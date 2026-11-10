@@ -33,6 +33,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
@@ -117,15 +118,20 @@ fun MainScreen(
                 .fillMaxSize()
                 .padding(innerPadding),
         ) {
-            if (isCameraConnected) {
-                CameraTexturePreview(
-                    previewWidth = previewWidth,
-                    previewHeight = previewHeight,
-                    onSurfaceAvailable = onSurfaceAvailable,
-                    onSurfaceDestroyed = onSurfaceDestroyed,
-                    modifier = Modifier.align(Alignment.Center),
-                )
-            } else {
+            // The preview stays composed while no camera is connected, only hidden, so its
+            // SurfaceTexture is kept and reused when a camera connects again.
+            // 未连接相机时预览仍保留在组合中，只是被隐藏，因此其 SurfaceTexture
+            // 会被保留，并在再次连接相机时复用。
+            CameraTexturePreview(
+                previewWidth = previewWidth,
+                previewHeight = previewHeight,
+                onSurfaceAvailable = onSurfaceAvailable,
+                onSurfaceDestroyed = onSurfaceDestroyed,
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .alpha(if (isCameraConnected) 1f else 0f),
+            )
+            if (!isCameraConnected) {
                 Text(
                     text = stringResource(R.string.main_connect_usb_tip),
                     color = Color.White,

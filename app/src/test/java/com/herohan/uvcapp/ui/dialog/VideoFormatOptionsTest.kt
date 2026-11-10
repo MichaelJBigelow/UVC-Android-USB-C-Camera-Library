@@ -81,6 +81,25 @@ class VideoFormatOptionsTest {
     }
 
     @Test
+    fun applyToSetsFormatResolutionAndFrameRateOnACopy() {
+        val current = Size(UVCCamera.UVC_VS_FRAME_MJPEG, 640, 480, 30, listOf(30, 15))
+        val selection = VideoFormatSelection(UVCCamera.UVC_VS_FRAME_UNCOMPRESSED, Resolution(1920, 1080), 5)
+
+        val result = selection.applyTo(current)
+
+        assertEquals(UVCCamera.UVC_VS_FRAME_UNCOMPRESSED, result.type)
+        assertEquals(1920, result.width)
+        assertEquals(1080, result.height)
+        assertEquals(5, result.fps)
+        // The camera's current size is left untouched.
+        // 相机当前的尺寸保持不变。
+        assertEquals(UVCCamera.UVC_VS_FRAME_MJPEG, current.type)
+        assertEquals(640, current.width)
+        assertEquals(480, current.height)
+        assertEquals(30, current.fps)
+    }
+
+    @Test
     fun resolutionPrintsAsWidthByHeight() {
         assertEquals("1920x1080", Resolution(1920, 1080).toString())
     }

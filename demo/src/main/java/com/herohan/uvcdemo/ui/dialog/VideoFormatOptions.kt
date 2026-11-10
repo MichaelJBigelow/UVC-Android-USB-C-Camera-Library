@@ -20,7 +20,19 @@ data class Resolution(val width: Int, val height: Int) {
  *
  * @param frameType UVC frame type, [UVCCamera.UVC_VS_FRAME_MJPEG] or [UVCCamera.UVC_VS_FRAME_UNCOMPRESSED] / UVC 帧类型
  */
-data class VideoFormatSelection(val frameType: Int, val resolution: Resolution, val fps: Int)
+data class VideoFormatSelection(val frameType: Int, val resolution: Resolution, val fps: Int) {
+    /**
+     * A copy of [size] set to this format, resolution and frame rate; [size] itself is not changed.
+     *
+     * 将 [size] 复制一份并设为本选择的格式、分辨率和帧率；[size] 本身不会改变。
+     */
+    fun applyTo(size: Size): Size = size.clone().also {
+        it.type = frameType
+        it.width = resolution.width
+        it.height = resolution.height
+        it.fps = fps
+    }
+}
 
 /**
  * The formats, resolutions and frame rates a camera supports, as offered by the video format dialog.

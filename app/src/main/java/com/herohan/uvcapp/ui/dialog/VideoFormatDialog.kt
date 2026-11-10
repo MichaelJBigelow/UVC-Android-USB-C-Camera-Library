@@ -105,13 +105,7 @@ fun VideoFormatDialog(
         },
         confirmButton = {
             TextButton(onClick = {
-                val size = currentSize.clone().apply {
-                    type = selection.frameType
-                    width = selection.resolution.width
-                    height = selection.resolution.height
-                    fps = selection.fps
-                }
-                onFormatSelected(size)
+                onFormatSelected(selection.applyTo(currentSize))
                 onDismiss()
             }) {
                 Text(stringResource(R.string.video_format_ok_button))

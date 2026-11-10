@@ -232,8 +232,6 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun onPreviewSurfaceDestroyed(surface: SurfaceTexture) {
-        // onCameraClose may have removed it already.
-        // onCameraClose 可能已将其移除。
         if (previewSurface === surface) {
             cameraHelper?.removeSurface(surface)
             previewSurface = null
@@ -317,8 +315,9 @@ class MainActivity : ComponentActivity() {
                 toggleVideoRecord(false)
             }
 
+            // Detach the preview from the camera but keep it: it is attached again on the next onCameraOpen.
+            // 将预览从相机上移除但保留它：下次 onCameraOpen 时会重新挂接。
             previewSurface?.let { cameraHelper?.removeSurface(it) }
-            previewSurface = null
 
             isCameraConnected = false
             openDialog = null

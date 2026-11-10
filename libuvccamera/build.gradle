@@ -23,21 +23,21 @@
 
 plugins {
     id 'com.android.library'
-    id "com.vanniktech.maven.publish" version "0.34.0"
+    id "com.vanniktech.maven.publish" version "0.37.0"
 }
 
 android {
-    namespace 'com.serenegiant.uvccamera'
-    compileSdkVersion versionCompiler
+    namespace = 'com.serenegiant.uvccamera'
+    compileSdk = rootProject.ext.versionCompiler
 
     compileOptions {
-        sourceCompatibility javaSourceCompatibility
-        targetCompatibility javaTargetCompatibility
+        sourceCompatibility = rootProject.ext.javaSourceCompatibility
+        targetCompatibility = rootProject.ext.javaTargetCompatibility
     }
 
     defaultConfig {
-        minSdkVersion versionMin
-        targetSdkVersion versionTarget
+        minSdk = rootProject.ext.versionMin
+        targetSdk = rootProject.ext.versionTarget
 
         ndk {
             abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
@@ -46,17 +46,17 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            minifyEnabled = false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             consumerProguardFiles 'consumer-rules.pro'
         }
     }
     buildFeatures {
-        buildConfig true
+        buildConfig = true
     }
     externalNativeBuild {
         ndkBuild {
-            path file('src/main/jni/Android.mk')
+            path = file('src/main/jni/Android.mk')
         }
 //        cmake {
 //            path "src/main/jni/CMakeLists.txt"

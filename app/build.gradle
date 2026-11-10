@@ -3,31 +3,31 @@ plugins {
 }
 
 android {
-    namespace 'com.herohan.uvcapp'
-    compileSdkVersion 34
+    namespace = 'com.herohan.uvcapp'
+    compileSdk = rootProject.ext.versionCompiler
 
     defaultConfig {
-        applicationId "com.herohan.uvcapp"
-        minSdkVersion 29
-        targetSdkVersion 34
-        versionCode 3
-        versionName "1.0.2"
+        applicationId = "com.herohan.uvcapp"
+        minSdk = rootProject.ext.versionMin
+        targetSdk = rootProject.ext.versionTarget
+        versionCode = 3
+        versionName = "1.0.2"
 
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled = false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility = rootProject.ext.javaSourceCompatibility
+        targetCompatibility = rootProject.ext.javaTargetCompatibility
     }
-    viewBinding {
-        enabled true
+    buildFeatures {
+        viewBinding = true
     }
 }
 

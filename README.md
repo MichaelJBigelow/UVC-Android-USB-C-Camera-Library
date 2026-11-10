@@ -39,3 +39,7 @@ ProGuard users must manually add the below options.
 Requirements
 --------------
 Android 10 (API level 29)+
+
+The library is compiled for Java 17, so apps that use it must build with JDK 17 or newer (Android Gradle Plugin 8.0+).
+
+Building this repository requires JDK 17 or newer. It is tested with JDK 25, the version bundled with Android Studio.

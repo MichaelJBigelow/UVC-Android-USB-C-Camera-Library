@@ -2,33 +2,32 @@
 // 顶层构建文件，可在此添加所有子项目/模块共用的配置选项。
 buildscript {
     repositories {
-        maven { url 'https://maven.aliyun.com/repository/google' }
-        maven { url 'https://maven.aliyun.com/repository/central' }
+        maven { url = 'https://maven.aliyun.com/repository/google' }
+        maven { url = 'https://maven.aliyun.com/repository/central' }
 
         google()
         mavenCentral()
         gradlePluginPortal()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.5.1'
+        classpath 'com.android.tools.build:gradle:9.5.1'
     }
 }
 
 allprojects {
     repositories {
-        maven { url 'https://maven.aliyun.com/repository/google' }
-        maven { url 'https://maven.aliyun.com/repository/central' }
+        maven { url = 'https://maven.aliyun.com/repository/google' }
+        maven { url = 'https://maven.aliyun.com/repository/central' }
 
-        maven { url 'https://jitpack.io' }
+        maven { url = 'https://jitpack.io' }
 
         google()
         mavenCentral()
-        jcenter() // Warning: this repository is going to shut down soon / 警告：该仓库即将关闭
     }
 }
 
-task clean(type: Delete) {
-    delete rootProject.buildDir
+tasks.register('clean', Delete) {
+    delete rootProject.layout.buildDirectory
 }
 
 ext {
@@ -36,6 +35,8 @@ ext {
     versionTarget = 34
     versionMin = 29
 
-    javaSourceCompatibility = JavaVersion.VERSION_1_8
-    javaTargetCompatibility = JavaVersion.VERSION_1_8
+    // Java language level for all modules. The build runs on JDK 25; Android bytecode targets Java 17.
+    // 所有模块的 Java 语言级别。构建在 JDK 25 上运行；Android 字节码以 Java 17 为目标。
+    javaSourceCompatibility = JavaVersion.VERSION_17
+    javaTargetCompatibility = JavaVersion.VERSION_17
 }

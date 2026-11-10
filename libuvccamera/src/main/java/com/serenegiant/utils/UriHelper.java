@@ -1,13 +1,10 @@
 package com.serenegiant.utils;
 
-import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
@@ -76,9 +73,7 @@ public final class UriHelper {
         list.add(Environment.DIRECTORY_MOVIES);
         list.add(Environment.DIRECTORY_DOWNLOADS);
         list.add(Environment.DIRECTORY_DCIM);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            list.add(Environment.DIRECTORY_DOCUMENTS);    // API>=19
-        }
+        list.add(Environment.DIRECTORY_DOCUMENTS);
         STANDARD_DIRECTORIES = list.toArray(new String[0]);
     }
 
@@ -101,20 +96,18 @@ public final class UriHelper {
      * @param context The context.
      * @param uri     The Uri to query.
      */
-    @SuppressLint("NewApi")
     @Nullable
-    @TargetApi(Build.VERSION_CODES.KITKAT)
     public static String getPath(@NonNull final Context context, final Uri uri) {
         if (DEBUG) Log.i(TAG, "getPath:uri=" + uri);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && DocumentsContract.isDocumentUri(context, uri)) {
+        if (DocumentsContract.isDocumentUri(context, uri)) {
             // DocumentProvider
             if (DEBUG) Log.i(TAG, "getPath:isDocumentUri,getAuthority=" + uri.getAuthority());
             // ExternalStorageProvider
             if (isExternalStorageDocument(uri)) {
                 final String docId = DocumentsContract.getDocumentId(uri);
                 if (DEBUG) Log.i(TAG, "getPath:isDocumentUri,docId=" + docId);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && DEBUG) {
+                if (DEBUG) {
                     Log.i(TAG, "getPath:isDocumentUri,getTreeDocumentId="
                             + DocumentsContract.getTreeDocumentId(uri));
                 }

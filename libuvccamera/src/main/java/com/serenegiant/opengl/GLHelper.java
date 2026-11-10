@@ -31,7 +31,6 @@ import android.opengl.GLUtils;
 
 import androidx.annotation.NonNull;
 
-import android.os.Build;
 import android.util.Log;
 
 import com.serenegiant.utils.AssetsHelper;
@@ -263,12 +262,7 @@ public final class GLHelper {
 
         // get a background image from resources
         // note the image format must match the bitmap format
-        final Drawable background;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            background = context.getResources().getDrawable(resId, theme);
-        } else {
-            background = context.getResources().getDrawable(resId);
-        }
+        final Drawable background = context.getResources().getDrawable(resId, theme);
         background.setBounds(0, 0, 256, 256);
         background.draw(canvas); // draw the background to our bitmap
 
@@ -434,15 +428,13 @@ public final class GLHelper {
         Log.i(TAG, "renderer: " + GLES20.glGetString(GLES20.GL_RENDERER));
         Log.i(TAG, "version : " + GLES20.glGetString(GLES20.GL_VERSION));
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            final int[] values = new int[1];
-            GLES30.glGetIntegerv(GLES30.GL_MAJOR_VERSION, values, 0);
-            final int majorVersion = values[0];
-            GLES30.glGetIntegerv(GLES30.GL_MINOR_VERSION, values, 0);
-            final int minorVersion = values[0];
-            if (GLES30.glGetError() == GLES30.GL_NO_ERROR) {
-                Log.i(TAG, "version: " + majorVersion + "." + minorVersion);
-            }
+        final int[] values = new int[1];
+        GLES30.glGetIntegerv(GLES30.GL_MAJOR_VERSION, values, 0);
+        final int majorVersion = values[0];
+        GLES30.glGetIntegerv(GLES30.GL_MINOR_VERSION, values, 0);
+        final int minorVersion = values[0];
+        if (GLES30.glGetError() == GLES30.GL_NO_ERROR) {
+            Log.i(TAG, "version: " + majorVersion + "." + minorVersion);
         }
     }
 }

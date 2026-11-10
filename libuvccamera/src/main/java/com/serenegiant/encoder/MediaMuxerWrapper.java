@@ -31,7 +31,6 @@ import android.media.MediaCodec;
 import android.media.MediaFormat;
 import android.media.MediaMuxer;
 import android.net.Uri;
-import android.os.Build;
 import android.util.Log;
 
 import com.serenegiant.utils.UVCUtils;
@@ -59,12 +58,7 @@ public class MediaMuxerWrapper {
         Context context = UVCUtils.getApplication();
         mOutputUri = uri;
 
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            String outputPath = UriHelper.getPath(UVCUtils.getApplication(), mOutputUri);
-            mMediaMuxer = new MediaMuxer(outputPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
-        } else {
-            mMediaMuxer = new MediaMuxer(context.getContentResolver().openFileDescriptor(mOutputUri, "rw").getFileDescriptor(), MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
-        }
+        mMediaMuxer = new MediaMuxer(context.getContentResolver().openFileDescriptor(mOutputUri, "rw").getFileDescriptor(), MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
 
         mEncoderCount = mStartedCount = 0;
         mIsStarted = false;

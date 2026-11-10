@@ -13,7 +13,6 @@ import android.media.MediaMuxer;
 import android.media.MediaRecorder;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -23,17 +22,14 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Surface;
 
-import androidx.annotation.DoNotInline;
 import androidx.annotation.GuardedBy;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.annotation.RequiresPermission;
 import androidx.annotation.UiThread;
 import androidx.annotation.VisibleForTesting;
 
-import com.herohan.uvcapp.utils.VideoUtil;
 import com.serenegiant.usb.Size;
 import com.serenegiant.utils.UVCUtils;
 import com.serenegiant.utils.UriHelper;
@@ -378,11 +374,7 @@ public class VideoCapture {
                 // Do the setup of the videoEncoder at the end of video recording instead of at the
                 // start of recording because it requires attaching a new Surface. This causes a
                 // glitch so we don't want that to incur latency at the start of capture.
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    setupEncoder();
-                } else {
-                    initVideoAudioEncoder();
-                }
+                setupEncoder();
                 return "startRecording";
             }
         });
@@ -523,9 +515,7 @@ public class VideoCapture {
     void setupEncoder() {
 
         // video encoder setup
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            mVideoEncoder.reset();
-        }
+        mVideoEncoder.reset();
         mVideoEncoderInitStatus = VideoEncoderInitStatus.VIDEO_ENCODER_INIT_STATUS_UNINITIALIZED;
 
         // Configures a Video encoder, if there is any exception, will abort follow up actions
@@ -552,9 +542,7 @@ public class VideoCapture {
 
         if (mIsAudioEnabled.get()) {
             setAudioParameters();
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                mAudioEncoder.reset();
-            }
+            mAudioEncoder.reset();
             // Configures a Audio encoder, if there is any exception, will abort follow up actions
             try {
                 mAudioEncoder.configure(
@@ -587,22 +575,17 @@ public class VideoCapture {
                 VideoEncoderInitStatus.VIDEO_ENCODER_INIT_STATUS_INITIALIZED_FAILED;
         mVideoEncoderErrorMessage = e;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            if (e instanceof MediaCodec.CodecException) {
-                MediaCodec.CodecException e1 = (MediaCodec.CodecException) e;
-                int errorCode = 0;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    errorCode = Api23Impl.getCodecExceptionErrorCode(e1);
-                    Log.i(TAG,
-                            "CodecException: code: " + errorCode + " diagnostic: " + e1.getDiagnosticInfo());
-                    if (errorCode == MediaCodec.CodecException.ERROR_INSUFFICIENT_RESOURCE) {
-                        mVideoEncoderInitStatus =
-                                VideoEncoderInitStatus.VIDEO_ENCODER_INIT_STATUS_INSUFFICIENT_RESOURCE;
-                    } else if (errorCode == MediaCodec.CodecException.ERROR_RECLAIMED) {
-                        mVideoEncoderInitStatus =
-                                VideoEncoderInitStatus.VIDEO_ENCODER_INIT_STATUS_RESOURCE_RECLAIMED;
-                    }
-                }
+        if (e instanceof MediaCodec.CodecException) {
+            MediaCodec.CodecException e1 = (MediaCodec.CodecException) e;
+            int errorCode = e1.getErrorCode();
+            Log.i(TAG,
+                    "CodecException: code: " + errorCode + " diagnostic: " + e1.getDiagnosticInfo());
+            if (errorCode == MediaCodec.CodecException.ERROR_INSUFFICIENT_RESOURCE) {
+                mVideoEncoderInitStatus =
+                        VideoEncoderInitStatus.VIDEO_ENCODER_INIT_STATUS_INSUFFICIENT_RESOURCE;
+            } else if (errorCode == MediaCodec.CodecException.ERROR_RECLAIMED) {
+                mVideoEncoderInitStatus =
+                        VideoEncoderInitStatus.VIDEO_ENCODER_INIT_STATUS_RESOURCE_RECLAIMED;
             }
         }
     }
@@ -612,22 +595,17 @@ public class VideoCapture {
                 AudioEncoderInitStatus.AUDIO_ENCODER_INIT_STATUS_INITIALIZED_FAILED;
         mAudioEncoderErrorMessage = e;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            if (e instanceof MediaCodec.CodecException) {
-                MediaCodec.CodecException e1 = (MediaCodec.CodecException) e;
-                int errorCode = 0;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    errorCode = Api23Impl.getCodecExceptionErrorCode(e1);
-                    Log.i(TAG,
-                            "CodecException: code: " + errorCode + " diagnostic: " + e1.getDiagnosticInfo());
-                    if (errorCode == MediaCodec.CodecException.ERROR_INSUFFICIENT_RESOURCE) {
-                        mAudioEncoderInitStatus =
-                                AudioEncoderInitStatus.AUDIO_ENCODER_INIT_STATUS_INSUFFICIENT_RESOURCE;
-                    } else if (errorCode == MediaCodec.CodecException.ERROR_RECLAIMED) {
-                        mAudioEncoderInitStatus =
-                                AudioEncoderInitStatus.AUDIO_ENCODER_INIT_STATUS_RESOURCE_RECLAIMED;
-                    }
-                }
+        if (e instanceof MediaCodec.CodecException) {
+            MediaCodec.CodecException e1 = (MediaCodec.CodecException) e;
+            int errorCode = e1.getErrorCode();
+            Log.i(TAG,
+                    "CodecException: code: " + errorCode + " diagnostic: " + e1.getDiagnosticInfo());
+            if (errorCode == MediaCodec.CodecException.ERROR_INSUFFICIENT_RESOURCE) {
+                mAudioEncoderInitStatus =
+                        AudioEncoderInitStatus.AUDIO_ENCODER_INIT_STATUS_INSUFFICIENT_RESOURCE;
+            } else if (errorCode == MediaCodec.CodecException.ERROR_RECLAIMED) {
+                mAudioEncoderInitStatus =
+                        AudioEncoderInitStatus.AUDIO_ENCODER_INIT_STATUS_RESOURCE_RECLAIMED;
             }
         }
     }
@@ -661,20 +639,18 @@ public class VideoCapture {
 
                 synchronized (mMuxerLock) {
 
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        if (!mIsFirstVideoKeyFrameWrite.get()) {
-                            boolean isKeyFrame =
-                                    (mVideoBufferInfo.flags & MediaCodec.BUFFER_FLAG_KEY_FRAME) != 0;
-                            if (isKeyFrame) {
-                                Log.i(TAG,
-                                        "First video key frame written.");
-                                mIsFirstVideoKeyFrameWrite.set(true);
-                            } else {
-                                // Request a sync frame immediately
-                                final Bundle syncFrame = new Bundle();
-                                syncFrame.putInt(MediaCodec.PARAMETER_KEY_REQUEST_SYNC_FRAME, 0);
-                                mVideoEncoder.setParameters(syncFrame);
-                            }
+                    if (!mIsFirstVideoKeyFrameWrite.get()) {
+                        boolean isKeyFrame =
+                                (mVideoBufferInfo.flags & MediaCodec.BUFFER_FLAG_KEY_FRAME) != 0;
+                        if (isKeyFrame) {
+                            Log.i(TAG,
+                                    "First video key frame written.");
+                            mIsFirstVideoKeyFrameWrite.set(true);
+                        } else {
+                            // Request a sync frame immediately
+                            final Bundle syncFrame = new Bundle();
+                            syncFrame.putInt(MediaCodec.PARAMETER_KEY_REQUEST_SYNC_FRAME, 0);
+                            mVideoEncoder.setParameters(syncFrame);
                         }
                     }
 
@@ -884,8 +860,7 @@ public class VideoCapture {
                         }
                     }
                 } catch (Exception e) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-                            && e instanceof MediaCodec.CodecException) {
+                    if (e instanceof MediaCodec.CodecException) {
                         Log.i(TAG, "audio dequeueInputBuffer CodecException " + e.getMessage());
                     } else if (e instanceof IllegalStateException) {
                         Log.i(TAG,
@@ -958,13 +933,11 @@ public class VideoCapture {
     }
 
     private ByteBuffer getInputBuffer(MediaCodec codec, int index) {
-        return Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP ?
-                codec.getInputBuffers()[index] : codec.getInputBuffer(index);
+        return codec.getInputBuffer(index);
     }
 
     private ByteBuffer getOutputBuffer(MediaCodec codec, int index) {
-        return Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP ?
-                codec.getOutputBuffers()[index] : codec.getOutputBuffer(index);
+        return codec.getOutputBuffer(index);
     }
 
     /**
@@ -1091,13 +1064,8 @@ public class VideoCapture {
                         MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
             }
         } else if (outputFileOptions.isSavingToFileDescriptor()) {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-                throw new IllegalArgumentException("Using a FileDescriptor to record a video is "
-                        + "only supported for Android 8.0 or above.");
-            }
-
             if (outputFileOptions.getFileDescriptor() != null) {
-                mediaMuxer = Api26Impl.createMediaMuxer(outputFileOptions.getFileDescriptor(),
+                mediaMuxer = new MediaMuxer(outputFileOptions.getFileDescriptor(),
                         MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
             }
         } else if (outputFileOptions.isSavingToMediaStore()) {
@@ -1114,26 +1082,14 @@ public class VideoCapture {
                     throw new IOException("Invalid Uri!");
                 }
 
-                // Sine API 26, media muxer could be initiated by a FileDescriptor.
                 try {
-                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-                        String savedLocationPath = VideoUtil.getAbsolutePathFromUri(
-                                outputFileOptions.getContentResolver(), mSavedVideoUri);
-
-                        Log.i(TAG, "Saved Location Path: " + savedLocationPath);
-                        if (savedLocationPath != null) {
-                            mediaMuxer = new MediaMuxer(savedLocationPath,
-                                    MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
-                        }
-                    } else {
-                        mParcelFileDescriptor =
-                                outputFileOptions.getContentResolver().openFileDescriptor(
-                                        mSavedVideoUri, "rw");
-                        if (mParcelFileDescriptor != null) {
-                            mediaMuxer = Api26Impl.createMediaMuxer(
-                                    mParcelFileDescriptor.getFileDescriptor(),
-                                    MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
-                        }
+                    mParcelFileDescriptor =
+                            outputFileOptions.getContentResolver().openFileDescriptor(
+                                    mSavedVideoUri, "rw");
+                    if (mParcelFileDescriptor != null) {
+                        mediaMuxer = new MediaMuxer(
+                                mParcelFileDescriptor.getFileDescriptor(),
+                                MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
                     }
                 } catch (IOException e) {
                     mSavedVideoUri = null;
@@ -1387,14 +1343,8 @@ public class VideoCapture {
              * above.
              *
              * @param fileDescriptor to save the video.
-             * @throws IllegalArgumentException when the device is not running Android 8.0 or above.
              */
             public Builder(@NonNull FileDescriptor fileDescriptor) {
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-                    throw new IllegalArgumentException("Using a FileDescriptor to record a video is only supported for Android 8"
-                            + ".0 or above.");
-                }
-
                 mFileDescriptor = fileDescriptor;
             }
 
@@ -1436,38 +1386,6 @@ public class VideoCapture {
                 return new OutputFileOptions(mFile, mFileDescriptor, mContentResolver,
                         mSaveCollection, mContentValues);
             }
-        }
-    }
-
-    /**
-     * Nested class to avoid verification errors for methods introduced in Android 8.0 (API 26).
-     */
-    @RequiresApi(26)
-    private static class Api26Impl {
-
-        private Api26Impl() {
-        }
-
-        @DoNotInline
-        @NonNull
-        static MediaMuxer createMediaMuxer(@NonNull FileDescriptor fileDescriptor, int format)
-                throws IOException {
-            return new MediaMuxer(fileDescriptor, format);
-        }
-    }
-
-    /**
-     * Nested class to avoid verification errors for methods introduced in Android 6.0 (API 23).
-     */
-    @RequiresApi(23)
-    private static class Api23Impl {
-
-        private Api23Impl() {
-        }
-
-        @DoNotInline
-        static int getCodecExceptionErrorCode(MediaCodec.CodecException e) {
-            return e.getErrorCode();
         }
     }
 }

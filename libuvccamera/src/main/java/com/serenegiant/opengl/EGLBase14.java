@@ -18,8 +18,6 @@ package com.serenegiant.opengl;
  *  limitations under the License.
  */
 
-import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.graphics.SurfaceTexture;
 import android.opengl.EGL14;
 import android.opengl.EGLConfig;
@@ -29,7 +27,6 @@ import android.opengl.EGLExt;
 import android.opengl.EGLSurface;
 import android.opengl.GLES10;
 import android.opengl.GLES20;
-import android.os.Build;
 
 import androidx.annotation.NonNull;
 
@@ -41,8 +38,7 @@ import android.view.SurfaceView;
 /**
  * Helper class for creating and using EGL rendering context
  */
-@TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-        /*package*/ class EGLBase14 extends EGLBase {    // API >= 17
+/*package*/ class EGLBase14 extends EGLBase {
     private static final boolean DEBUG = false;    // TODO set false on release
     private static final String TAG = EGLBase14.class.getSimpleName();
 
@@ -67,11 +63,8 @@ import android.view.SurfaceView;
         }
 
         @Override
-        @SuppressLint("NewApi")
         public long getNativeHandle() {
-            return eglContext != null ?
-                    (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-                            ? eglContext.getNativeHandle() : eglContext.getHandle()) : 0L;
+            return eglContext != null ? eglContext.getNativeHandle() : 0L;
         }
 
         @Override
@@ -594,7 +587,7 @@ import android.view.SurfaceView;
             attribList[offset++] = EGL14.EGL_DEPTH_SIZE;
             attribList[offset++] = 16;
         }
-        if (isRecordable && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {// MediaCodecの入力用Surfaceの場合
+        if (isRecordable) {// MediaCodecの入力用Surfaceの場合
             attribList[offset++] = EGL_RECORDABLE_ANDROID;
             attribList[offset++] = 1;
         }

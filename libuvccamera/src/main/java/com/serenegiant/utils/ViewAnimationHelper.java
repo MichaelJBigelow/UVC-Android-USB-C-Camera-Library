@@ -25,7 +25,6 @@ import android.annotation.SuppressLint;
 
 import androidx.annotation.NonNull;
 
-import android.os.Build;
 import android.util.Log;
 import android.view.View;
 
@@ -73,8 +72,7 @@ public class ViewAnimationHelper {
                 target.setAlpha(0.0f);
                 final ObjectAnimator objectAnimator = ObjectAnimator.ofFloat(target, "alpha", 0f, 1f);
                 objectAnimator.addListener(mAnimatorListener);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2)
-                    objectAnimator.setAutoCancel(true);        // API >= 18 同じターゲットに対して別のAnimatorが開始したら自分をキャンセルする
+                objectAnimator.setAutoCancel(true);        // 同じターゲットに対して別のAnimatorが開始したら自分をキャンセルする
                 objectAnimator.setDuration(duration > 0 ? duration : DEFAULT_DURATION_MS);
                 objectAnimator.setStartDelay(startDelay > 0 ? startDelay : 0);    // 開始までの時間
                 objectAnimator.start();                        // アニメーションを開始
@@ -104,8 +102,7 @@ public class ViewAnimationHelper {
                     target.setAlpha(1.0f);
                     final ObjectAnimator objectAnimator = ObjectAnimator.ofFloat(target, "alpha", 1f, 0f);
                     objectAnimator.addListener(mAnimatorListener);
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2)
-                        objectAnimator.setAutoCancel(true);        // API >= 18 同じターゲットに対して別のAnimatorが開始したら自分をキャンセルする
+                    objectAnimator.setAutoCancel(true);        // 同じターゲットに対して別のAnimatorが開始したら自分をキャンセルする
                     objectAnimator.setDuration(duration > 0 ? duration : DEFAULT_DURATION_MS);
                     objectAnimator.setStartDelay(startDelay > 0 ? startDelay : 0);    // 開始までの時間
                     objectAnimator.start();                        // アニメーションを開始
@@ -139,8 +136,7 @@ public class ViewAnimationHelper {
                 final PropertyValuesHolder scale_y = PropertyValuesHolder.ofFloat("scaleY", 0.01f, 1f);
                 final ObjectAnimator objectAnimator = ObjectAnimator.ofPropertyValuesHolder(target, scale_x, scale_y);
                 objectAnimator.addListener(mAnimatorListener);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2)
-                    objectAnimator.setAutoCancel(true);        // API >= 18 同じターゲットに対して別のAnimatorが開始したら自分をキャンセルする
+                objectAnimator.setAutoCancel(true);        // 同じターゲットに対して別のAnimatorが開始したら自分をキャンセルする
                 objectAnimator.setDuration(duration > 0 ? duration : DEFAULT_DURATION_MS);
                 objectAnimator.setStartDelay(startDelay > 0 ? startDelay : 0);    // 開始までの時間
                 objectAnimator.start();                        // アニメーションを開始
@@ -173,8 +169,7 @@ public class ViewAnimationHelper {
                 final PropertyValuesHolder scale_y = PropertyValuesHolder.ofFloat("scaleY", 1f, 0f);
                 final ObjectAnimator objectAnimator = ObjectAnimator.ofPropertyValuesHolder(target, scale_x, scale_y);
                 objectAnimator.addListener(mAnimatorListener);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2)
-                    objectAnimator.setAutoCancel(true);        // API >= 18 同じターゲットに対して別のAnimatorが開始したら自分をキャンセルする
+                objectAnimator.setAutoCancel(true);        // 同じターゲットに対して別のAnimatorが開始したら自分をキャンセルする
                 objectAnimator.setDuration(duration > 0 ? duration : DEFAULT_DURATION_MS);
                 objectAnimator.setStartDelay(startDelay > 0 ? startDelay : 0);    // 開始までの時間
                 objectAnimator.start();                        // アニメーションを開始

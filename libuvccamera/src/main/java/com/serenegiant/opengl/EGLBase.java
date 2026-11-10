@@ -18,7 +18,6 @@ package com.serenegiant.opengl;
  *  limitations under the License.
  */
 
-import android.os.Build;
 
 /**
  * Helper class for creating and using EGL rendering context
@@ -128,7 +127,7 @@ public abstract class EGLBase {
     }
 
     public static boolean isEGL14Supported() {
-        return (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2);
+        return true;
     }
 
     /**

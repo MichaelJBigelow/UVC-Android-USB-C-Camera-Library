@@ -4,7 +4,6 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.text.TextUtils;
@@ -65,14 +64,8 @@ public class FileUtils {
         ContentResolver resolver = context.getContentResolver();
 
         Uri mediaTable = null;
-        String volumeName = null;
         // Find all media files on the primary external storage device.
-        // On API <= 28, use VOLUME_EXTERNAL instead.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            volumeName = MediaStore.VOLUME_EXTERNAL;
-        } else {
-            volumeName = MediaStore.VOLUME_EXTERNAL_PRIMARY;
-        }
+        String volumeName = MediaStore.VOLUME_EXTERNAL_PRIMARY;
         if (mimeType.startsWith(MIME_PREFIX_IMAGE)) {
             mediaTable = MediaStore.Images.Media.getContentUri(
                     volumeName);
@@ -89,17 +82,8 @@ public class FileUtils {
         ContentValues contentValues = new ContentValues();
         contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
         contentValues.put(MediaStore.MediaColumns.MIME_TYPE, mimeType);
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            final File dir = getCaptureDir(context, type);
-            if (dir == null) {
-                return null;
-            }
-            String absolutePath = dir.getPath() + File.separator + fileName;
-            contentValues.put(MediaStore.MediaColumns.DATA, absolutePath);
-        } else {
-            String relativePath = type + File.separator + getAppName();
-            contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, relativePath);
-        }
+        String relativePath = type + File.separator + getAppName();
+        contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, relativePath);
 
         Uri uri = resolver.insert(mediaTable, contentValues);
         return uri;

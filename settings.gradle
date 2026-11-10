@@ -21,6 +21,19 @@
  *  may have a different license, see the respective files.
  */
 
+// Repositories for resolving Gradle plugins (versions are in gradle/libs.versions.toml).
+// 用于解析 Gradle 插件的仓库(版本在 gradle/libs.versions.toml 中声明)。
+pluginManagement {
+    repositories {
+        maven { url = 'https://maven.aliyun.com/repository/google' }
+        maven { url = 'https://maven.aliyun.com/repository/central' }
+
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
 include ':libuvccamera'
 include ':app'
 include ':demo'

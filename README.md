@@ -42,4 +42,6 @@ Android 10 (API level 29)+
 
 The library is compiled for Java 17, so apps that use it must build with JDK 17 or newer (Android Gradle Plugin 8.0+).
 
-Building this repository requires JDK 17 or newer. It is tested with JDK 25, the version bundled with Android Studio.
+Building this repository requires JDK 17 or newer. It is tested with JDK 25, the version bundled with Android Studio. Gradle must run on a full JDK, not a JRE, because it compiles the version catalog's accessors; from the command line, point `JAVA_HOME` at a JDK (for example Android Studio's bundled one).
+
+Plugin and library versions are declared in one place, the Gradle version catalog [`gradle/libs.versions.toml`](gradle/libs.versions.toml).

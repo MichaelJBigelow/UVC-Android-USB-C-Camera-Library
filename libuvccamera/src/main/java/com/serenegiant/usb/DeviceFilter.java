@@ -43,22 +43,31 @@ public final class DeviceFilter {
 	private static final String TAG = "DeviceFilter";
 
 	// USB Vendor ID (or -1 for unspecified)
+	// USB 供应商 ID(未指定时为 -1)
 	public final int mVendorId;
 	// USB Product ID (or -1 for unspecified)
+	// USB 产品 ID(未指定时为 -1)
 	public final int mProductId;
 	// USB device or interface class (or -1 for unspecified)
+	// USB 设备或接口的类(未指定时为 -1)
 	public final int mClass;
 	// USB device subclass (or -1 for unspecified)
+	// USB 设备子类(未指定时为 -1)
 	public final int mSubclass;
 	// USB device protocol (or -1 for unspecified)
+	// USB 设备协议(未指定时为 -1)
 	public final int mProtocol;
 	// USB device manufacturer name string (or null for unspecified)
+	// USB 设备制造商名称字符串(未指定时为 null)
 	public final String mManufacturerName;
 	// USB device product name string (or null for unspecified)
+	// USB 设备产品名称字符串(未指定时为 null)
 	public final String mProductName;
 	// USB device serial number string (or null for unspecified)
+	// USB 设备序列号字符串(未指定时为 null)
 	public final String mSerialNumber;
 	// set true if specific device(s) should exclude
+	// 如果要排除特定设备,则设为 true
 	public final boolean isExclude;
 
 	public DeviceFilter(final int vid, final int pid, final int clasz, final int subclass,
@@ -100,7 +109,9 @@ public final class DeviceFilter {
 	}
 
 	/**
-	 * 指定したxmlリソースからDeviceFilterリストを生成する
+	 * Create a list of DeviceFilter from the specified xml resource
+	 *
+	 * 从指定的 xml 资源生成 DeviceFilter 列表
 	 * @param context
 	 * @param deviceFilterXmlId
 	 * @return
@@ -133,6 +144,9 @@ public final class DeviceFilter {
 	/**
 	 * read as integer values with default value from xml(w/o exception throws)
 	 * resource integer id is also resolved into integer
+	 *
+	 * 从 xml 中读取整数值,可指定默认值(不抛出异常)
+	 * 资源整数 id 也会被解析为整数
 	 * @param parser
 	 * @param namespace
 	 * @param name
@@ -154,6 +168,7 @@ public final class DeviceFilter {
                 if (v != null && v.length() > 2 && v.charAt(0) == '0' &&
                     (v.charAt(1) == 'x' || v.charAt(1) == 'X')) {
                     // allow hex values starting with 0x or 0X
+                    // 允许以 0x 或 0X 开头的十六进制值
                     radix = 16;
                     v = v.substring(2);
                 }
@@ -173,6 +188,10 @@ public final class DeviceFilter {
 	 * read as boolean values with default value from xml(w/o exception throws)
 	 * resource boolean id is also resolved into boolean
 	 * if the value is zero, return false, if the value is non-zero integer, return true
+	 *
+	 * 从 xml 中读取布尔值,可指定默认值(不抛出异常)
+	 * 资源布尔 id 也会被解析为布尔值
+	 * 如果值为零则返回 false,如果值为非零整数则返回 true
 	 * @param context
 	 * @param parser
 	 * @param namespace
@@ -199,6 +218,7 @@ public final class DeviceFilter {
                 if (v != null && v.length() > 2 && v.charAt(0) == '0' &&
                     (v.charAt(1) == 'x' || v.charAt(1) == 'X')) {
                     // allow hex values starting with 0x or 0X
+                    // 允许以 0x 或 0X 开头的十六进制值
                     radix = 16;
                     v = v.substring(2);
                 }
@@ -218,6 +238,9 @@ public final class DeviceFilter {
 	/**
 	 * read as String attribute with default value from xml(w/o exception throws)
 	 * resource string id is also resolved into string
+	 *
+	 * 从 xml 中读取字符串属性,可指定默认值(不抛出异常)
+	 * 资源字符串 id 也会被解析为字符串
 	 * @param parser
 	 * @param namespace
 	 * @param name
@@ -334,8 +357,11 @@ public final class DeviceFilter {
 	} */
 
 	/**
-	 * 指定したクラス・サブクラス・プロトコルがこのDeviceFilterとマッチするかどうかを返す
-	 * mExcludeフラグは別途#isExcludeか自前でチェックすること
+	 * Returns whether the specified class, subclass and protocol match this DeviceFilter
+	 * The mExclude flag must be checked separately, via #isExclude or by yourself
+	 *
+	 * 返回指定的类、子类和协议是否与此 DeviceFilter 匹配
+	 * mExclude 标志需要另行通过 #isExclude 或自行检查
 	 * @param clasz
 	 * @param subclass
 	 * @param protocol
@@ -347,8 +373,11 @@ public final class DeviceFilter {
 	}
 
 	/**
-	 * 指定したUsbDeviceがこのDeviceFilterにマッチするかどうかを返す
-	 * mExcludeフラグは別途#isExcludeか自前でチェックすること
+	 * Returns whether the specified UsbDevice matches this DeviceFilter
+	 * The mExclude flag must be checked separately, via #isExclude or by yourself
+	 *
+	 * 返回指定的 UsbDevice 是否与此 DeviceFilter 匹配
+	 * mExclude 标志需要另行通过 #isExclude 或自行检查
 	 * @param device
 	 * @return
 	 */
@@ -376,11 +405,13 @@ public final class DeviceFilter {
 			return false; */
 
 		// check device class/subclass/protocol
+		// 检查设备的类/子类/协议
 		if (matches(device.getDeviceClass(), device.getDeviceSubclass(), device.getDeviceProtocol())) {
 			return true;
 		}
 
 		// if device doesn't match, check the interfaces
+		// 如果设备不匹配,则检查其接口
 		final int count = device.getInterfaceCount();
 		for (int i = 0; i < count; i++) {
 			final UsbInterface intf = device.getInterface(i);
@@ -393,7 +424,9 @@ public final class DeviceFilter {
 	}
 
 	/**
-	 * このDeviceFilterに一致してかつmExcludeがtrueならtrueを返す
+	 * Returns true if this DeviceFilter matches and mExclude is true
+	 *
+	 * 如果与此 DeviceFilter 匹配且 mExclude 为 true,则返回 true
 	 * @param device
 	 * @return
 	 */
@@ -402,7 +435,9 @@ public final class DeviceFilter {
 	}
 
 	/**
-	 * これって要らんかも, equalsでできる気が
+	 * This may not be needed; equals can probably do the same
+	 *
+	 * 这个方法可能不需要,用 equals 应该就能实现
 	 * @param f
 	 * @return
 	 */
@@ -439,12 +474,14 @@ public final class DeviceFilter {
 		}
 
 		// check device class/subclass/protocol
+		// 检查设备的类/子类/协议
 		return matches(f.mClass, f.mSubclass, f.mProtocol);
 	}
 
 	@Override
 	public boolean equals(final Object obj) {
 		// can't compare if we have wildcard strings
+		// 如果存在通配符字符串,则无法比较
 		if (mVendorId == -1 || mProductId == -1 || mClass == -1
 				|| mSubclass == -1 || mProtocol == -1) {
 			return false;

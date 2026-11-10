@@ -126,6 +126,7 @@ public abstract class EGLTask extends Thread {
         }
 
         // If the thread has been started, wait until the looper has been created.
+        // 如果线程已启动,则等待直到 looper 创建完成。
         synchronized (this) {
             while (isAlive() && mLooper == null) {
                 try {

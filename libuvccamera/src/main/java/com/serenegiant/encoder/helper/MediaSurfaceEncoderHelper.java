@@ -28,6 +28,8 @@ public class MediaSurfaceEncoderHelper {
 
     /**
      * muxer for audio/video recording
+     *
+     * 用于音视频录制的 muxer
      */
     private MediaMuxerWrapper mMuxer;
     private MediaSurfaceEncoder mVideoEncoder;
@@ -60,9 +62,12 @@ public class MediaSurfaceEncoderHelper {
                 if (mMuxer != null) return;
 
                 synchronized (mSync) {
-                    mMuxer =  new MediaMuxerWrapper(uri);    // if you record audio only, ".m4a" is also OK.
+                    // if you record audio only, ".m4a" is also OK.
+                    // 如果只录制音频，也可以使用 ".m4a"。
+                    mMuxer =  new MediaMuxerWrapper(uri);
                     mVideoEncoder =  new MediaSurfaceEncoder(mMuxer, mSize.width, mSize.height, mVideoEncoderListener);
                     // for audio capturing
+                    // 用于音频采集
                     new MediaAudioEncoder(mMuxer, mAudioEncoderListener);
                 }
 
@@ -140,6 +145,7 @@ public class MediaSurfaceEncoderHelper {
                         try {
                             if (DEBUG) Log.i(TAG, "MediaScannerConnection#scanFile");
                             // invoke scanFile to update size of media file in MediaStore
+                            // 调用 scanFile 以更新 MediaStore 中媒体文件的大小
                             MediaScannerConnection.scanFile(context, new String[]{path}, null, null);
                         } catch (final Exception e) {
                             Log.e(TAG, "MediaScannerConnection:", e);

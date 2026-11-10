@@ -21,8 +21,9 @@ public final class UVCUtils {
     /**
      * Init utils.
      * <p>Init it in the class of Application.</p>
+     * <p>初始化工具类。请在 Application 类中初始化。</p>
      *
-     * @param context context
+     * @param context context / 上下文
      */
     public static void init(final Context context) {
         if (context == null) {
@@ -35,8 +36,9 @@ public final class UVCUtils {
     /**
      * Init utils.
      * <p>Init it in the class of Application.</p>
+     * <p>初始化工具类。请在 Application 类中初始化。</p>
      *
-     * @param app application
+     * @param app application / 应用程序
      */
     public static void init(final Application app) {
         if (sApplication == null) {
@@ -54,8 +56,9 @@ public final class UVCUtils {
 
     /**
      * Return the context of Application object.
+     * <p>返回 Application 对象的上下文。</p>
      *
-     * @return the context of Application object
+     * @return the context of Application object / Application 对象的上下文
      */
     public static Application getApplication() {
         if (sApplication != null) return sApplication;

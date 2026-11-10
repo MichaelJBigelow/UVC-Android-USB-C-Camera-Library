@@ -38,14 +38,18 @@ import com.serenegiant.utils.AssetsHelper;
 import java.io.IOException;
 
 /**
- * OpenGL|ES2/3用のヘルパークラス
+ * Helper class for OpenGL|ES2/3
+ *
+ * OpenGL|ES2/3 辅助类
  */
 public final class GLHelper {
     //	private static final boolean DEBUG = false;	// FIXME 実働時はfalseにすること
     private static final String TAG = "GLHelper";
 
     /**
-     * OpenGL|ESのエラーをチェックしてlogCatに出力する
+     * Checks for OpenGL|ES errors and outputs them to logCat
+     *
+     * 检查 OpenGL|ES 错误并输出到 logCat
      *
      * @param op
      */
@@ -62,10 +66,12 @@ public final class GLHelper {
     }
 
     /**
-     * テクスチャ名を生成, テクスチャユニットはGL_TEXTURE0, クランプ方法はGL_CLAMP_TO_EDGE
+     * Generates a texture name; the texture unit is GL_TEXTURE0 and the clamp mode is GL_CLAMP_TO_EDGE
+     *
+     * 生成纹理名，纹理单元为 GL_TEXTURE0，钳制方式为 GL_CLAMP_TO_EDGE
      *
      * @param texTarget
-     * @param filter_param テクスチャの補完方法を指定, min/mag共に同じ値になる, GL_LINEARとかGL_NEAREST
+     * @param filter_param Specifies the texture interpolation method; min/mag get the same value, e.g. GL_LINEAR or GL_NEAREST / 指定纹理插值方式，min/mag 使用相同的值，例如 GL_LINEAR 或 GL_NEAREST
      * @return
      */
     public static int initTex(final int texTarget, final int filter_param) {
@@ -74,13 +80,15 @@ public final class GLHelper {
     }
 
     /**
-     * テクスチャ名を生成(GL_TEXTURE0のみ)
+     * Generates a texture name (GL_TEXTURE0 only)
+     *
+     * 生成纹理名（仅限 GL_TEXTURE0）
      *
      * @param texTarget
-     * @param texUnit    テクスチャユニット, GL_TEXTURE0...GL_TEXTURE31
-     * @param min_filter テクスチャの補間方法を指定, GL_LINEARとかGL_NEAREST
-     * @param mag_filter テクスチャの補間方法を指定, GL_LINEARとかGL_NEAREST
-     * @param wrap       テクスチャのクランプ方法, GL_CLAMP_TO_EDGE
+     * @param texUnit    Texture unit, GL_TEXTURE0...GL_TEXTURE31 / 纹理单元，GL_TEXTURE0...GL_TEXTURE31
+     * @param min_filter Specifies the texture interpolation method, e.g. GL_LINEAR or GL_NEAREST / 指定纹理插值方式，例如 GL_LINEAR 或 GL_NEAREST
+     * @param mag_filter Specifies the texture interpolation method, e.g. GL_LINEAR or GL_NEAREST / 指定纹理插值方式，例如 GL_LINEAR 或 GL_NEAREST
+     * @param wrap       Texture clamp (wrap) mode, GL_CLAMP_TO_EDGE / 纹理钳制方式，GL_CLAMP_TO_EDGE
      * @return
      */
     public static int initTex(final int texTarget, final int texUnit,
@@ -99,9 +107,11 @@ public final class GLHelper {
     }
 
     /**
-     * テクスチャ名配列を生成(前から順にGL_TEXTURE0, GL_TEXTURE1, ...)
+     * Generates an array of texture names (GL_TEXTURE0, GL_TEXTURE1, ... in order from the front)
      *
-     * @param n            生成するテキスチャ名の数, 最大で32個(GL_MAX_TEXTURE_IMAGE_UNITS以下)
+     * 生成纹理名数组（从前往后依次为 GL_TEXTURE0、GL_TEXTURE1、...）
+     *
+     * @param n            Number of texture names to generate, up to 32 (no more than GL_MAX_TEXTURE_IMAGE_UNITS) / 要生成的纹理名数量，最多 32 个（不超过 GL_MAX_TEXTURE_IMAGE_UNITS）
      * @param texTarget
      * @param filter_param
      * @return
@@ -114,9 +124,11 @@ public final class GLHelper {
     }
 
     /**
-     * テクスチャ名配列を生成(前から順にGL_TEXTURE0, GL_TEXTURE1, ...)
+     * Generates an array of texture names (GL_TEXTURE0, GL_TEXTURE1, ... in order from the front)
      *
-     * @param texIds       テクスチャ名配列, 最大で32個(GL_MAX_TEXTURE_IMAGE_UNITS以下)
+     * 生成纹理名数组（从前往后依次为 GL_TEXTURE0、GL_TEXTURE1、...）
+     *
+     * @param texIds       Array of texture names, up to 32 (no more than GL_MAX_TEXTURE_IMAGE_UNITS) / 纹理名数组，最多 32 个（不超过 GL_MAX_TEXTURE_IMAGE_UNITS）
      * @param texTarget
      * @param filter_param
      * @return
@@ -129,9 +141,11 @@ public final class GLHelper {
     }
 
     /**
-     * テクスチャ名配列を生成(前から順にGL_TEXTURE0, GL_TEXTURE1, ...)
+     * Generates an array of texture names (GL_TEXTURE0, GL_TEXTURE1, ... in order from the front)
      *
-     * @param n          生成するテキスチャ名の数, 最大32
+     * 生成纹理名数组（从前往后依次为 GL_TEXTURE0、GL_TEXTURE1、...）
+     *
+     * @param n          Number of texture names to generate, up to 32 / 要生成的纹理名数量，最多 32 个
      * @param texTarget
      * @param min_filter
      * @param mag_filter
@@ -145,9 +159,11 @@ public final class GLHelper {
     }
 
     /**
-     * テクスチャ名配列を生成(前から順にGL_TEXTURE0, GL_TEXTURE1, ...)
+     * Generates an array of texture names (GL_TEXTURE0, GL_TEXTURE1, ... in order from the front)
      *
-     * @param texIds     テクスチャ名配列, 最大で32個(GL_MAX_TEXTURE_IMAGE_UNITS以下)
+     * 生成纹理名数组（从前往后依次为 GL_TEXTURE0、GL_TEXTURE1、...）
+     *
+     * @param texIds     Array of texture names, up to 32 (no more than GL_MAX_TEXTURE_IMAGE_UNITS) / 纹理名数组，最多 32 个（不超过 GL_MAX_TEXTURE_IMAGE_UNITS）
      * @param texTarget
      * @param min_filter
      * @param mag_filter
@@ -170,9 +186,11 @@ public final class GLHelper {
     }
 
     /**
-     * テクスチャ名配列を生成(こっちは全部同じテクスチャユニット)
+     * Generates an array of texture names (this variant uses the same texture unit for all of them)
      *
-     * @param n          最大で32個(GL_MAX_TEXTURE_IMAGE_UNITS以下)
+     * 生成纹理名数组（此版本所有纹理使用同一个纹理单元）
+     *
+     * @param n          Up to 32 (no more than GL_MAX_TEXTURE_IMAGE_UNITS) / 最多 32 个（不超过 GL_MAX_TEXTURE_IMAGE_UNITS）
      * @param texTarget
      * @param texUnit
      * @param min_filter
@@ -189,9 +207,11 @@ public final class GLHelper {
     }
 
     /**
-     * テクスチャ名配列を生成(こっちは全部同じテクスチャユニット)
+     * Generates an array of texture names (this variant uses the same texture unit for all of them)
      *
-     * @param texIds       最大で32個(GL_MAX_TEXTURE_IMAGE_UNITS以下)
+     * 生成纹理名数组（此版本所有纹理使用同一个纹理单元）
+     *
+     * @param texIds       Up to 32 (no more than GL_MAX_TEXTURE_IMAGE_UNITS) / 最多 32 个（不超过 GL_MAX_TEXTURE_IMAGE_UNITS）
      * @param texTarget
      * @param texUnit
      * @param filter_param
@@ -205,7 +225,9 @@ public final class GLHelper {
     }
 
     /**
-     * テクスチャ名配列を生成(こっちは全部同じテクスチャユニット)
+     * Generates an array of texture names (this variant uses the same texture unit for all of them)
+     *
+     * 生成纹理名数组（此版本所有纹理使用同一个纹理单元）
      *
      * @param texIds
      * @param texTarget
@@ -232,6 +254,8 @@ public final class GLHelper {
 
     /**
      * delete specific texture
+     *
+     * 删除指定的纹理
      */
     public static void deleteTex(final int hTex) {
 //		if (DEBUG) Log.v(TAG, "deleteTex:");
@@ -241,6 +265,8 @@ public final class GLHelper {
 
     /**
      * delete specific texture
+     *
+     * 删除指定的纹理
      */
     public static void deleteTex(@NonNull final int[] tex) {
 //		if (DEBUG) Log.v(TAG, "deleteTex:");
@@ -255,39 +281,49 @@ public final class GLHelper {
     @SuppressWarnings("deprecation")
     public static int loadTextureFromResource(final Context context, final int resId, final Resources.Theme theme) {
         // Create an empty, mutable bitmap
+        // 创建一个空的、可变的 bitmap
         final Bitmap bitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888);
         // get a canvas to paint over the bitmap
+        // 获取用于在 bitmap 上绘制的 canvas
         final Canvas canvas = new Canvas(bitmap);
         canvas.drawARGB(0, 0, 255, 0);
 
         // get a background image from resources
         // note the image format must match the bitmap format
+        // 从资源中获取背景图像
+        // 注意图像格式必须与 bitmap 格式一致
         final Drawable background = context.getResources().getDrawable(resId, theme);
         background.setBounds(0, 0, 256, 256);
-        background.draw(canvas); // draw the background to our bitmap
+        background.draw(canvas); // draw the background to our bitmap / 将背景绘制到我们的 bitmap 上
 
         final int[] textures = new int[1];
 
         //Generate one texture pointer...
+        // 生成一个纹理指针...
         GLES20.glGenTextures(1, textures, 0);
         //...and bind it to our array
+        // ...并将其绑定到我们的数组
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[0]);
 
         //Create Nearest Filtered Texture
+        // 创建最近邻过滤的纹理
         GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
                 GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_NEAREST);
         GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
                 GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
 
         //Different possible texture parameters, e.g. GLES20.GL_CLAMP_TO_EDGE
+        // 其他可选的纹理参数，例如 GLES20.GL_CLAMP_TO_EDGE
         GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
                 GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_REPEAT);
         GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D,
                 GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_REPEAT);
 
         //Use the Android GLUtils to specify a two-dimensional texture image from our bitmap
+        // 使用 Android GLUtils 通过我们的 bitmap 指定二维纹理图像
         GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
         //Clean up
+        // 清理
         bitmap.recycle();
 
         return textures[0];
@@ -295,29 +331,36 @@ public final class GLHelper {
 
     public static int createTextureWithTextContent(final String text) {
         // Create an empty, mutable bitmap
+        // 创建一个空的、可变的 bitmap
         final Bitmap bitmap = Bitmap.createBitmap(256, 256, Bitmap.Config.ARGB_8888);
         // get a canvas to paint over the bitmap
+        // 获取用于在 bitmap 上绘制的 canvas
         final Canvas canvas = new Canvas(bitmap);
         canvas.drawARGB(0, 0, 255, 0);
 
         // Draw the text
+        // 绘制文本
         final Paint textPaint = new Paint();
         textPaint.setTextSize(32);
         textPaint.setAntiAlias(true);
         textPaint.setARGB(0xff, 0xff, 0xff, 0xff);
         // draw the text centered
+        // 将文本居中绘制
         canvas.drawText(text, 16, 112, textPaint);
 
         final int texture = initTex(GLES20.GL_TEXTURE_2D,
                 GLES20.GL_TEXTURE0, GLES20.GL_NEAREST, GLES20.GL_LINEAR, GLES20.GL_REPEAT);
 
         // Alpha blending
+        // Alpha 混合
         // GLES20.glEnable(GLES20.GL_BLEND);
         // GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
 
         // Use the Android GLUtils to specify a two-dimensional texture image from our bitmap
+        // 使用 Android GLUtils 通过我们的 bitmap 指定二维纹理图像
         GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
         // Clean up
+        // 清理
         bitmap.recycle();
 
         return texture;
@@ -326,9 +369,11 @@ public final class GLHelper {
     /**
      * load, compile and link shader from Assets files
      *
+     * 从 Assets 文件加载、编译并链接着色器
+     *
      * @param context
-     * @param vss_asset source file name in Assets of vertex shader
-     * @param fss_asset source file name in Assets of fragment shader
+     * @param vss_asset source file name in Assets of vertex shader / 顶点着色器在 Assets 中的源文件名
+     * @param fss_asset source file name in Assets of fragment shader / 片段着色器在 Assets 中的源文件名
      * @return
      */
     public static int loadShader(@NonNull final Context context,
@@ -347,24 +392,29 @@ public final class GLHelper {
     /**
      * load, compile and link shader
      *
-     * @param vss source of vertex shader
-     * @param fss source of fragment shader
+     * 加载、编译并链接着色器
+     *
+     * @param vss source of vertex shader / 顶点着色器源码
+     * @param fss source of fragment shader / 片段着色器源码
      * @return
      */
     public static int loadShader(final String vss, final String fss) {
 //		if (DEBUG) Log.v(TAG, "loadShader:");
         final int[] compiled = new int[1];
-        // 頂点シェーダーをコンパイル
+        // Compile the vertex shader
+        // 编译顶点着色器
         final int vs = loadShader(GLES20.GL_VERTEX_SHADER, vss);
         if (vs == 0) {
             return 0;
         }
-        // フラグメントシェーダーをコンパイル
+        // Compile the fragment shader
+        // 编译片段着色器
         int fs = loadShader(GLES20.GL_FRAGMENT_SHADER, fss);
         if (fs == 0) {
             return 0;
         }
-        // リンク
+        // Link
+        // 链接
         final int program = GLES20.glCreateProgram();
         checkGlError("glCreateProgram");
         if (program == 0) {
@@ -389,7 +439,9 @@ public final class GLHelper {
     /**
      * Compiles the provided shader source.
      *
-     * @return A handle to the shader, or 0 on failure.
+     * 编译所提供的着色器源码。
+     *
+     * @return A handle to the shader, or 0 on failure. / 着色器句柄，失败时返回 0。
      */
     public static int loadShader(final int shaderType, final String source) {
         int shader = GLES20.glCreateShader(shaderType);
@@ -412,6 +464,10 @@ public final class GLHelper {
      * could not be found, but does not set the GL error.
      * <p>
      * Throws a RuntimeException if the location is invalid.
+     * <p>
+     * 检查我们获取到的 location 是否有效。如果找不到标签，GLES 返回 -1，但不会设置 GL 错误。
+     * <p>
+     * 如果 location 无效，则抛出 RuntimeException。
      */
     public static void checkLocation(final int location, final String label) {
         if (location < 0) {
@@ -421,6 +477,8 @@ public final class GLHelper {
 
     /**
      * Writes GL version info to the log.
+     *
+     * 将 GL 版本信息写入日志。
      */
     @SuppressLint("InlinedApi")
     public static void logVersionInfo() {

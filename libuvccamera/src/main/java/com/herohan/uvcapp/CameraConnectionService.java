@@ -115,6 +115,11 @@ class CameraConnectionService {
          * if device is non-null, return specific CameraService if exist. block if not exists.<br>
          * return null if not exist matched specific device<br>
          *
+         * 获取具有指定 key 的 CameraService<br>
+         * 如果 device 为 null,则直接返回 CameraInternal 实例的顶部项(非阻塞方法)(若存在),否则返回 null。<br>
+         * 如果 device 非 null,则返回指定的 CameraService(若存在);若不存在则阻塞。<br>
+         * 如果不存在与指定设备匹配的项,则返回 null<br>
+         *
          * @param device
          * @param isBlocking
          * @return
@@ -131,6 +136,7 @@ class CameraConnectionService {
                     cameraInternal = mCameras.get(cameraKey);
                     if (cameraInternal == null && isBlocking) {
                         //add this condition to fix async thread deadlock bug
+                        // 添加此条件以修复异步线程死锁的 bug
                         if (!cameraKey.equals(mLastCameraKey)) {
                             Log.i(TAG, "wait for service is ready");
                             try {
@@ -203,6 +209,8 @@ class CameraConnectionService {
 
         /**
          * check usb permission, open device
+         *
+         * 检查 usb 权限,打开设备
          *
          * @param device
          */
@@ -311,6 +319,8 @@ class CameraConnectionService {
 
         /**
          * open device once again, open camera and start streaming
+         *
+         * 再次打开设备,打开摄像头并开始推流
          */
         @Override
         public void openCamera(final UsbDevice device, UVCParam param,
@@ -329,6 +339,8 @@ class CameraConnectionService {
         /**
          * stop streaming and close device
          *
+         * 停止推流并关闭设备
+         *
          * @param device
          */
         @Override
@@ -344,6 +356,8 @@ class CameraConnectionService {
         /**
          * start streaming
          *
+         * 开始推流
+         *
          * @param device
          */
         @Override
@@ -358,6 +372,8 @@ class CameraConnectionService {
 
         /**
          * stop streaming
+         *
+         * 停止推流
          *
          * @param device
          */
@@ -425,6 +441,8 @@ class CameraConnectionService {
 
         /**
          * release camera
+         *
+         * 释放摄像头
          *
          * @param device
          */
@@ -527,6 +545,7 @@ class CameraConnectionService {
                 CameraInternal camera = addCamera(device, ctrlBlock);
 
                 // register callback that listen onCameraOpen and onCameraClose state
+                // 注册回调,用于监听 onCameraOpen 和 onCameraClose 状态
                 camera.registerCallback(new ICameraInternal.StateCallback() {
                     boolean mIsCameraOpened = false;
 

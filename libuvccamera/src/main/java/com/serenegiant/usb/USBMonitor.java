@@ -55,16 +55,20 @@ import java.util.Set;
 
 public final class USBMonitor {
 
-    private static final boolean DEBUG = BuildConfig.DEBUG;    // TODO set false on production
+    private static final boolean DEBUG = BuildConfig.DEBUG;    // TODO set false on production / 在生产环境中设为 false
     private static final String TAG = USBMonitor.class.getSimpleName();
 
     /**
      * Unknown error occurred  when open camera
+     *
+     * 打开相机时发生未知错误
      */
     public static int USB_OPEN_ERROR_UNKNOWN = 1;
 
     /**
      * check device interval 150ms
+     *
+     * 检查设备的间隔，150ms
      */
     private static final int CHECK_DEVICE_RUNNABLE_DELAY = 150;
 
@@ -75,15 +79,21 @@ public final class USBMonitor {
 
     /**
      * all opened UsbControlBlock
+     *
+     * 所有已打开的 UsbControlBlock
      */
     private final HashMap<UsbDevice, UsbControlBlock> mOpenedCtrlBlocks = new HashMap<UsbDevice, UsbControlBlock>();
 
     /**
      * all keys of device that has permission
+     *
+     * 所有已获得权限的设备的 key
      */
     private HashSet<String> mHasPermissionDeviceKeys = new HashSet<>();
     /**
      * all keys of detected devices
+     *
+     * 所有已检测到的设备的 key
      */
     private HashSet<String> mDetectedDeviceKeys = new HashSet<>();
 
@@ -95,20 +105,28 @@ public final class USBMonitor {
 
     /**
      * Handler that is used for OnDeviceConnectListener
+     *
+     * 用于 OnDeviceConnectListener 的 Handler
      */
     private final Handler mListenerHandler;
     /**
      * Handler that is on worker thread
+     *
+     * 运行在工作线程上的 Handler
      */
     private final Handler mAsyncHandler;
     private volatile boolean mDestroyed;
 
     /**
      * Callback listener for connect USB device
+     *
+     * USB 设备连接的回调监听器
      */
     public interface OnDeviceConnectListener {
         /**
          * called when device attached
+         *
+         * 设备连接时调用
          *
          * @param device
          */
@@ -117,12 +135,16 @@ public final class USBMonitor {
         /**
          * called when device detach(after onDeviceClose)
          *
+         * 设备断开时调用（在 onDeviceClose 之后）
+         *
          * @param device
          */
         void onDetach(UsbDevice device);
 
         /**
          * called after device opened
+         *
+         * 设备打开后调用
          *
          * @param device
          * @param ctrlBlock
@@ -133,6 +155,8 @@ public final class USBMonitor {
         /**
          * called when USB device removed or its power off (this callback is called after device closing)
          *
+         * USB 设备被移除或断电时调用（此回调在设备关闭之后调用）
+         *
          * @param device
          * @param ctrlBlock
          */
@@ -140,6 +164,8 @@ public final class USBMonitor {
 
         /**
          * called when canceled or could not get permission from user
+         *
+         * 用户取消或无法从用户处获得权限时调用
          *
          * @param device
          */
@@ -171,6 +197,9 @@ public final class USBMonitor {
     /**
      * Release all related resources,
      * never reuse again
+     *
+     * 释放所有相关资源，
+     * 之后不要再次复用
      */
     public void destroy() {
         if (DEBUG) Log.i(TAG, "destroy:");
@@ -180,6 +209,7 @@ public final class USBMonitor {
 
             synchronized (mOpenedCtrlBlocks) {
                 // close all connected USB device
+                // 关闭所有已连接的 USB 设备
                 final Set<UsbDevice> keys = mOpenedCtrlBlocks.keySet();
                 if (keys != null) {
                     UsbControlBlock ctrlBlock;
@@ -207,6 +237,8 @@ public final class USBMonitor {
 
     /**
      * register BroadcastReceiver to monitor USB events
+     *
+     * 注册 BroadcastReceiver 以监听 USB 事件
      */
     public synchronized void register() {
         if (mDestroyed) {
@@ -222,15 +254,21 @@ public final class USBMonitor {
                     // Starting with Build. VERSION_CODES. UPSIDE_DOWN_CAKE, for apps that target SDK Build. VERSION_CODES. UPSIDE_DOWN_CAKE or higher,
                     // creation of a PendingIntent with FLAG_MUTABLE and an implicit Intent within will throw an IllegalArgumentException for security reasons.
                     // To bypass this check, use FLAG_ALLOW_UNSAFE_IMPLICIT_INTENT when creating a PendingIntent
+                    // 从 Build.VERSION_CODES.UPSIDE_DOWN_CAKE 开始，对于目标 SDK 为 Build.VERSION_CODES.UPSIDE_DOWN_CAKE 或更高版本的应用，
+                    // 出于安全原因，使用 FLAG_MUTABLE 并包含隐式 Intent 来创建 PendingIntent 将抛出 IllegalArgumentException。
+                    // 要绕过此检查，请在创建 PendingIntent 时使用 FLAG_ALLOW_UNSAFE_IMPLICIT_INTENT
                     flags = PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_ALLOW_UNSAFE_IMPLICIT_INTENT;
                 } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                     // Up until Build.VERSION_CODES.R, PendingIntents are assumed to be mutable by default, unless FLAG_IMMUTABLE is set.
                     // Starting with Build.VERSION_CODES.S, it will be required to explicitly specify the mutability of PendingIntents on creation with either (@link #FLAG_IMMUTABLE} or FLAG_MUTABLE.
+                    // 直到 Build.VERSION_CODES.R，除非设置了 FLAG_IMMUTABLE，否则 PendingIntent 默认被视为可变。
+                    // 从 Build.VERSION_CODES.S 开始，创建 PendingIntent 时必须通过 (@link #FLAG_IMMUTABLE} 或 FLAG_MUTABLE 显式指定其可变性。
                     flags = PendingIntent.FLAG_MUTABLE;
                 }
                 mPermissionIntent = PendingIntent.getBroadcast(context, 0, new Intent(ACTION_USB_PERMISSION), flags);
                 final IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
                 // ACTION_USB_DEVICE_ATTACHED never comes on some devices so it should not be added here
+                // 在某些设备上 ACTION_USB_DEVICE_ATTACHED 永远不会收到，因此不应在此处添加
                 filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     context.registerReceiver(mUsbReceiver, filter, Context.RECEIVER_EXPORTED);
@@ -239,6 +277,7 @@ public final class USBMonitor {
                 }
             }
             // start connection check
+            // 开始连接检查
             mDetectedDeviceKeys.clear();
             mAsyncHandler.postDelayed(mDeviceCheckRunnable, CHECK_DEVICE_RUNNABLE_DELAY);
         }
@@ -246,9 +285,12 @@ public final class USBMonitor {
 
     /**
      * unregister BroadcastReceiver
+     *
+     * 注销 BroadcastReceiver
      */
     public synchronized void unregister() {
         // remove Runnable of connection check
+        // 移除连接检查的 Runnable
         mDetectedDeviceKeys.clear();
         if (!mDestroyed) {
             mAsyncHandler.removeCallbacks(mDeviceCheckRunnable);
@@ -274,6 +316,8 @@ public final class USBMonitor {
     /**
      * set device filter
      *
+     * 设置设备过滤器
+     *
      * @param filter
      */
     public void setDeviceFilter(final DeviceFilter filter) {
@@ -288,6 +332,8 @@ public final class USBMonitor {
     /**
      * add device filter
      *
+     * 添加设备过滤器
+     *
      * @param filter
      */
     public void addDeviceFilter(final DeviceFilter filter) {
@@ -301,6 +347,8 @@ public final class USBMonitor {
     /**
      * remove device filter
      *
+     * 移除设备过滤器
+     *
      * @param filter
      */
     public void removeDeviceFilter(final DeviceFilter filter) {
@@ -313,6 +361,8 @@ public final class USBMonitor {
 
     /**
      * set device filters
+     *
+     * 设置设备过滤器（多个）
      *
      * @param filters
      */
@@ -328,6 +378,8 @@ public final class USBMonitor {
     /**
      * add device filters
      *
+     * 添加设备过滤器（多个）
+     *
      * @param filters
      */
     public void addDeviceFilter(final List<DeviceFilter> filters) {
@@ -340,6 +392,8 @@ public final class USBMonitor {
 
     /**
      * remove device filters
+     *
+     * 移除设备过滤器（多个）
      */
     public void removeDeviceFilter(final List<DeviceFilter> filters) {
         if (mDestroyed) {
@@ -359,6 +413,7 @@ public final class USBMonitor {
             for (final DeviceFilter filter : mDeviceFilters) {
                 if ((filter != null) && filter.matches(device)) {
                     // when filter matches
+                    // 当过滤器匹配时
                     return !filter.isExclude;
                 }
             }
@@ -368,6 +423,8 @@ public final class USBMonitor {
 
     /**
      * return the number of connected USB devices that matched device filter
+     *
+     * 返回与设备过滤器匹配的已连接 USB 设备的数量
      */
     public int getDeviceCount() {
         if (mDestroyed) {
@@ -379,6 +436,8 @@ public final class USBMonitor {
 
     /**
      * return device list, return empty list if no device matched
+     *
+     * 返回设备列表，如果没有匹配的设备，则返回空列表
      */
     public List<UsbDevice> getDeviceList() {
         if (mDestroyed) {
@@ -390,6 +449,8 @@ public final class USBMonitor {
 
     /**
      * return device list, return empty list if no device matched
+     *
+     * 返回设备列表，如果没有匹配的设备，则返回空列表
      *
      * @param filters
      */
@@ -408,6 +469,7 @@ public final class USBMonitor {
                     for (final DeviceFilter filter : filters) {
                         if ((filter != null) && filter.matches(device)) {
                             // when filter matches
+                            // 当过滤器匹配时
                             if (!filter.isExclude) {
                                 result.add(device);
                             }
@@ -422,6 +484,8 @@ public final class USBMonitor {
 
     /**
      * return device list, return empty list if no device matched
+     *
+     * 返回设备列表，如果没有匹配的设备，则返回空列表
      *
      * @param filter
      */
@@ -444,6 +508,8 @@ public final class USBMonitor {
 
     /**
      * get USB device list, without filter
+     *
+     * 获取 USB 设备列表，不使用过滤器
      */
     public Iterator<UsbDevice> getDevices() {
         if (mDestroyed) {
@@ -459,6 +525,8 @@ public final class USBMonitor {
 
     /**
      * output device list to LogCat
+     *
+     * 将设备列表输出到 LogCat
      */
     public final void dumpDevices() {
         final HashMap<String, UsbDevice> list = mUsbManager.getDeviceList();
@@ -486,8 +554,10 @@ public final class USBMonitor {
     /**
      * return whether the specific Usb device has permission
      *
+     * 返回指定的 Usb 设备是否已获得权限
+     *
      * @param device
-     * @return true: if specified usb device has permission
+     * @return true: if specified usb device has permission / true：如果指定的 usb 设备已获得权限
      */
     public boolean hasPermission(final UsbDevice device) {
         if (mDestroyed) {
@@ -500,6 +570,8 @@ public final class USBMonitor {
     /**
      * update device key and retained permission state
      *
+     * 更新设备 key 以及保留的权限状态
+     *
      * @param device
      * @param hasPermission
      */
@@ -510,6 +582,8 @@ public final class USBMonitor {
 
     /**
      * update device key and retained permission state
+     *
+     * 更新设备 key 以及保留的权限状态
      *
      * @param deviceKey
      * @param hasPermission
@@ -528,6 +602,8 @@ public final class USBMonitor {
     /**
      * request permission to access to USB device
      *
+     * 请求访问 USB 设备的权限
+     *
      * @param device
      */
     public void requestPermission(final UsbDevice device) {
@@ -537,13 +613,16 @@ public final class USBMonitor {
                 if (device != null) {
                     if (mUsbManager.hasPermission(device)) {
                         // call onConnect if app already has permission
+                        // 如果应用已经拥有权限，则调用 onConnect
                         processOpenDevice(device);
                     } else {
                         try {
                             // if no usb permission, request permission
+                            // 如果没有 usb 权限，则请求权限
                             mUsbManager.requestPermission(device, mPermissionIntent);
                         } catch (final Exception e) {
                             // With Android5.1.x of GALAXY, this action may throw exception:android.permission.sec.MDM_APP_MGMT
+                            // 在 GALAXY 的 Android5.1.x 上，此操作可能会抛出异常：android.permission.sec.MDM_APP_MGMT
                             Log.w(TAG, e);
                             processCancel(device);
                         }
@@ -559,6 +638,8 @@ public final class USBMonitor {
 
     /**
      * BroadcastReceiver for USB permission
+     *
+     * 用于 USB 权限的 BroadcastReceiver
      */
     private final BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
 
@@ -569,14 +650,17 @@ public final class USBMonitor {
                 final String action = intent.getAction();
                 if (ACTION_USB_PERMISSION.equals(action)) {
                     // when received the result of requesting USB permission
+                    // 当收到请求 USB 权限的结果时
                     synchronized (USBMonitor.this) {
                         final UsbDevice device = getExtraDevice(intent);
                         if (device != null) {
                             if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
                                 // get permission, call onConnect
+                                // 获得权限，调用 onConnect
                                 processOpenDevice(device);
                             } else {
                                 // failed to get permission
+                                // 获取权限失败
                                 processCancel(device);
                             }
                         }
@@ -589,12 +673,14 @@ public final class USBMonitor {
                     }
                 } else if (UsbManager.ACTION_USB_DEVICE_DETACHED.equals(action)) {
                     // when device removed
+                    // 当设备被移除时
                     final UsbDevice device = getExtraDevice(intent);
                     if (device != null) {
                         synchronized (mOpenedCtrlBlocks) {
                             UsbControlBlock ctrlBlock = mOpenedCtrlBlocks.remove(device);
                             if (ctrlBlock != null) {
                                 // cleanup
+                                // 清理
                                 ctrlBlock.close();
                             }
                         }
@@ -612,6 +698,8 @@ public final class USBMonitor {
 
     /**
      * periodically check connected devices and if it changed, call onAttach
+     *
+     * 定期检查已连接的设备，如果发生变化，则调用 onAttach
      */
     private final Runnable mDeviceCheckRunnable = new Runnable() {
         @Override
@@ -628,9 +716,11 @@ public final class USBMonitor {
                     boolean hasPermission = hasPermission(device);
                     String deviceKey = getDeviceKey(device);
                     // if this device a new device or a old device that get permission just now
+                    // 如果此设备是新设备，或者是刚刚获得权限的旧设备
                     if (!oldDetectedKeys.contains(deviceKey)
                             || (hasPermission && !oldHasPermissionKeys.contains(deviceKey))) {
                         // need to notify user
+                        // 需要通知用户
                         needNotifyDevices.add(device);
                     }
 
@@ -652,6 +742,8 @@ public final class USBMonitor {
 
     /**
      * open specific USB device
+     *
+     * 打开指定的 USB 设备
      *
      * @param device
      */
@@ -723,6 +815,9 @@ public final class USBMonitor {
     /**
      * generate device key for each UsbDevice. Returns an empty string if device is null
      * use manufacture name, version, and configuration count if the API >= LOLLIPOP
+     *
+     * 为每个 UsbDevice 生成设备 key。如果 device 为 null，则返回空字符串
+     * 如果 API >= LOLLIPOP，则使用制造商名称、版本和配置数量
      *
      * @param device
      * @return
@@ -893,6 +988,9 @@ public final class USBMonitor {
      * get string by specified id from Usb Connection.
      * Null if it cannot be retrieved
      *
+     * 根据指定的 id 从 Usb Connection 获取字符串。
+     * 如果无法获取，则为 Null
+     *
      * @param connection
      * @param id
      * @param languageCount
@@ -909,15 +1007,17 @@ public final class USBMonitor {
                     (USB_DT_STRING << 8) | id, languages[i], work, 256, 0);
             if ((ret > 2) && (work[0] == ret) && (work[1] == USB_DT_STRING)) {
                 // skip first two bytes(bLength & bDescriptorType), and copy the rest to the string
+                // 跳过前两个字节（bLength 和 bDescriptorType），并将其余部分复制到字符串中
                 try {
                     result = new String(work, 2, ret - 2, "UTF-16LE");
-                    if (!"Љ".equals(result)) {    // 変なゴミが返ってくる時がある
+                    if (!"Љ".equals(result)) {    // sometimes garbage is returned / 有时会返回乱码
                         break;
                     } else {
                         result = null;
                     }
                 } catch (final UnsupportedEncodingException e) {
                     // ignore
+                    // 忽略
                 }
             }
         }
@@ -926,6 +1026,8 @@ public final class USBMonitor {
 
     /**
      * get device info that contains ManufacturerName, ProductName, Version and SerialNumber
+     *
+     * 获取包含 ManufacturerName、ProductName、Version 和 SerialNumber 的设备信息
      *
      * @param device
      * @return
@@ -937,6 +1039,8 @@ public final class USBMonitor {
     /**
      * get device info that contains ManufacturerName, ProductName, Version and SerialNumber
      *
+     * 获取包含 ManufacturerName、ProductName、Version 和 SerialNumber 的设备信息
+     *
      * @param context
      * @param device
      * @return
@@ -947,6 +1051,8 @@ public final class USBMonitor {
 
     /**
      * update device info that contains ManufacturerName, ProductName, Version and SerialNumber
+     *
+     * 更新包含 ManufacturerName、ProductName、Version 和 SerialNumber 的设备信息
      *
      * @param manager
      * @param device
@@ -961,6 +1067,7 @@ public final class USBMonitor {
             info.manufacturer = device.getManufacturerName();
             info.product = device.getProductName();
             // reading the serial number requires permission to access the device
+            // 读取序列号需要获得访问该设备的权限
             if (manager != null && manager.hasPermission(device)) {
                 info.serial = device.getSerialNumber();
             }
@@ -1033,6 +1140,9 @@ public final class USBMonitor {
     /**
      * control class
      * never reuse the instance when it closed
+     *
+     * 控制类
+     * 关闭后不要再复用该实例
      */
     public static class UsbControlBlock implements Cloneable {
         private final WeakReference<USBMonitor> mWeakMonitor;
@@ -1046,6 +1156,8 @@ public final class USBMonitor {
         /**
          * this class needs permission to access USB device before constructing
          *
+         * 构造此类之前需要先获得访问 USB 设备的权限
+         *
          * @param monitor
          * @param device
          */
@@ -1058,6 +1170,9 @@ public final class USBMonitor {
         /**
          * Open device
          * This method needs permission to access USB device
+         *
+         * 打开设备
+         * 此方法需要访问 USB 设备的权限
          */
         public synchronized void open() throws Exception {
             if (DEBUG) Log.i(TAG, "UsbControlBlock#open:");
@@ -1091,6 +1206,9 @@ public final class USBMonitor {
         /**
          * Close device
          * This also close interfaces if they are opened in Java side
+         *
+         * 关闭设备
+         * 如果接口是在 Java 端打开的，这也会同时关闭这些接口
          */
         public synchronized void close() {
             close(false);
@@ -1099,6 +1217,9 @@ public final class USBMonitor {
         /**
          * Close device
          * This also close interfaces if they are opened in Java side
+         *
+         * 关闭设备
+         * 如果接口是在 Java 端打开的，这也会同时关闭这些接口
          */
         public synchronized void close(boolean isSilent) {
             if (DEBUG) Log.i(TAG, "UsbControlBlock#close:");
@@ -1138,6 +1259,10 @@ public final class USBMonitor {
          * need permission
          * USBMonitor never handle cloned UsbControlBlock, you should release it after using it.
          *
+         * 通过 clone 复制
+         * 需要权限
+         * USBMonitor 不会处理被克隆的 UsbControlBlock，使用完毕后你应当自行释放它。
+         *
          * @return
          * @throws CloneNotSupportedException
          */
@@ -1163,6 +1288,8 @@ public final class USBMonitor {
         /**
          * get device name
          *
+         * 获取设备名称
+         *
          * @return
          */
         public String getDeviceName() {
@@ -1172,6 +1299,8 @@ public final class USBMonitor {
 
         /**
          * get device id
+         *
+         * 获取设备 id
          *
          * @return
          */
@@ -1183,6 +1312,8 @@ public final class USBMonitor {
         /**
          * get UsbDeviceConnection
          *
+         * 获取 UsbDeviceConnection
+         *
          * @return
          */
         public synchronized UsbDeviceConnection getConnection() {
@@ -1191,6 +1322,8 @@ public final class USBMonitor {
 
         /**
          * get file descriptor to access USB device
+         *
+         * 获取访问 USB 设备的文件描述符
          *
          * @return
          * @throws IllegalStateException
@@ -1203,6 +1336,8 @@ public final class USBMonitor {
         /**
          * get raw descriptor for the USB device
          *
+         * 获取 USB 设备的原始描述符
+         *
          * @return
          * @throws IllegalStateException
          */
@@ -1214,6 +1349,8 @@ public final class USBMonitor {
         /**
          * get vendor id
          *
+         * 获取供应商 id
+         *
          * @return
          */
         public int getVendorId() {
@@ -1223,6 +1360,8 @@ public final class USBMonitor {
 
         /**
          * get product id
+         *
+         * 获取产品 id
          *
          * @return
          */
@@ -1234,6 +1373,8 @@ public final class USBMonitor {
         /**
          * get version string of USB
          *
+         * 获取 USB 的版本字符串
+         *
          * @return
          */
         public String getUsbVersion() {
@@ -1242,6 +1383,8 @@ public final class USBMonitor {
 
         /**
          * get manufacture
+         *
+         * 获取制造商
          *
          * @return
          */
@@ -1252,6 +1395,8 @@ public final class USBMonitor {
         /**
          * get product name
          *
+         * 获取产品名称
+         *
          * @return
          */
         public String getProductName() {
@@ -1261,6 +1406,8 @@ public final class USBMonitor {
         /**
          * get version
          *
+         * 获取版本
+         *
          * @return
          */
         public String getVersion() {
@@ -1269,6 +1416,8 @@ public final class USBMonitor {
 
         /**
          * get serial number
+         *
+         * 获取序列号
          *
          * @return
          */
@@ -1287,6 +1436,8 @@ public final class USBMonitor {
         /**
          * get interface
          *
+         * 获取接口
+         *
          * @param interface_id
          * @throws IllegalStateException
          */
@@ -1296,6 +1447,8 @@ public final class USBMonitor {
 
         /**
          * get interface
+         *
+         * 获取接口
          *
          * @param interface_id
          * @param altsetting
@@ -1330,6 +1483,8 @@ public final class USBMonitor {
         /**
          * open specific interface
          *
+         * 打开指定的接口
+         *
          * @param intf
          */
         public synchronized void claimInterface(final UsbInterface intf) {
@@ -1343,6 +1498,8 @@ public final class USBMonitor {
 
         /**
          * close interface
+         *
+         * 关闭接口
          *
          * @param intf
          * @throws IllegalStateException

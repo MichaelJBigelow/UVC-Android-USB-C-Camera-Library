@@ -140,6 +140,7 @@ public class SetFrameCallbackActivity extends AppCompatActivity implements View.
                 int width = size.width;
                 int height = size.height;
                 //auto aspect ratio
+                //自动调整宽高比
                 mCameraViewMain.setAspectRatio(width, height);
             }
 
@@ -148,6 +149,7 @@ public class SetFrameCallbackActivity extends AppCompatActivity implements View.
             mCameraHelper.setFrameCallback(frame -> {
                 if (mCustomFPS != null) {
                     //Refresh FPS
+                    //刷新 FPS
                     mCustomFPS.doFrame();
                 }
 
@@ -195,6 +197,7 @@ public class SetFrameCallbackActivity extends AppCompatActivity implements View.
     public void onClick(View v) {
         if (v.getId() == R.id.btnOpenCamera) {
             // select a uvc device
+            // 选择 uvc 设备
             if (mCameraHelper != null) {
                 final List<UsbDevice> list = mCameraHelper.getDeviceList();
                 if (list != null && list.size() > 0) {
@@ -203,6 +206,7 @@ public class SetFrameCallbackActivity extends AppCompatActivity implements View.
             }
         } else if (v.getId() == R.id.btnCloseCamera) {
             // close camera
+            // 关闭摄像头
             if (mCameraHelper != null) {
                 mCameraHelper.closeCamera();
             }
@@ -211,6 +215,8 @@ public class SetFrameCallbackActivity extends AppCompatActivity implements View.
 
     /**
      * Initialize the FPS display
+     *
+     * 初始化 FPS 显示
      */
     private void initFPS() {
         DecimalFormat decimal = new DecimalFormat(" #.0' fps'");
@@ -226,6 +232,8 @@ public class SetFrameCallbackActivity extends AppCompatActivity implements View.
 
     /**
      * End FPS display
+     *
+     * 结束 FPS 显示
      */
     private void clearFPS() {
         if (mCustomFPS != null) {

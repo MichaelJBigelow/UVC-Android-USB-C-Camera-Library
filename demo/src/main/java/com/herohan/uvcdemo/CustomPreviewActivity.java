@@ -32,10 +32,14 @@ public class CustomPreviewActivity extends AppCompatActivity implements View.OnC
 
     /**
      * Camera preview width
+     *
+     * 摄像头预览宽度
      */
     private int mPreviewWidth = DEFAULT_WIDTH;
     /**
      * Camera preview height
+     *
+     * 摄像头预览高度
      */
     private int mPreviewHeight = DEFAULT_HEIGHT;
 
@@ -152,6 +156,7 @@ public class CustomPreviewActivity extends AppCompatActivity implements View.OnC
         }
 
         // When DialogFragment is not showing
+        // 当 DialogFragment 未显示时
         if (!mControlsDialog.isAdded()) {
             mControlsDialog.show(getSupportFragmentManager(), "controls_dialog");
         }
@@ -181,9 +186,11 @@ public class CustomPreviewActivity extends AppCompatActivity implements View.OnC
 
     private void resizePreviewView(Size size) {
         // Update the preview size
+        // 更新预览尺寸
         mPreviewWidth = size.width;
         mPreviewHeight = size.height;
         // Set the aspect ratio of SurfaceView to match the aspect ratio of the camera
+        // 设置 SurfaceView 的宽高比，使其与摄像头的宽高比一致
         mCameraViewMain.setAspectRatio(mPreviewWidth, mPreviewHeight);
     }
 
@@ -268,6 +275,7 @@ public class CustomPreviewActivity extends AppCompatActivity implements View.OnC
     public void onClick(View v) {
         if (v.getId() == R.id.btnOpenCamera) {
             // select a uvc device
+            // 选择一个 uvc 设备
             if (mCameraHelper != null) {
                 final List<UsbDevice> list = mCameraHelper.getDeviceList();
                 if (list != null && list.size() > 0) {
@@ -276,6 +284,7 @@ public class CustomPreviewActivity extends AppCompatActivity implements View.OnC
             }
         } else if (v.getId() == R.id.btnCloseCamera) {
             // close camera
+            // 关闭摄像头
             if (mCameraHelper != null) {
                 mCameraHelper.closeCamera();
             }

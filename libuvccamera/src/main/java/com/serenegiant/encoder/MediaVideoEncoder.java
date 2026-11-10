@@ -40,13 +40,17 @@ import com.serenegiant.uvccamera.BuildConfig;
  * using MediaCodec.
  * This class render texture images into recording surface
  * camera from MediaCodec encoder using Open GL|ES
+ *
+ * 使用 MediaCodec 将纹理图像编码为 H.264 视频。
+ * 此类使用 Open GL|ES 将纹理图像渲染到 MediaCodec 编码器的录制 surface 上
  */
 public class MediaVideoEncoder extends MediaEncoder implements IVideoEncoder {
-    private static final boolean DEBUG = BuildConfig.DEBUG;    // TODO set false on release
+    private static final boolean DEBUG = BuildConfig.DEBUG;    // TODO set false on release / 发布时请设为 false
     private static final String TAG = "MediaVideoEncoder";
 
     private static final String MIME_TYPE = "video/avc";
     // parameters for recording
+    // 录制参数
     private final int mWidth, mHeight;
     protected int mColorFormat;
     private static final int FRAME_RATE = 25;
@@ -74,6 +78,9 @@ public class MediaVideoEncoder extends MediaEncoder implements IVideoEncoder {
     /**
      * This method does not work correctly on this class,
      * use #frameAvailableSoon(final float[]) instead
+     *
+     * 此方法在该类中无法正常工作,
+     * 请改用 #frameAvailableSoon(final float[])
      *
      * @return
      */
@@ -109,7 +116,9 @@ public class MediaVideoEncoder extends MediaEncoder implements IVideoEncoder {
         mMediaCodec = MediaCodec.createEncoderByType(MIME_TYPE);
         mMediaCodec.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
         // get Surface for encoder input
+        // 获取编码器输入用的 Surface
         // this method only can call between #configure and #start
+        // 此方法只能在 #configure 和 #start 之间调用
         mSurface = mMediaCodec.createInputSurface();    // API >= 18
         mMediaCodec.start();
         if (DEBUG) Log.i(TAG, "prepare finishing");
@@ -149,21 +158,25 @@ public class MediaVideoEncoder extends MediaEncoder implements IVideoEncoder {
     /**
      * select the first codec that match a specific MIME type
      *
+     * 选择第一个与指定 MIME 类型匹配的编解码器
+     *
      * @param mimeType
-     * @return null if no codec matched
+     * @return null if no codec matched / 如果没有匹配的编解码器则返回 null
      */
     protected final MediaCodecInfo selectVideoCodec(final String mimeType) {
         if (DEBUG) Log.v(TAG, "selectVideoCodec:");
 
         // get the list of available codecs
+        // 获取可用编解码器列表
         final int numCodecs = MediaCodecList.getCodecCount();
         for (int i = 0; i < numCodecs; i++) {
             final MediaCodecInfo codecInfo = MediaCodecList.getCodecInfoAt(i);
 
-            if (!codecInfo.isEncoder()) {    // skipp decoder
+            if (!codecInfo.isEncoder()) {    // skipp decoder / 跳过解码器
                 continue;
             }
             // select first codec that match a specific MIME type and color format
+            // 选择第一个与指定 MIME 类型和颜色格式匹配的编解码器
             final String[] types = codecInfo.getSupportedTypes();
             for (String type : types) {
                 if (type.equalsIgnoreCase(mimeType)) {
@@ -182,7 +195,9 @@ public class MediaVideoEncoder extends MediaEncoder implements IVideoEncoder {
     /**
      * select color format available on specific codec and we can use.
      *
-     * @return 0 if no colorFormat is matched
+     * 选择指定编解码器上可用且我们能够使用的颜色格式。
+     *
+     * @return 0 if no colorFormat is matched / 如果没有匹配的 colorFormat 则返回 0
      */
     protected static int selectColorFormat(final MediaCodecInfo codecInfo, final String mimeType) {
         if (DEBUG) Log.i(TAG, "selectColorFormat: ");
@@ -210,6 +225,8 @@ public class MediaVideoEncoder extends MediaEncoder implements IVideoEncoder {
 
     /**
      * color formats that we can use in this class
+     *
+     * 此类中可以使用的颜色格式
      */
     protected static int[] recognizedFormats;
 

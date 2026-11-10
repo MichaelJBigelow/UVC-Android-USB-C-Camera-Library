@@ -185,7 +185,8 @@ static void writerFormat(Writer<StringBuffer> &writer, uvc_format_desc_t *fmt_de
 					}
 					writer.EndArray();
 				} else {
-					// 最小fps
+					// minimum fps
+					// 最小 fps
 					writer.String(FRAME_INTERVAL_MIN);
 					writer.StartObject();
 					{
@@ -194,7 +195,8 @@ static void writerFormat(Writer<StringBuffer> &writer, uvc_format_desc_t *fmt_de
 						write(writer, FRAME_INTERVAL_FPS, 10000000 / frame_desc->dwMinFrameInterval);
 					}
 					writer.EndObject();
-					// 最大fps
+					// maximum fps
+					// 最大 fps
 					writer.String(FRAME_INTERVAL_MAX);
 					writer.StartObject();
 					{
@@ -204,7 +206,8 @@ static void writerFormat(Writer<StringBuffer> &writer, uvc_format_desc_t *fmt_de
 					}
 					writer.EndObject();
 					if (frame_desc->dwFrameIntervalStep) {
-						// fpsステップ
+						// fps step
+						// fps 步长
 						writer.String(FRAME_INTERVAL_STEP);
 						writer.StartObject();
 						{
@@ -218,9 +221,9 @@ static void writerFormat(Writer<StringBuffer> &writer, uvc_format_desc_t *fmt_de
 			}
 			writer.EndObject();
 		}
-		writer.EndArray();	// end of FORMAT_FRAME_DESCRIPTORS
+		writer.EndArray();	// end of FORMAT_FRAME_DESCRIPTORS / FORMAT_FRAME_DESCRIPTORS 结束
 	}
-	writer.EndObject();	// end of FORMAT_DETAIL
+	writer.EndObject();	// end of FORMAT_DETAIL / FORMAT_DETAIL 结束
 }
 
 static void writerFormatDescriptions(Writer<StringBuffer> &writer, uvc_streaming_interface_t *stream_if) {
@@ -248,7 +251,7 @@ static void writerFormatDescriptions(Writer<StringBuffer> &writer, uvc_streaming
 		}
 		writer.EndObject();
 	}
-	writer.EndArray();	// end of FORMATS
+	writer.EndArray();	// end of FORMATS / FORMATS 结束
 }
 
 UVCDiags::UVCDiags() {}
@@ -306,13 +309,14 @@ char *UVCDiags::getDescriptions(const uvc_device_handle_t *deviceHandle) {
 							writer.EndObject();
 						}
 					}
-					writer.EndArray();	// end of DESC_INTERFACES
+					writer.EndArray();	// end of DESC_INTERFACES / DESC_INTERFACES 结束
 				}
-				writer.EndObject();	// end of DESC_UVC
+				writer.EndObject();	// end of DESC_UVC / DESC_UVC 结束
 			}
 			// XXX other interfaces
+			// XXX 其他接口
 		}
-		writer.EndObject();	// end of DESCRIPTION
+		writer.EndObject();	// end of DESCRIPTION / DESCRIPTION 结束
 	}
 	writer.EndObject();
 	RETURN(strdup(buffer.GetString()), char *);
@@ -386,7 +390,8 @@ char *UVCDiags::getSupportedFormats(const uvc_device_handle_t *deviceHandle) {
 								write(writer, FRAME_FPS_DEFAULT, 10000000 / frame_desc->dwDefaultFrameInterval);
 
 								if (!frame_desc->bFrameIntervalType) {
-									// 最小fps
+									// minimum fps
+									// 最小 fps
 									writer.String(FRAME_INTERVAL_MIN);
 									writer.StartObject();
 									{
@@ -395,7 +400,8 @@ char *UVCDiags::getSupportedFormats(const uvc_device_handle_t *deviceHandle) {
 										write(writer, FRAME_INTERVAL_FPS, 10000000 / frame_desc->dwMinFrameInterval);
 									}
 									writer.EndObject();
-									// 最大fps
+									// maximum fps
+									// 最大 fps
 									writer.String(FRAME_INTERVAL_MAX);
 									writer.StartObject();
 									{
@@ -405,7 +411,8 @@ char *UVCDiags::getSupportedFormats(const uvc_device_handle_t *deviceHandle) {
 									}
 									writer.EndObject();
 									if (frame_desc->dwFrameIntervalStep) {
-										// fpsステップ
+										// fps step
+										// fps 步长
 										writer.String(FRAME_INTERVAL_STEP);
 										writer.StartObject();
 										{
@@ -441,6 +448,7 @@ char *UVCDiags::getSupportedFormats(const uvc_device_handle_t *deviceHandle) {
 			}
 			writer.EndArray();
 			// FIXME still image is not supported now
+			// FIXME 目前不支持静态图片
 		}
 	}
 	writer.EndObject();

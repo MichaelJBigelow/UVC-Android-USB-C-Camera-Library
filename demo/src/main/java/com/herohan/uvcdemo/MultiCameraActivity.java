@@ -214,6 +214,7 @@ public class MultiCameraActivity extends AppCompatActivity implements View.OnCli
                     int width = size.width;
                     int height = size.height;
                     //auto aspect ratio
+                    // 自动设置宽高比
                     svCameraViewLeft.setAspectRatio(width, height);
                 }
 
@@ -292,6 +293,7 @@ public class MultiCameraActivity extends AppCompatActivity implements View.OnCli
                     int width = size.width;
                     int height = size.height;
                     //auto aspect ratio
+                    // 自动设置宽高比
                     svCameraViewRight.setAspectRatio(width, height);
                 }
 
@@ -339,17 +341,21 @@ public class MultiCameraActivity extends AppCompatActivity implements View.OnCli
     public void onClick(View v) {
         if (v.getId() == R.id.btnOpenCameraLeft) {
             // select a uvc device
+            // 选择一个 uvc 设备
             showDeviceListDialogLeft();
         } else if (v.getId() == R.id.btnCloseCameraLeft) {
             // close camera
+            // 关闭相机
             if (mCameraHelperLeft != null && mIsCameraLeftConnected) {
                 mCameraHelperLeft.closeCamera();
             }
         } else if (v.getId() == R.id.btnOpenCameraRight) {
             // select a uvc device
+            // 选择一个 uvc 设备
             showDeviceListDialogRight();
         } else if (v.getId() == R.id.btnCloseCameraRight) {
             // close camera
+            // 关闭相机
             if (mCameraHelperRight != null && mIsCameraRightConnected) {
                 mCameraHelperRight.closeCamera();
             }

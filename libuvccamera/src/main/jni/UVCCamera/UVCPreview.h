@@ -41,10 +41,10 @@
 
 typedef int (*convFunc_t)(uvc_frame_t *in, uvc_frame_t *out);
 
-#define PIXEL_FORMAT_RAW 0        // same as PIXEL_FORMAT_YUV
+#define PIXEL_FORMAT_RAW 0        // same as PIXEL_FORMAT_YUV / 与 PIXEL_FORMAT_YUV 相同
 #define PIXEL_FORMAT_YUV 1
-#define PIXEL_FORMAT_NV12 2        // one format of YUV420SemiPlanar
-#define PIXEL_FORMAT_NV21 3        // one format of YUV420SemiPlanar
+#define PIXEL_FORMAT_NV12 2        // one format of YUV420SemiPlanar / YUV420SemiPlanar 的一种格式
+#define PIXEL_FORMAT_NV21 3        // one format of YUV420SemiPlanar / YUV420SemiPlanar 的一种格式
 #define PIXEL_FORMAT_RGB 4
 #define PIXEL_FORMAT_RGB565 5
 #define PIXEL_FORMAT_RGBX 6
@@ -52,6 +52,7 @@ typedef int (*convFunc_t)(uvc_frame_t *in, uvc_frame_t *out);
 
 
 // for callback to Java object
+// 用于回调 Java 对象
 typedef struct {
     jmethodID onFrame;
 } Fields_iframecallback;
@@ -63,10 +64,12 @@ private:
     volatile bool mIsRunning;
 
     // request format
+    // 请求的格式
     int requestWidth, requestHeight, requestFormatType;
     int requestFps;
 
     // actual format
+    // 实际的格式
     int frameWidth, frameHeight;
     int frameFormatType;
     size_t frameBytes;
@@ -83,13 +86,14 @@ private:
     pthread_t capture_thread;
     pthread_mutex_t capture_mutex;
     pthread_cond_t capture_sync;
-    uvc_frame_t *captureQueu;            // keep latest frame
+    uvc_frame_t *captureQueu;            // keep latest frame / 保留最新一帧
     jobject mFrameCallbackObj;
     convFunc_t mFrameCallbackFunc;
     Fields_iframecallback iframecallback_fields;
     int mPixelFormat;
     size_t callbackPixelBytes;
 // improve performance by reducing memory allocation
+// 通过减少内存分配来提升性能
     pthread_mutex_t pool_mutex;
     ObjectArray<uvc_frame_t *> mFramePool;
 

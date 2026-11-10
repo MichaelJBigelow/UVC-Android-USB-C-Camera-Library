@@ -44,12 +44,15 @@ import com.serenegiant.usb.USBMonitor.UsbControlBlock;
 import com.serenegiant.uvccamera.BuildConfig;
 
 public class UVCCamera {
-    private static final boolean DEBUG = BuildConfig.DEBUG;    // TODO set false when releasing
+    private static final boolean DEBUG = BuildConfig.DEBUG;    // TODO set false when releasing / 发布时设为 false
     private static final String TAG = UVCCamera.class.getSimpleName();
 
     // uvc_vs_desc_subtype from libuvc.h
+    // 来自 libuvc.h 的 uvc_vs_desc_subtype
     /**
      * Resource busy
+     *
+     * 资源忙
      */
     public static final int UVC_ERROR_BUSY = -6;
 
@@ -68,8 +71,8 @@ public class UVCCamera {
 
     public static final int PIXEL_FORMAT_RAW = 0;
     public static final int PIXEL_FORMAT_YUV = 1;
-    public static final int PIXEL_FORMAT_NV12 = 2;        // one format of YUV420SemiPlanar
-    public static final int PIXEL_FORMAT_NV21 = 3;        // one format of YUV420SemiPlanar
+    public static final int PIXEL_FORMAT_NV12 = 2;        // one format of YUV420SemiPlanar / YUV420SemiPlanar 的一种格式
+    public static final int PIXEL_FORMAT_NV21 = 3;        // one format of YUV420SemiPlanar / YUV420SemiPlanar 的一种格式
     public static final int PIXEL_FORMAT_RGB = 4;
     public static final int PIXEL_FORMAT_RGB565 = 5;
     public static final int PIXEL_FORMAT_RGBX = 6;
@@ -78,6 +81,9 @@ public class UVCCamera {
     /**
      * This quirk makes the assumption that the device calculated bandwidth is wrong
      * and instead the library calculates its own value based off the frame size, frame rate and bits per pixel.
+     *
+     * 该 quirk 假定设备计算出的带宽有误,
+     * 转而由库根据帧大小、帧率和每像素位数自行计算该值。
      */
     public static final int UVC_QUIRK_FIX_BANDWIDTH = 0x00000080;
 
@@ -86,6 +92,10 @@ public class UVCCamera {
      * libuvc quirks recommended for this device's USB host. MediaTek platforms
      * often need {@link #UVC_QUIRK_FIX_BANDWIDTH} for isochronous uncompressed
      * video so that {@code dwMaxPayloadTransferSize} is recalculated before commit.
+     *
+     * 针对此设备 USB 主机推荐使用的 libuvc quirk。MediaTek 平台
+     * 在处理等时传输的未压缩视频时,通常需要 {@link #UVC_QUIRK_FIX_BANDWIDTH},
+     * 以便在提交前重新计算 {@code dwMaxPayloadTransferSize}。
      */
     public static int getRecommendedPlatformQuirks() {
         final String hw = Build.HARDWARE != null ? Build.HARDWARE.toLowerCase(Locale.US) : "";
@@ -107,6 +117,7 @@ public class UVCCamera {
     private UVCControl mControl = null;
 
     // these fields from here are accessed from native code and do not change name and remove
+    // 从这里开始的这些字段会被原生代码访问,请勿更改名称或删除
     protected long mNativePtr;
     protected String mSupportedFormats;
     protected List<Format> mSupportedFormatList;
@@ -114,10 +125,14 @@ public class UVCCamera {
     protected Size mCurrentSize;
     protected UVCParam mParam;
     // until here
+    // 到此为止
 
     /**
      * the constructor of this class should be call within the thread that has a looper
      * (UI thread or a thread that called Looper.prepare)
+     *
+     * 此类的构造函数应在拥有 looper 的线程中调用
+     * (UI 线程或调用过 Looper.prepare 的线程)
      */
     public UVCCamera(UVCParam param) {
         mNativePtr = nativeCreate();
@@ -127,6 +142,9 @@ public class UVCCamera {
     /**
      * connect to a UVC camera
      * USB permission is necessary before this method is called
+     *
+     * 连接到 UVC 相机
+     * 调用此方法之前需要获得 USB 权限
      *
      * @param ctrlBlock
      */
@@ -173,6 +191,8 @@ public class UVCCamera {
     /**
      * set status callback
      *
+     * 设置状态回调
+     *
      * @param callback
      */
     public void setQuirks(final IStatusCallback callback) {
@@ -183,6 +203,8 @@ public class UVCCamera {
 
     /**
      * set status callback
+     *
+     * 设置状态回调
      *
      * @param callback
      */
@@ -195,6 +217,8 @@ public class UVCCamera {
     /**
      * set button callback
      *
+     * 设置按钮回调
+     *
      * @param callback
      */
     public void setButtonCallback(final IButtonCallback callback) {
@@ -205,6 +229,8 @@ public class UVCCamera {
 
     /**
      * close and release UVC camera
+     *
+     * 关闭并释放 UVC 相机
      */
     public synchronized void close() {
         close(false);
@@ -212,13 +238,15 @@ public class UVCCamera {
 
     /**
      * close and release UVC camera
+     *
+     * 关闭并释放 UVC 相机
      */
     public synchronized void close(boolean isSilent) {
         if (DEBUG) Log.v(TAG, "close");
         stopPreview();
         if (mNativePtr != 0) {
             nativeRelease(mNativePtr);
-//    		mNativePtr = 0;	// nativeDestroyを呼ぶのでここでクリアしちゃダメ
+//    		mNativePtr = 0;	// Do not clear here because nativeDestroy is called / 因为会调用 nativeDestroy,所以不能在这里清除
         }
         if (mCtrlBlock != null) {
             mCtrlBlock.close(isSilent);
@@ -288,6 +316,8 @@ public class UVCCamera {
     /**
      * get supported size that has max pixel and match default frame format
      *
+     * 获取像素数最大且与默认帧格式匹配的受支持尺寸
+     *
      * @return
      */
     public Size getSupportedSizeOne() {
@@ -324,6 +354,7 @@ public class UVCCamera {
                         final int index = formatJSON.getInt("index");
                         final int formatType = formatJSON.getInt("subType");
                         // this uvc library support for mjpeg and uncompressed format
+                        // 此 uvc 库支持 mjpeg 和未压缩格式
                         if (formatType == UVC_VS_FORMAT_MJPEG
                                 || formatType == UVC_VS_FORMAT_UNCOMPRESSED) {
                             List<Format.Descriptor> descriptorList = parseFrameDescriptors(formatJSON, index);
@@ -400,6 +431,8 @@ public class UVCCamera {
     /**
      * Check for valid size
      *
+     * 检查尺寸是否有效
+     *
      * @param width
      * @param height
      * @param frameType
@@ -427,6 +460,8 @@ public class UVCCamera {
     /**
      * Set preview size and preview mode
      *
+     * 设置预览尺寸和预览模式
+     *
      * @param width
      * @param height
      */
@@ -437,9 +472,11 @@ public class UVCCamera {
     /**
      * Set preview size and preview mode
      *
+     * 设置预览尺寸和预览模式
+     *
      * @param width
      * @param height
-     * @param frameType either UVC_VS_FRAME_UNCOMPRESSED or UVC_VS_FRAME_MJPEG
+     * @param frameType either UVC_VS_FRAME_UNCOMPRESSED or UVC_VS_FRAME_MJPEG / UVC_VS_FRAME_UNCOMPRESSED 或 UVC_VS_FRAME_MJPEG 之一
      */
     public void setPreviewSize(final int width, final int height, final int frameType) {
         setPreviewSize(width, height, frameType, DEFAULT_PREVIEW_FPS);
@@ -448,9 +485,11 @@ public class UVCCamera {
     /**
      * Set preview size and preview mode
      *
+     * 设置预览尺寸和预览模式
+     *
      * @param width
      * @param height
-     * @param frameType either UVC_VS_FRAME_UNCOMPRESSED or UVC_VS_FRAME_MJPEG
+     * @param frameType either UVC_VS_FRAME_UNCOMPRESSED or UVC_VS_FRAME_MJPEG / UVC_VS_FRAME_UNCOMPRESSED 或 UVC_VS_FRAME_MJPEG 之一
      * @param fps
      */
     public void setPreviewSize(final int width, final int height, final int frameType, final int fps) {
@@ -459,6 +498,8 @@ public class UVCCamera {
 
     /**
      * Set preview size and preview mode
+     *
+     * 设置预览尺寸和预览模式
      *
      * @param size
      */
@@ -473,10 +514,13 @@ public class UVCCamera {
             }
 
             //set preview size
+            //设置预览尺寸
             int result = nativeSetPreviewSize(mNativePtr, size.width, size.height, size.type, size.fps);
             if (result != 0) {
                 // Because _uvc_stream_params_negotiated method use dwMaxPayloadTransferSize to confirm result of format negotiation.
                 // If frameType is changed, result of nativeSetPreviewSize will be UVC_ERROR_INVALID_MODE, we need try again
+                // 由于 _uvc_stream_params_negotiated 方法使用 dwMaxPayloadTransferSize 来确认格式协商的结果。
+                // 如果 frameType 发生了变化,nativeSetPreviewSize 的结果将是 UVC_ERROR_INVALID_MODE,我们需要重试
                 result = nativeSetPreviewSize(mNativePtr, size.width, size.height, size.type, size.fps);
             }
 
@@ -492,6 +536,9 @@ public class UVCCamera {
      * set preview surface with SurfaceHolder</br>
      * you can use SurfaceHolder came from SurfaceView/GLSurfaceView
      *
+     * 使用 SurfaceHolder 设置预览 surface</br>
+     * 可以使用来自 SurfaceView/GLSurfaceView 的 SurfaceHolder
+     *
      * @param holder
      */
     public synchronized void setPreviewDisplay(final SurfaceHolder holder) {
@@ -502,15 +549,20 @@ public class UVCCamera {
      * set preview surface with SurfaceTexture.
      * this method require API >= 14
      *
+     * 使用 SurfaceTexture 设置预览 surface。
+     * 此方法要求 API >= 14
+     *
      * @param texture
      */
-    public synchronized void setPreviewTexture(final SurfaceTexture texture) {    // API >= 11
-        final Surface surface = new Surface(texture);    // XXX API >= 14
+    public synchronized void setPreviewTexture(final SurfaceTexture texture) {    // API >= 11 / API 级别 >= 11
+        final Surface surface = new Surface(texture);    // XXX API >= 14 / XXX API 级别 >= 14
         nativeSetPreviewDisplay(mNativePtr, surface);
     }
 
     /**
      * set preview surface with Surface
+     *
+     * 使用 Surface 设置预览 surface
      *
      * @param surface
      */
@@ -521,9 +573,11 @@ public class UVCCamera {
     /**
      * set frame callback
      *
-     * @param callback    The callback that receive frame data in pixelFormat
-     * @param pixelFormat The frame format of callback.
-     *                    Can be {@link #PIXEL_FORMAT_RAW}, {@link #PIXEL_FORMAT_YUV}, {@link #PIXEL_FORMAT_NV12}, {@link #PIXEL_FORMAT_NV21}, {@link #PIXEL_FORMAT_RGB}, {@link #PIXEL_FORMAT_RGB565}, {@link #PIXEL_FORMAT_BGR}.
+     * 设置帧回调
+     *
+     * @param callback    The callback that receive frame data in pixelFormat / 以 pixelFormat 格式接收帧数据的回调
+     * @param pixelFormat The frame format of callback. / 回调的帧格式。
+     *                    Can be {@link #PIXEL_FORMAT_RAW}, {@link #PIXEL_FORMAT_YUV}, {@link #PIXEL_FORMAT_NV12}, {@link #PIXEL_FORMAT_NV21}, {@link #PIXEL_FORMAT_RGB}, {@link #PIXEL_FORMAT_RGB565}, {@link #PIXEL_FORMAT_BGR}. / 可以是 PIXEL_FORMAT_RAW、PIXEL_FORMAT_YUV、PIXEL_FORMAT_NV12、PIXEL_FORMAT_NV21、PIXEL_FORMAT_RGB、PIXEL_FORMAT_RGB565、PIXEL_FORMAT_BGR 之一
      */
     public void setFrameCallback(final IFrameCallback callback, final int pixelFormat) {
         if (mNativePtr != 0) {
@@ -533,6 +587,8 @@ public class UVCCamera {
 
     /**
      * start preview
+     *
+     * 开始预览
      */
     public synchronized void startPreview() {
         if (mCtrlBlock != null) {
@@ -542,6 +598,8 @@ public class UVCCamera {
 
     /**
      * stop preview
+     *
+     * 停止预览
      */
     public synchronized void stopPreview() {
 //        setFrameCallback(null, 0);
@@ -552,6 +610,8 @@ public class UVCCamera {
 
     /**
      * start movie capturing(this should call while previewing)
+     *
+     * 开始录制视频(应在预览期间调用)
      *
      * @param surface
      */
@@ -565,6 +625,8 @@ public class UVCCamera {
 
     /**
      * stop movie capturing
+     *
+     * 停止录制视频
      */
     public void stopCapture() {
         if (mCtrlBlock != null) {
@@ -574,6 +636,8 @@ public class UVCCamera {
 
     /**
      * destroy UVCCamera object
+     *
+     * 销毁 UVCCamera 对象
      */
     public synchronized void destroy() {
         destroy(false);
@@ -581,6 +645,8 @@ public class UVCCamera {
 
     /**
      * destroy UVCCamera object
+     *
+     * 销毁 UVCCamera 对象
      */
     public synchronized void destroy(boolean isSilent) {
         close(isSilent);
@@ -592,6 +658,8 @@ public class UVCCamera {
 
     /**
      * Returns true if UVCCamera is opened.
+     *
+     * 如果 UVCCamera 已打开则返回 true。
      */
     public UVCControl getControl() {
         return mControl;

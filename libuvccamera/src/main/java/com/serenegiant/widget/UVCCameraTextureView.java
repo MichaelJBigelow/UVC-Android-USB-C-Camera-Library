@@ -50,11 +50,16 @@ import com.serenegiant.uvccamera.BuildConfig;
  * if you set this view with in a FrameLayout and set property "android:layout_gravity="center",
  * you can show this view in the center of screen and keep the aspect ratio of content
  * XXX it is better that can set the aspect ratio as xml property
+ *
+ * 在保持指定宽高比的前提下改变视图大小。
+ * 如果将此视图放在 FrameLayout 中并设置属性 "android:layout_gravity="center",
+ * 就可以让此视图显示在屏幕中央并保持内容的宽高比
+ * XXX 最好能通过 xml 属性设置宽高比
  */
 public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
         implements TextureView.SurfaceTextureListener, CameraViewInterface {
 
-    private static final boolean DEBUG = BuildConfig.DEBUG;    // TODO set false on release
+    private static final boolean DEBUG = BuildConfig.DEBUG;    // TODO set false on release / 发布时请设为 false
     private static final String TAG = UVCCameraTextureView.class.getSimpleName();
 
     private boolean mHasSurfaceTexture;
@@ -65,6 +70,8 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
     private Callback mCallback;
     /**
      * for calculation of frame rate
+     *
+     * 用于计算帧率
      */
     private FpsCounter mFpsCounter = new FpsCounter();
 
@@ -107,6 +114,11 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
         // createWindowSurface failed EGL_BAD_ALLOC
         //
         // if size of SurfaceTexture has changed, destroy old surface and create new surface.
+        // 为避免出现异常:
+        // createWindowSurface failed error=12291
+        // createWindowSurface failed EGL_BAD_ALLOC
+        //
+        // 如果 SurfaceTexture 的大小发生变化,请销毁旧的 Surface 并创建新的 Surface。
         if (mPreviewSurface != null) {
             mPreviewSurface.release();
             mPreviewSurface = null;
@@ -169,6 +181,14 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
      * (because we return same instance of bitmap on each call for memory saving)
      * if you need to call this method from multiple thread,
      * you should change this method(copy and return)
+     *
+     * 将预览图像捕获为 bitmap
+     * 此方法会阻塞当前线程,直到 bitmap 准备就绪
+     * 如果几乎同时从不同线程调用此方法,
+     * 在你处理 bitmap 的过程中返回的 bitmap 可能会被改变
+     * (因为为了节省内存,每次调用都返回同一个 bitmap 实例)
+     * 如果需要从多个线程调用此方法,
+     * 应当修改此方法(复制后再返回)
      */
     @Override
     public Bitmap captureStillImage() {
@@ -219,6 +239,8 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 
     /**
      * update frame rate of image processing
+     *
+     * 更新图像处理的帧率
      */
     public void updateFps() {
         mFpsCounter.update();
@@ -226,6 +248,8 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 
     /**
      * get current frame rate of image processing
+     *
+     * 获取图像处理的当前帧率
      *
      * @return
      */
@@ -236,6 +260,8 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
     /**
      * get total frame rate from start
      *
+     * 获取从开始至今的总体帧率
+     *
      * @return
      */
     public float getTotalFps() {
@@ -244,6 +270,8 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 
     /**
      * render camera frames on this view on a private thread
+     *
+     * 在私有线程中将相机帧渲染到此视图上
      *
      * @author saki
      */
@@ -330,12 +358,16 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
             private EGLBase mEgl;
             /**
              * IEglSurface instance related to this TextureView
+             *
+             * 与此 TextureView 关联的 IEglSurface 实例
              */
             private EGLBase.IEglSurface mEglSurface;
             private GLDrawer2D mDrawer;
             private int mTexId = -1;
             /**
              * SurfaceTexture instance to receive video images
+             *
+             * 用于接收视频图像的 SurfaceTexture 实例
              */
             private SurfaceTexture mPreviewSurfaceTexture;
             private float[] mStMatrix = new float[16];
@@ -345,7 +377,9 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
             /**
              * constructor
              *
-             * @param surface: drawing surface came from TextureView
+             * 构造函数
+             *
+             * @param surface: drawing surface came from TextureView / 来自 TextureView 的绘制 Surface
              */
             public RenderHandler(final RenderAgent renderAgent, final SurfaceTexture surface, final int width, final int height) {
                 super(createLooper());
@@ -358,6 +392,7 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
             private static Looper createLooper() {
                 HandlerThread thread = new HandlerThread("RenderThread", Process.THREAD_PRIORITY_MORE_FAVORABLE);
                 // start this HandlerThread, prepare for getLooper
+                // 启动此 HandlerThread,为 getLooper 做准备
                 thread.start();
                 return thread.getLooper();
             }
@@ -415,12 +450,14 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
                         mDrawer.deleteTex(mTexId);
                     }
                     // create texture and SurfaceTexture for input from camera
+                    // 创建用于接收相机输入的纹理和 SurfaceTexture
                     mTexId = mDrawer.initTex();
                     if (DEBUG) Log.v(TAG, "updatePreviewSurfaceTexture:tex_id=" + mTexId);
                     mPreviewSurfaceTexture = new SurfaceTexture(mTexId);
                     mPreviewSurfaceTexture.setDefaultBufferSize(mViewWidth, mViewHeight);
                     mPreviewSurfaceTexture.setOnFrameAvailableListener(mParent);
                     // notify to caller thread that previewSurface is ready
+                    // 通知调用线程 previewSurface 已准备就绪
                     mSync.notifyAll();
                 }
             }
@@ -436,6 +473,9 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
             /*
              * Now you can get frame data as ByteBuffer(as YUV/RGB565/RGBX/NV21 pixel format) using IFrameCallback interface
              * with UVCCamera#setFrameCallback instead of using following code samples.
+             *
+             * 现在可以通过 IFrameCallback 接口配合 UVCCamera#setFrameCallback
+             * 以 ByteBuffer 形式(YUV/RGB565/RGBX/NV21 像素格式)获取帧数据,而无需使用下面的代码示例。
              */
 /*			// for part1
  			private static final int BUF_NUM = 1;
@@ -451,16 +491,22 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
 
             /**
              * draw a frame (and request to draw for video capturing if it is necessary)
+             *
+             * 绘制一帧(必要时同时请求为视频录制进行绘制)
              */
             public final void onDrawFrame() {
                 mEglSurface.makeCurrent();
                 // update texture(came from camera)
+                // 更新纹理(来自相机)
                 mPreviewSurfaceTexture.updateTexImage();
                 // get texture matrix
+                // 获取纹理矩阵
                 mPreviewSurfaceTexture.getTransformMatrix(mStMatrix);
                 // notify video encoder if it exist
+                // 如果存在视频编码器,则通知它
                 if (mEncoder != null) {
                     // notify to capturing thread that the camera frame is available.
+                    // 通知采集线程相机帧已可用。
                     if (mEncoder instanceof MediaVideoEncoder) {
                         ((MediaVideoEncoder) mEncoder).frameAvailableSoon(mStMatrix);
                     } else {
@@ -468,6 +514,7 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
                     }
                 }
                 // draw to preview screen
+                // 绘制到预览画面
                 mDrawer.draw(mTexId, mStMatrix, 0);
                 mEglSurface.swap();
 /*				// sample code to read pixels into Buffer and save as a Bitmap (part1)
@@ -547,10 +594,12 @@ public class UVCCameraTextureView extends AspectRatioTextureView    // API >= 14
             private void init() {
                 if (DEBUG) Log.v(TAG, TAG_HANDLER + "#init:");
                 // create EGLContext for this thread
+                // 为此线程创建 EGLContext
                 mEgl = EGLBase.createFrom(null, false, false);
                 mEglSurface = mEgl.createFromSurface(mSurface);
                 mEglSurface.makeCurrent();
                 // create drawing object
+                // 创建绘制对象
                 mDrawer = new GLDrawer2D(true);
             }
 

@@ -56,6 +56,7 @@ class CameraRendererHolder extends RendererHolder implements ICameraRendererHold
     public void captureImage(OnImageCapturedCallback callback) {
         mRendererHandler.post(() -> {
             // Capture still image
+            // 拍摄静态图片
             try {
                 ImageRawData data = mCaptureHolder.captureImageRawData();
                 callback.onCaptureSuccess(data);
@@ -104,6 +105,7 @@ class CameraRendererHolder extends RendererHolder implements ICameraRendererHold
                 float[] mirrorMatrix = new float[16];
                 Matrix.setIdentityM(mirrorMatrix, 0);
                 //Must flip up-side down otherwise our output will look upside down relative to what appears on screen
+                //必须上下翻转，否则输出图像相对于屏幕上显示的内容会是上下颠倒的
                 RendererHolder.setMirrorMode(mirrorMatrix, MirrorMode.MIRROR_VERTICAL);
 
                 Matrix.multiplyMM(mvpMatrix, 0, mirrorMatrix, 0, mvpMatrix, 0);

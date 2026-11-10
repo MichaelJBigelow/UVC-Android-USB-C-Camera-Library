@@ -12,6 +12,8 @@ class RendererSurface {
     /**
      * Factory method
      *
+     * 工厂方法
+     *
      * @param egl
      * @param surface
      * @param maxFps
@@ -22,15 +24,19 @@ class RendererSurface {
 
         return (maxFps > 0)
                 ? new RendererSurfaceHasWait(egl, surface, maxFps)
-                : new RendererSurface(egl, surface);    // no limitation of maxFps
+                : new RendererSurface(egl, surface);    // no limitation of maxFps / 不限制 maxFps
     }
 
     /**
      * original Surface
+     *
+     * 原始 Surface
      */
     private Object mSurface;
     /**
      * EglSurface that is used for OpenGL|ES
+     *
+     * 用于 OpenGL|ES 的 EglSurface
      */
     private EGLBase.IEglSurface mEGLSurface;
     final float[] mMvpMatrix = new float[16];
@@ -38,6 +44,8 @@ class RendererSurface {
 
     /**
      * Making constructor private to enforce the use of  factory method
+     *
+     * 将构造函数设为私有，强制使用工厂方法
      *
      * @param egl
      * @param surface
@@ -85,8 +93,10 @@ class RendererSurface {
     public void draw(final GLDrawer2D drawer, final int textId, final float[] texMatrix, final float[] mvpMatrix) {
         if (drawer != null && mEGLSurface != null) {
             mEGLSurface.makeCurrent();
-            // 本来は映像が全面に描画されるので#glClearでクリアする必要はないけど
-            // ハングアップする機種があるのでクリアしとく
+            // Normally the video covers the entire surface, so clearing with #glClear is not required,
+            // but some devices hang up, so clear it anyway
+            // 正常情况下视频会铺满整个画面，无需用 #glClear 清除，
+            // 但部分机型会卡死，所以还是先清除一次
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
             drawer.setMvpMatrix(mvpMatrix, 0);
             drawer.draw(textId, texMatrix, 0);
@@ -96,6 +106,8 @@ class RendererSurface {
 
     /**
      * Fill surface with specific color
+     *
+     * 用指定颜色填充 surface
      *
      * @param color
      */
@@ -119,6 +131,8 @@ class RendererSurface {
 
         /**
          * Making constructor private to enforce the use of  factory method
+         *
+         * 将构造函数设为私有，强制使用工厂方法
          *
          * @param egl
          * @param surface

@@ -9,6 +9,7 @@
 #pragma interface
 
 // for callback to Java object
+// 用于回调到 Java 对象
 typedef struct {
 	jmethodID onStatus;
 } Fields_istatuscallback;

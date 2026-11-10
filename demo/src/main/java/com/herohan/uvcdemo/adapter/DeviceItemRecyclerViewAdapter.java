@@ -15,6 +15,8 @@ import java.util.List;
 
 /**
  * {@link RecyclerView.Adapter} that can display a {@link UsbDevice}.
+ *
+ * 可显示 {@link UsbDevice} 的 {@link RecyclerView.Adapter}。
  */
 public class DeviceItemRecyclerViewAdapter extends RecyclerView.Adapter<DeviceItemRecyclerViewAdapter.ViewHolder> {
 

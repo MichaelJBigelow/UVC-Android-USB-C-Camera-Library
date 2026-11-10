@@ -25,30 +25,44 @@ public class VideoCaptureConfig implements Cloneable {
     private static final int DEFAULT_VIDEO_FRAME_RATE = 30;
     /**
      * 8Mb/s the recommend rate for 30fps 1080p
+     *
+     * 8Mb/s,30fps 1080p 的推荐码率
      */
     private static final int DEFAULT_BIT_RATE = 8 * 1024 * 1024;
     /**
      * Seconds between each key frame
+     *
+     * 相邻关键帧之间的间隔秒数
      */
     private static final int DEFAULT_INTRA_FRAME_INTERVAL = 1;
     /**
      * audio capture enabled
+     *
+     * 是否启用音频采集
      */
     private static final boolean DEFAULT_AUDIO_CAPTURE_ENABLE = true;
     /**
      * audio bit rate
+     *
+     * 音频码率
      */
     private static final int DEFAULT_AUDIO_BIT_RATE = 64000;
     /**
      * audio sample rate
+     *
+     * 音频采样率
      */
     private static final int DEFAULT_AUDIO_SAMPLE_RATE = 8000;
     /**
      * audio channel count
+     *
+     * 音频声道数
      */
     private static final int DEFAULT_AUDIO_CHANNEL_COUNT = 1;
     /**
      * audio default minimum buffer size
+     *
+     * 音频默认最小缓冲区大小
      */
     private static final int DEFAULT_AUDIO_MIN_BUFFER_SIZE = 1024;
 
@@ -64,8 +78,10 @@ public class VideoCaptureConfig implements Cloneable {
     /**
      * Sets the recording frames per second.
      *
-     * @param videoFrameRate The requested interval in seconds.
-     * @return The current Config.
+     * 设置录制的每秒帧数。
+     *
+     * @param videoFrameRate The requested frame rate in frames per second. / 请求的帧率，单位为帧/秒
+     * @return The current Config. / 当前的 Config
      */
     @NonNull
     public VideoCaptureConfig setVideoFrameRate(int videoFrameRate) {
@@ -75,6 +91,8 @@ public class VideoCaptureConfig implements Cloneable {
 
     /**
      * Get the recording frames per second.
+     *
+     * 获取录制的每秒帧数。
      */
     public int getVideoFrameRate() {
         return getMutableConfig().getInt(OPTION_VIDEO_FRAME_RATE, DEFAULT_VIDEO_FRAME_RATE);
@@ -83,8 +101,10 @@ public class VideoCaptureConfig implements Cloneable {
     /**
      * Sets the encoding bit rate.
      *
-     * @param bitRate The requested bit rate in bits per second.
-     * @return The current Config.
+     * 设置编码码率。
+     *
+     * @param bitRate The requested bit rate in bits per second. / 请求的码率,单位为 bit/s
+     * @return The current Config. / 当前的 Config
      */
     @NonNull
     public VideoCaptureConfig setBitRate(int bitRate) {
@@ -94,6 +114,8 @@ public class VideoCaptureConfig implements Cloneable {
 
     /**
      * Returns true if has been setting this encoding bit rate.
+     *
+     * 如果已设置此编码码率则返回 true。
      */
     public boolean hasBitRate() {
         return getMutableConfig().containsKey(OPTION_BIT_RATE);
@@ -101,6 +123,8 @@ public class VideoCaptureConfig implements Cloneable {
 
     /**
      * Get the encoding bit rate.
+     *
+     * 获取编码码率。
      */
     public int getBitRate() {
         return getMutableConfig().getInt(OPTION_BIT_RATE, DEFAULT_BIT_RATE);
@@ -109,8 +133,10 @@ public class VideoCaptureConfig implements Cloneable {
     /**
      * Sets number of seconds between each key frame in seconds.
      *
-     * @param interval The requested interval in seconds.
-     * @return The current Config.
+     * 设置相邻关键帧之间的间隔秒数。
+     *
+     * @param interval The requested interval in seconds. / 请求的间隔,单位为秒
+     * @return The current Config. / 当前的 Config
      */
     @NonNull
     public VideoCaptureConfig setIFrameInterval(int interval) {
@@ -120,6 +146,8 @@ public class VideoCaptureConfig implements Cloneable {
 
     /**
      * Get number of seconds between each key frame in seconds.
+     *
+     * 获取相邻关键帧之间的间隔秒数。
      */
     public int getIFrameInterval() {
         return getMutableConfig().getInt(OPTION_INTRA_FRAME_INTERVAL, DEFAULT_INTRA_FRAME_INTERVAL);
@@ -128,8 +156,10 @@ public class VideoCaptureConfig implements Cloneable {
     /**
      * Enable the audio capture or disable the audio capture.
      *
-     * @param enable true to turn on the audio capture, false to turn it off..
-     * @return The current Config.
+     * 启用或禁用音频采集。
+     *
+     * @param enable true to turn on the audio capture, false to turn it off.. / 为 true 表示开启音频采集,为 false 表示关闭
+     * @return The current Config. / 当前的 Config
      */
     @NonNull
     public VideoCaptureConfig setAudioCaptureEnable(boolean enable) {
@@ -139,6 +169,8 @@ public class VideoCaptureConfig implements Cloneable {
 
     /**
      * Return true if audio capture is enabled, false if audio capture is disabled.
+     *
+     * 如果启用了音频采集则返回 true,禁用则返回 false。
      */
     public boolean getAudioCaptureEnable() {
         return getMutableConfig().getBoolean(OPTION_AUDIO_CAPTURE_ENABLE, DEFAULT_AUDIO_CAPTURE_ENABLE);
@@ -147,8 +179,10 @@ public class VideoCaptureConfig implements Cloneable {
     /**
      * Sets the bit rate of the audio stream.
      *
-     * @param bitRate The requested bit rate in bits/s.
-     * @return The current Config.
+     * 设置音频流的码率。
+     *
+     * @param bitRate The requested bit rate in bits/s. / 请求的码率,单位为 bit/s
+     * @return The current Config. / 当前的 Config
      */
     @NonNull
     public VideoCaptureConfig setAudioBitRate(int bitRate) {
@@ -158,6 +192,8 @@ public class VideoCaptureConfig implements Cloneable {
 
     /**
      * Get the bit rate of the audio stream.
+     *
+     * 获取音频流的码率。
      */
     public int getAudioBitRate() {
         return getMutableConfig().getInt(OPTION_AUDIO_BIT_RATE, DEFAULT_AUDIO_BIT_RATE);
@@ -166,8 +202,10 @@ public class VideoCaptureConfig implements Cloneable {
     /**
      * Sets the sample rate of the audio stream.
      *
-     * @param sampleRate The requested sample rate in bits/s.
-     * @return The current Config.
+     * 设置音频流的采样率。
+     *
+     * @param sampleRate The requested sample rate in Hz. / 请求的采样率，单位为 Hz
+     * @return The current Config. / 当前的 Config
      */
     @NonNull
     public VideoCaptureConfig setAudioSampleRate(int sampleRate) {
@@ -177,6 +215,8 @@ public class VideoCaptureConfig implements Cloneable {
 
     /**
      * Get the sample rate of the audio stream.
+     *
+     * 获取音频流的采样率。
      */
     public int getAudioSampleRate() {
         return getMutableConfig().getInt(OPTION_AUDIO_SAMPLE_RATE, DEFAULT_AUDIO_SAMPLE_RATE);
@@ -185,8 +225,10 @@ public class VideoCaptureConfig implements Cloneable {
     /**
      * Sets the number of audio channels.
      *
-     * @param channelCount The requested number of audio channels.
-     * @return The current Config.
+     * 设置音频声道数。
+     *
+     * @param channelCount The requested number of audio channels. / 请求的音频声道数
+     * @return The current Config. / 当前的 Config
      */
     @NonNull
     public VideoCaptureConfig setAudioChannelCount(int channelCount) {
@@ -196,6 +238,8 @@ public class VideoCaptureConfig implements Cloneable {
 
     /**
      * Get the number of audio channels.
+     *
+     * 获取音频声道数。
      */
     public int getAudioChannelCount() {
         return getMutableConfig().getInt(OPTION_AUDIO_CHANNEL_COUNT, DEFAULT_AUDIO_CHANNEL_COUNT);
@@ -204,8 +248,10 @@ public class VideoCaptureConfig implements Cloneable {
     /**
      * Sets the audio min buffer size.
      *
-     * @param minBufferSize The requested audio minimum buffer size, in bytes.
-     * @return The current Config.
+     * 设置音频最小缓冲区大小。
+     *
+     * @param minBufferSize The requested audio minimum buffer size, in bytes. / 请求的音频最小缓冲区大小,单位为字节
+     * @return The current Config. / 当前的 Config
      */
     @NonNull
     public VideoCaptureConfig setAudioMinBufferSize(int minBufferSize) {
@@ -215,6 +261,8 @@ public class VideoCaptureConfig implements Cloneable {
 
     /**
      * Get the audio min buffer size.
+     *
+     * 获取音频最小缓冲区大小。
      */
     public int getAudioMinBufferSize() {
         return getMutableConfig().getInt(OPTION_AUDIO_MIN_BUFFER_SIZE, DEFAULT_AUDIO_MIN_BUFFER_SIZE);

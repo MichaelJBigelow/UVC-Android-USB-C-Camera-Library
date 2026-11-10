@@ -9,6 +9,7 @@
 #pragma interface
 
 // for callback to Java object
+// 用于回调 Java 对象
 typedef struct {
 	jmethodID onButton;
 } Fields_ibuttoncallback;

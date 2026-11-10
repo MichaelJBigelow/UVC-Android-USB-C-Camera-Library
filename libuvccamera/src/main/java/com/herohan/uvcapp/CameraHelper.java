@@ -160,6 +160,7 @@ public class CameraHelper implements ICameraHelper {
 
     private Object fetchSurface(final Object surface) {
         // check surface is valid or not
+        // 检查 surface 是否有效
         Object sur;
         if (surface instanceof SurfaceView) {
             SurfaceView surfaceView = (SurfaceView) surface;
@@ -464,6 +465,10 @@ public class CameraHelper implements ICameraHelper {
      * Returns the current preview settings for this Camera.
      * If modifications are made to the returned Config, they must be passed
      * to {@link #setPreviewConfig(CameraPreviewConfig)} to take effect.
+     *
+     * 返回此 Camera 当前的预览设置。
+     * 如果对返回的 Config 进行了修改,必须将其传递给
+     * {@link #setPreviewConfig(CameraPreviewConfig)} 才能生效。
      */
     @Override
     public CameraPreviewConfig getPreviewConfig() {
@@ -473,7 +478,9 @@ public class CameraHelper implements ICameraHelper {
     /**
      * Changes the preview settings for this Camera.
      *
-     * @param config the Parameters to use for this Camera
+     * 更改此 Camera 的预览设置。
+     *
+     * @param config the Parameters to use for this Camera / 此 Camera 使用的参数
      */
     @Override
     public void setPreviewConfig(CameraPreviewConfig config) {
@@ -496,6 +503,10 @@ public class CameraHelper implements ICameraHelper {
      * Returns the current ImageCapture settings for this Camera.
      * If modifications are made to the returned Config, they must be passed
      * to {@link #setImageCaptureConfig(ImageCaptureConfig)} to take effect.
+     *
+     * 返回此 Camera 当前的 ImageCapture 设置。
+     * 如果对返回的 Config 进行了修改,必须将其传递给
+     * {@link #setImageCaptureConfig(ImageCaptureConfig)} 才能生效。
      */
     @Override
     public ImageCaptureConfig getImageCaptureConfig() {
@@ -505,7 +516,9 @@ public class CameraHelper implements ICameraHelper {
     /**
      * Changes the ImageCapture settings for this Camera.
      *
-     * @param config the Parameters to use for this Camera
+     * 更改此 Camera 的 ImageCapture 设置。
+     *
+     * @param config the Parameters to use for this Camera / 此 Camera 使用的参数
      */
     @Override
     public void setImageCaptureConfig(ImageCaptureConfig config) {
@@ -528,6 +541,10 @@ public class CameraHelper implements ICameraHelper {
      * Returns the current VideoCapture settings for this Camera.
      * If modifications are made to the returned Config, they must be passed
      * to {@link #setVideoCaptureConfig(VideoCaptureConfig)} to take effect.
+     *
+     * 返回此 Camera 当前的 VideoCapture 设置。
+     * 如果对返回的 Config 进行了修改,必须将其传递给
+     * {@link #setVideoCaptureConfig(VideoCaptureConfig)} 才能生效。
      */
     @Override
     public VideoCaptureConfig getVideoCaptureConfig() {
@@ -537,7 +554,9 @@ public class CameraHelper implements ICameraHelper {
     /**
      * Changes the VideoCapture settings for this Camera.
      *
-     * @param config the Parameters to use for this Camera
+     * 更改此 Camera 的 VideoCapture 设置。
+     *
+     * @param config the Parameters to use for this Camera / 此 Camera 使用的参数
      */
     @Override
     public void setVideoCaptureConfig(VideoCaptureConfig config) {

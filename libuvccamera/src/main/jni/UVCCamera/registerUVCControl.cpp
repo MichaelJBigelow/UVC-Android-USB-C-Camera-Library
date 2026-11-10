@@ -8,6 +8,8 @@
 
 /**
  *  Get jintArray by int array
+ *
+ * 通过 int 数组获取 jintArray
  * @param env
  * @param arr
  * @return
@@ -28,6 +30,7 @@ UVCControl *getControlByCameraId(ID_TYPE id) {
 
 //======================================================================
 // Get the bmControls ( a entry of bit set )  of Camera Control that is supported  by the camera
+// 获取摄像头支持的 Camera Control 的 bmControls(位集合中的一项)
 static jlong nativeGetCameraTerminalControls(JNIEnv *env, jobject thiz,
                                              ID_TYPE id_camera) {
 
@@ -44,6 +47,7 @@ static jlong nativeGetCameraTerminalControls(JNIEnv *env, jobject thiz,
 }
 
 // Get the bmControls ( a entry of bit set )  of Processing Unit that is supported  by the camera
+// 获取摄像头支持的 Processing Unit 的 bmControls(位集合中的一项)
 static jlong nativeGetProcessingUnitControls(JNIEnv *env, jobject thiz,
                                              ID_TYPE id_camera) {
 
@@ -61,6 +65,7 @@ static jlong nativeGetProcessingUnitControls(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // Java method correspond to this function should not be a static method
+// 与此函数对应的 Java 方法不应是 static 方法
 static jintArray nativeObtainScanningModeLimit(JNIEnv *env, jobject thiz,
                                                ID_TYPE id_camera) {
     jintArray result = NULL;
@@ -102,6 +107,7 @@ static jint nativeGetScanningMode(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // Java method correspond to this function should not be a static method
+// 与此函数对应的 Java 方法不应是 static 方法
 static jintArray nativeObtainAutoExposureModeLimit(JNIEnv *env, jobject thiz,
                                                    ID_TYPE id_camera) {
     jintArray result = NULL;
@@ -143,6 +149,7 @@ static jint nativeGetAutoExposureMode(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // Java method correspond to this function should not be a static method
+// 与此函数对应的 Java 方法不应是 static 方法
 static jintArray nativeObtainAutoExposurePriorityLimit(JNIEnv *env, jobject thiz,
                                                        ID_TYPE id_camera) {
     jintArray result = NULL;
@@ -184,6 +191,7 @@ static jint nativeGetAutoExposurePriority(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // Java method correspond to this function should not be a static method
+// 与此函数对应的 Java 方法不应是 static 方法
 static jintArray nativeObtainExposureTimeAbsoluteLimit(JNIEnv *env, jobject thiz,
                                                        ID_TYPE id_camera) {
     jintArray result = NULL;
@@ -225,6 +233,7 @@ static jint nativeGetExposureTimeAbsolute(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // Java method correspond to this function should not be a static method
+// 与此函数对应的 Java 方法不应是 static 方法
 static jintArray nativeObtainExposureTimeRelativeLimit(JNIEnv *env, jobject thiz,
                                                        ID_TYPE id_camera) {
     jintArray result = NULL;
@@ -266,6 +275,7 @@ static jint nativeGetExposureTimeRelative(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // Java method correspond to this function should not be a static method
+// 与此函数对应的 Java 方法不应是 static 方法
 static jintArray nativeObtainFocusAbsoluteLimit(JNIEnv *env, jobject thiz,
                                                 ID_TYPE id_camera) {
     jintArray result = NULL;
@@ -310,6 +320,7 @@ static jint nativeGetFocusAbsolute(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // Java method correspond to this function should not be a static method
+// 与此函数对应的 Java 方法不应是 static 方法
 static jintArray nativeObtainFocusRelativeLimit(JNIEnv *env, jobject thiz,
                                                 ID_TYPE id_camera) {
     jintArray result = NULL;
@@ -351,6 +362,7 @@ static jint nativeGetFocusRelative(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // Java method correspond to this function should not be a static method
+// 与此函数对应的 Java 方法不应是 static 方法
 static jintArray nativeObtainIrisAbsoluteLimit(JNIEnv *env, jobject thiz,
                                                ID_TYPE id_camera) {
     jintArray result = NULL;
@@ -392,6 +404,7 @@ static jint nativeGetIrisAbsolute(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // Java method correspond to this function should not be a static method
+// 与此函数对应的 Java 方法不应是 static 方法
 static jintArray nativeObtainIrisRelativeLimit(JNIEnv *env, jobject thiz,
                                                ID_TYPE id_camera) {
     jintArray result = NULL;
@@ -433,6 +446,7 @@ static jint nativeGetIrisRelative(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // Java method correspond to this function should not be a static method
+// 与此函数对应的 Java 方法不应是 static 方法
 static jintArray nativeObtainZoomAbsoluteLimit(JNIEnv *env, jobject thiz,
                                                ID_TYPE id_camera) {
     jintArray result = NULL;
@@ -474,6 +488,7 @@ static jint nativeGetZoomAbsolute(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // Java method correspond to this function should not be a static method
+// 与此函数对应的 Java 方法不应是 static 方法
 static jintArray nativeObtainZoomRelativeLimit(JNIEnv *env, jobject thiz,
                                                ID_TYPE id_camera) {
     jintArray result = NULL;
@@ -515,6 +530,7 @@ static jint nativeGetZoomRelative(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // Java method correspond to this function should not be a static method
+// 与此函数对应的 Java 方法不应是 static 方法
 static jintArray nativeObtainPanAbsoluteLimit(JNIEnv *env, jobject thiz,
                                               ID_TYPE id_camera) {
     jintArray result = NULL;
@@ -556,6 +572,7 @@ static jint nativeGetPanAbsolute(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // Java method correspond to this function should not be a static method
+// 与此函数对应的 Java 方法不应是 static 方法
 static jintArray nativeObtainTiltAbsoluteLimit(JNIEnv *env, jobject thiz,
                                                ID_TYPE id_camera) {
     jintArray result = NULL;
@@ -597,6 +614,7 @@ static jint nativeGetTiltAbsolute(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // Java method correspond to this function should not be a static method
+// 与此函数对应的 Java 方法不应是 static 方法
 static jintArray nativeObtainPanRelativeLimit(JNIEnv *env, jobject thiz,
                                               ID_TYPE id_camera) {
     jintArray result = NULL;
@@ -638,6 +656,7 @@ static jint nativeGetPanRelative(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // Java method correspond to this function should not be a static method
+// 与此函数对应的 Java 方法不应是 static 方法
 static jintArray nativeObtainTiltRelativeLimit(JNIEnv *env, jobject thiz,
                                                ID_TYPE id_camera) {
     jintArray result = NULL;
@@ -679,6 +698,7 @@ static jint nativeGetTiltRelative(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // Java method correspond to this function should not be a static method
+// 与此函数对应的 Java 方法不应是 static 方法
 static jintArray nativeObtainRollAbsoluteLimit(JNIEnv *env, jobject thiz,
                                                ID_TYPE id_camera) {
     jintArray result = NULL;
@@ -720,6 +740,7 @@ static jint nativeGetRollAbsolute(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // Java method correspond to this function should not be a static method
+// 与此函数对应的 Java 方法不应是 static 方法
 static jintArray nativeObtainRollRelativeLimit(JNIEnv *env, jobject thiz,
                                                ID_TYPE id_camera) {
     jintArray result = NULL;
@@ -761,6 +782,7 @@ static jint nativeGetRollRelative(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // Java method correspond to this function should not be a static method
+// 与此函数对应的 Java 方法不应是 static 方法
 static jintArray nativeObtainFocusAutoLimit(JNIEnv *env, jobject thiz,
                                             ID_TYPE id_camera) {
     jintArray result = NULL;
@@ -802,6 +824,7 @@ static jint nativeGetFocusAuto(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // Java method correspond to this function should not be a static method
+// 与此函数对应的 Java 方法不应是 static 方法
 static jintArray nativeObtainPrivacyLimit(JNIEnv *env, jobject thiz,
                                           ID_TYPE id_camera) {
     jintArray result = NULL;
@@ -843,6 +866,7 @@ static jint nativeGetPrivacy(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // Java method correspond to this function should not be a static method
+// 与此函数对应的 Java 方法不应是 static 方法
 static jintArray nativeObtainBrightnessLimit(JNIEnv *env, jobject thiz,
                                              ID_TYPE id_camera) {
     jintArray result = NULL;
@@ -886,6 +910,7 @@ static jint nativeGetBrightness(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // Java method correspond to this function should not be a static method
+// 与此函数对应的 Java 方法不应是 static 方法
 static jintArray nativeObtainContrastLimit(JNIEnv *env, jobject thiz,
                                            ID_TYPE id_camera) {
     jintArray result = NULL;
@@ -927,6 +952,7 @@ static jint nativeGetContrast(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // Java method correspond to this function should not be a static method
+// 与此函数对应的 Java 方法不应是 static 方法
 static jintArray nativeObtainHueLimit(JNIEnv *env, jobject thiz,
                                       ID_TYPE id_camera) {
     jintArray result = NULL;
@@ -968,6 +994,7 @@ static jint nativeGetHue(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // Java method correspond to this function should not be a static method
+// 与此函数对应的 Java 方法不应是 static 方法
 static jintArray nativeObtainSaturationLimit(JNIEnv *env, jobject thiz,
                                              ID_TYPE id_camera) {
     jintArray result = NULL;
@@ -1009,6 +1036,7 @@ static jint nativeGetSaturation(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // Java method correspond to this function should not be a static method
+// 与此函数对应的 Java 方法不应是 static 方法
 static jintArray nativeObtainSharpnessLimit(JNIEnv *env, jobject thiz,
                                             ID_TYPE id_camera) {
     jintArray result = NULL;
@@ -1050,6 +1078,7 @@ static jint nativeGetSharpness(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // Java method correspond to this function should not be a static method
+// 与此函数对应的 Java 方法不应是 static 方法
 static jintArray nativeObtainGammaLimit(JNIEnv *env, jobject thiz,
                                         ID_TYPE id_camera) {
     jintArray result = NULL;
@@ -1091,6 +1120,7 @@ static jint nativeGetGamma(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // Java method correspond to this function should not be a static method
+// 与此函数对应的 Java 方法不应是 static 方法
 static jintArray nativeObtainWhiteBalanceLimit(JNIEnv *env, jobject thiz,
                                                ID_TYPE id_camera) {
     jintArray result = NULL;
@@ -1132,6 +1162,7 @@ static jint nativeGetWhiteBalance(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // Java method correspond to this function should not be a static method
+// 与此函数对应的 Java 方法不应是 static 方法
 static jintArray nativeObtainWhiteBalanceCompoLimit(JNIEnv *env, jobject thiz,
                                                     ID_TYPE id_camera) {
     jintArray result = NULL;
@@ -1173,6 +1204,7 @@ static jint nativeGetWhiteBalanceCompo(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // Java method correspond to this function should not be a static method
+// 与此函数对应的 Java 方法不应是 static 方法
 static jintArray nativeObtainBacklightCompLimit(JNIEnv *env, jobject thiz,
                                                 ID_TYPE id_camera) {
     jintArray result = NULL;
@@ -1214,6 +1246,7 @@ static jint nativeGetBacklightComp(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // Java method correspond to this function should not be a static method
+// 与此函数对应的 Java 方法不应是 static 方法
 static jintArray nativeObtainGainLimit(JNIEnv *env, jobject thiz,
                                        ID_TYPE id_camera) {
     jintArray result = NULL;
@@ -1255,6 +1288,7 @@ static jint nativeGetGain(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // Java method correspond to this function should not be a static method
+// 与此函数对应的 Java 方法不应是 static 方法
 static jintArray nativeObtainPowerlineFrequencyLimit(JNIEnv *env, jobject thiz,
                                                      ID_TYPE id_camera) {
     jintArray result = NULL;
@@ -1296,6 +1330,7 @@ static jint nativeGetPowerlineFrequency(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // Java method correspond to this function should not be a static method
+// 与此函数对应的 Java 方法不应是 static 方法
 static jintArray nativeObtainHueAutoLimit(JNIEnv *env, jobject thiz,
                                           ID_TYPE id_camera) {
     jintArray result = NULL;
@@ -1337,6 +1372,7 @@ static jint nativeGetHueAuto(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // Java method correspond to this function should not be a static method
+// 与此函数对应的 Java 方法不应是 static 方法
 static jintArray nativeObtainWhiteBalanceAutoLimit(JNIEnv *env, jobject thiz,
                                                    ID_TYPE id_camera) {
     jintArray result = NULL;
@@ -1378,6 +1414,7 @@ static jint nativeGetWhiteBalanceAuto(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // Java method correspond to this function should not be a static method
+// 与此函数对应的 Java 方法不应是 static 方法
 static jintArray nativeObtainWhiteBalanceCompoAutoLimit(JNIEnv *env, jobject thiz,
                                                         ID_TYPE id_camera) {
     jintArray result = NULL;
@@ -1419,6 +1456,7 @@ static jint nativeGetWhiteBalanceCompoAuto(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // Java method correspond to this function should not be a static method
+// 与此函数对应的 Java 方法不应是 static 方法
 static jintArray nativeObtainDigitalMultiplierLimit(JNIEnv *env, jobject thiz,
                                                     ID_TYPE id_camera) {
     jintArray result = NULL;
@@ -1460,6 +1498,7 @@ static jint nativeGetDigitalMultiplier(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // Java method correspond to this function should not be a static method
+// 与此函数对应的 Java 方法不应是 static 方法
 static jintArray nativeObtainDigitalMultiplierLimitLimit(JNIEnv *env, jobject thiz,
                                                          ID_TYPE id_camera) {
     jintArray result = NULL;
@@ -1501,6 +1540,7 @@ static jint nativeGetDigitalMultiplierLimit(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // Java method correspond to this function should not be a static method
+// 与此函数对应的 Java 方法不应是 static 方法
 static jintArray nativeObtainAnalogVideoStandardLimit(JNIEnv *env, jobject thiz,
                                                       ID_TYPE id_camera) {
     jintArray result = NULL;
@@ -1542,6 +1582,7 @@ static jint nativeGetAnalogVideoStandard(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // Java method correspond to this function should not be a static method
+// 与此函数对应的 Java 方法不应是 static 方法
 static jintArray nativeObtainAnalogVideoLockStateLimit(JNIEnv *env, jobject thiz,
                                                        ID_TYPE id_camera) {
     jintArray result = NULL;
@@ -1583,6 +1624,7 @@ static jint nativeGetAnalogVideoLockState(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // Java method correspond to this function should not be a static method
+// 与此函数对应的 Java 方法不应是 static 方法
 static jintArray nativeObtainContrastAutoLimit(JNIEnv *env, jobject thiz,
                                                ID_TYPE id_camera) {
     jintArray result = NULL;

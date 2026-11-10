@@ -14,6 +14,8 @@ public class Format implements Parcelable, Cloneable {
     public int index;
     /**
      * format type: mjpeg, uncompressed etc.
+     *
+     * 格式类型：mjpeg、uncompressed 等
      */
     public int type;
     public List<Descriptor> frameDescriptors;
@@ -85,6 +87,8 @@ public class Format implements Parcelable, Cloneable {
         public int index;
         /**
          * frame type: mjpeg, uncompressed etc.
+         *
+         * 帧类型：mjpeg、uncompressed 等
          */
         public int type;
         public int width;
@@ -95,6 +99,8 @@ public class Format implements Parcelable, Cloneable {
 
         /**
          * constructor
+         *
+         * 构造函数
          */
         public Descriptor(final int _index, final int _type, final int _width, final int _height, final int _fps, final int _frameInterval, final List<Interval> _intervals) {
             index = _index;

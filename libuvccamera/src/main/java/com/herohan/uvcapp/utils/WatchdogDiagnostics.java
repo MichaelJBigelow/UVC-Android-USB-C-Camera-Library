@@ -7,6 +7,8 @@ import java.util.List;
 
 /**
  * Class to give diagnostic messages for Watchdogs.
+ *
+ * 用于给出 Watchdog 诊断信息的类。
  */
 class WatchdogDiagnostics {
     private static String getBlockedOnString(Object blockedOn) {
@@ -25,6 +27,7 @@ class WatchdogDiagnostics {
             Thread blockedThread = blockedCheckers.get(i).getThread();
 
             // Fall back to "regular" stack trace, if necessary.
+            // 如有必要,回退到"常规"堆栈跟踪。
             Log.w(Watchdog.TAG, blockedThread.getName() + " stack trace:");
             StackTraceElement[] stackTrace = blockedThread.getStackTrace();
             for (StackTraceElement element : stackTrace) {

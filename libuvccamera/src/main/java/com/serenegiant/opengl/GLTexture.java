@@ -29,7 +29,9 @@ import android.text.TextUtils;
 import java.io.IOException;
 
 /**
- * OpenGL|ESのテクスチャ操作用のヘルパークラス
+ * Helper class for OpenGL|ES texture operations
+ *
+ * OpenGL|ES 纹理操作辅助类
  */
 public class GLTexture implements ITexture {
 //	private static final boolean DEBUG = false;	// FIXME 実働時はfalseにすること
@@ -38,37 +40,45 @@ public class GLTexture implements ITexture {
 	/* package */final int mTextureTarget;
 	/* package */final int mTextureUnit ;
 	/* package */int mTextureId;
-	/* package */final float[] mTexMatrix = new float[16];	// テクスチャ変換行列
+	/* package */final float[] mTexMatrix = new float[16];	// Texture transform matrix / 纹理变换矩阵
 	/* package */int mTexWidth, mTexHeight;
 	/* package */int mImageWidth, mImageHeight;
 	
 	/**
-	 * コンストラクタ
-	 * テクスチャユニットが常時GL_TEXTURE0なので複数のテクスチャを同時に使えない
-	 * @param width テクスチャサイズ
-	 * @param height テクスチャサイズ
-	 * @param filter_param	テクスチャの補間方法を指定 GL_LINEARとかGL_NEAREST
+	 * Constructor
+	 * The texture unit is always GL_TEXTURE0, so multiple textures cannot be used at the same time
+	 *
+	 * 构造函数
+	 * 纹理单元始终为 GL_TEXTURE0，因此无法同时使用多个纹理
+	 * @param width Texture size / 纹理尺寸
+	 * @param height Texture size / 纹理尺寸
+	 * @param filter_param	Specifies the texture interpolation method, e.g. GL_LINEAR or GL_NEAREST / 指定纹理插值方式，例如 GL_LINEAR 或 GL_NEAREST
 	 */
 	public GLTexture(final int width, final int height, final int filter_param) {
 		this(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE0, width, height, filter_param);
 	}
 	
 	/**
-	 * コンストラクタ
-	 * @param texTarget GL_TEXTURE_EXTERNAL_OESはだめ
+	 * Constructor
+	 *
+	 * 构造函数
+	 * @param texTarget GL_TEXTURE_EXTERNAL_OES is not allowed / 不能使用 GL_TEXTURE_EXTERNAL_OES
 	 * @param texUnit
-	 * @param width テクスチャサイズ
-	 * @param height テクスチャサイズ
-	 * @param filter_param	テクスチャの補間方法を指定 GL_LINEARとかGL_NEAREST
+	 * @param width Texture size / 纹理尺寸
+	 * @param height Texture size / 纹理尺寸
+	 * @param filter_param	Specifies the texture interpolation method, e.g. GL_LINEAR or GL_NEAREST / 指定纹理插值方式，例如 GL_LINEAR 或 GL_NEAREST
 	 */
 	public GLTexture(final int texTarget, final int texUnit,
 		final int width, final int height, final int filter_param) {
 //		if (DEBUG) Log.v(TAG, String.format("コンストラクタ(%d,%d)", width, height));
 		mTextureTarget = texTarget;
 		mTextureUnit = texUnit;
-		// テクスチャに使うビットマップは縦横サイズが2の乗数でないとダメ。
-		// 更に、ミップマップするなら正方形でないとダメ
-		// 指定したwidth/heightと同じか大きい2の乗数にする
+		// The bitmap used for the texture must have power-of-two width and height.
+		// Furthermore, if mipmapping is used, it must be square.
+		// Round up to a power of two that is equal to or larger than the specified width/height
+		// 用于纹理的位图，其宽高必须是 2 的幂。
+		// 此外，如果要使用 mipmap，则必须是正方形。
+		// 取大于或等于指定 width/height 的 2 的幂
 		int w = 32;
 		for (; w < width; w <<= 1);
 		int h = 32;
@@ -79,16 +89,18 @@ public class GLTexture implements ITexture {
 		}
 //		if (DEBUG) Log.v(TAG, String.format("texSize(%d,%d)", mTexWidth, mTexHeight));
 		mTextureId = GLHelper.initTex(mTextureTarget, filter_param);
-		// テクスチャのメモリ領域を確保する
+		// Allocate memory for the texture
+		// 为纹理分配内存
 		GLES20.glTexImage2D(mTextureTarget,
-			0,							// ミップマップレベル0(ミップマップしない)
-			GLES20.GL_RGBA,				// 内部フォーマット
-			mTexWidth, mTexHeight,		// サイズ
-			0,							// 境界幅
-			GLES20.GL_RGBA,				// 引き渡すデータのフォーマット
-			GLES20.GL_UNSIGNED_BYTE,	// データの型
-			null);						// ピクセルデータ無し
-		// テクスチャ変換行列を初期化
+			0,							// Mipmap level 0 (no mipmap) / Mipmap 级别 0（不使用 mipmap）
+			GLES20.GL_RGBA,				// Internal format / 内部格式
+			mTexWidth, mTexHeight,		// Size / 尺寸
+			0,							// Border width / 边框宽度
+			GLES20.GL_RGBA,				// Format of the supplied data / 传入数据的格式
+			GLES20.GL_UNSIGNED_BYTE,	// Data type / 数据类型
+			null);						// No pixel data / 无像素数据
+		// Initialize the texture transform matrix
+		// 初始化纹理变换矩阵
 		Matrix.setIdentityM(mTexMatrix, 0);
 		mTexMatrix[0] = width / (float)mTexWidth;
 		mTexMatrix[5] = height / (float)mTexHeight;
@@ -98,15 +110,18 @@ public class GLTexture implements ITexture {
 	@Override
 	protected void finalize() throws Throwable {
 		try {
-			release();	// GLコンテキスト内じゃない可能性があるのであまり良くないけど
+			release();	// Not ideal, since we may not be inside a GL context / 不太理想，因为此时可能不在 GL 上下文中
 		} finally {
 			super.finalize();
 		}
 	}
 
 	/**
-	 * テクスチャを破棄
-	 * GLコンテキスト/EGLレンダリングコンテキスト内で呼び出すこと
+	 * Destroys the texture
+	 * Must be called inside a GL context / EGL rendering context
+	 *
+	 * 销毁纹理
+	 * 必须在 GL 上下文/EGL 渲染上下文中调用
 	 */
 	@Override
 	public void release() {
@@ -118,46 +133,58 @@ public class GLTexture implements ITexture {
 	}
 
 	/**
-	 * このインスタンスで管理しているテクスチャを有効にする(バインドする)
+	 * Enables (binds) the texture managed by this instance
+	 *
+	 * 启用（绑定）此实例所管理的纹理
 	 */
 	@Override
 	public void bind() {
 //		if (DEBUG) Log.v(TAG, "bind:");
-		GLES20.glActiveTexture(mTextureUnit);	// テクスチャユニットを選択
+		GLES20.glActiveTexture(mTextureUnit);	// Select the texture unit / 选择纹理单元
 		GLES20.glBindTexture(mTextureTarget, mTextureId);
 	}
 
 	/**
-	 * このインスタンスで管理しているテクスチャを無効にする(アンバインドする)
+	 * Disables (unbinds) the texture managed by this instance
+	 *
+	 * 禁用（解绑）此实例所管理的纹理
 	 */
 	@Override
 	public void unbind() {
 //		if (DEBUG) Log.v(TAG, "unbind:");
-		GLES20.glActiveTexture(mTextureUnit);	// テクスチャユニットを選択
+		GLES20.glActiveTexture(mTextureUnit);	// Select the texture unit / 选择纹理单元
 		GLES20.glBindTexture(mTextureTarget, 0);
 	}
 
 	/**
-	 * テクスチャターゲットを取得(GL_TEXTURE_2D)
+	 * Gets the texture target (GL_TEXTURE_2D)
+	 *
+	 * 获取纹理目标（GL_TEXTURE_2D）
 	 * @return
 	 */
 	@Override
 	public int getTexTarget() { return mTextureTarget; }
 	/**
-	 * テクスチャ名を取得
+	 * Gets the texture name
+	 *
+	 * 获取纹理名
 	 * @return
 	 */
 	@Override
 	public int getTexture() { return mTextureId; }
 	/**
-	 * テクスチャ座標変換行列を取得(内部配列をそのまま返すので変更時は要注意)
+	 * Gets the texture coordinate transform matrix (the internal array is returned as is, so be careful when modifying it)
+	 *
+	 * 获取纹理坐标变换矩阵（直接返回内部数组，修改时需格外小心）
 	 * @return
 	 */
 	@Override
 	public float[] getTexMatrix() { return mTexMatrix; }
 	/**
-	 * テクスチャ座標変換行列のコピーを取得
-	 * @param matrix 領域チェックしていないのでoffset位置から16個以上確保しておくこと
+	 * Gets a copy of the texture coordinate transform matrix
+	 *
+	 * 获取纹理坐标变换矩阵的副本
+	 * @param matrix The size is not checked, so reserve at least 16 elements from the offset position / 不会检查大小，因此需从 offset 位置起预留至少 16 个元素
 	 * @param offset
 	 */
 	@Override
@@ -165,21 +192,28 @@ public class GLTexture implements ITexture {
 		System.arraycopy(mTexMatrix, 0, matrix, offset, mTexMatrix.length);
 	}
 	/**
-	 * テクスチャ幅を取得
+	 * Gets the texture width
+	 *
+	 * 获取纹理宽度
 	 * @return
 	 */
 	@Override
 	public int getTexWidth() { return mTexWidth; }
 	/**
-	 * テクスチャ高さを取得
+	 * Gets the texture height
+	 *
+	 * 获取纹理高度
 	 * @return
 	 */
 	@Override
 	public int getTexHeight() { return mTexHeight; }
 
 	/**
-	 * 指定したファイルから画像をテクスチャに読み込む
-	 * ファイルが存在しないか読み込めなければIOException/NullPointerExceptionを生成
+	 * Loads an image from the specified file into the texture
+	 * Throws IOException/NullPointerException if the file does not exist or cannot be read
+	 *
+	 * 将指定文件中的图像加载到纹理中
+	 * 如果文件不存在或无法读取，则抛出 IOException/NullPointerException
 	 * @param filePath
 	 */
 	@Override
@@ -188,12 +222,13 @@ public class GLTexture implements ITexture {
 		if (TextUtils.isEmpty(filePath))
 			throw new NullPointerException("image file path should not be a null");
 		final BitmapFactory.Options options = new BitmapFactory.Options();
-		options.inJustDecodeBounds = true;	// Bitmapを生成せずにサイズ等の情報だけを取得する
+		options.inJustDecodeBounds = true;	// Get only information such as size without creating a Bitmap / 不生成 Bitmap，仅获取尺寸等信息
 		BitmapFactory.decodeFile(filePath, options);
-		// テキスチャサイズ内に指定したイメージが収まるためのサブサンプリングを値を求める
+		// Calculate the subsampling value so that the specified image fits within the texture size
+		// 计算子采样值，使指定图像能放入纹理尺寸内
 		final int imageWidth = options.outWidth;
 		final int imageHeight = options.outHeight;
-		int inSampleSize = 1;	// サブサンプリングサイズ
+		int inSampleSize = 1;	// Subsampling size / 子采样大小
 		if ((imageHeight > mTexHeight) || (imageWidth > mTexWidth)) {
 			if (imageWidth > imageHeight) {
 				inSampleSize = (int)Math.ceil(imageHeight / (float)mTexHeight);
@@ -203,24 +238,28 @@ public class GLTexture implements ITexture {
 		}
 //		if (DEBUG) Log.v(TAG, String.format("image(%d,%d),tex(%d,%d),inSampleSize=%d",
 // 			imageWidth, imageHeight, mTexWidth, mTexHeight, inSampleSize));
-		// 実際の読み込み処理
+		// The actual loading process
+		// 实际的加载处理
 		options.inSampleSize = inSampleSize;
 		options.inJustDecodeBounds = false;
 		loadTexture(BitmapFactory.decodeFile(filePath, options));
 	}
 	
 	/**
-	 * 指定したビットマップをテクスチャに読み込む
+	 * Loads the specified bitmap into the texture
+	 *
+	 * 将指定的位图加载到纹理中
  	 * @param bitmap
 	 */
 	public void loadTexture(final Bitmap bitmap) throws NullPointerException {
-		mImageWidth = bitmap.getWidth();	// 読み込んだイメージのサイズを取得
+		mImageWidth = bitmap.getWidth();	// Get the size of the loaded image / 获取已加载图像的尺寸
 		mImageHeight = bitmap.getHeight();
 		Bitmap texture = Bitmap.createBitmap(mTexWidth, mTexHeight, Bitmap.Config.ARGB_8888);
 		final Canvas canvas = new Canvas(texture);
 		canvas.drawBitmap(bitmap, 0, 0, null);
 		bitmap.recycle();
-		// テクスチャ座標変換行列を設定(読み込んだイメージサイズがテクスチャサイズにフィットするようにスケール変換)
+		// Set the texture coordinate transform matrix (scaled so that the loaded image size fits the texture size)
+		// 设置纹理坐标变换矩阵（进行缩放变换，使已加载图像的尺寸适配纹理尺寸）
 		Matrix.setIdentityM(mTexMatrix, 0);
 		mTexMatrix[0] = mImageWidth / (float)mTexWidth;
 		mTexMatrix[5] = mImageHeight / (float)mTexHeight;

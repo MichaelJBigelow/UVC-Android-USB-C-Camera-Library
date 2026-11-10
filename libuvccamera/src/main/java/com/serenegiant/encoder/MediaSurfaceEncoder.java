@@ -35,11 +35,12 @@ import android.view.Surface;
 import com.serenegiant.uvccamera.BuildConfig;
 
 public class MediaSurfaceEncoder extends MediaEncoder implements IVideoEncoder {
-    private static final boolean DEBUG = BuildConfig.DEBUG;    // TODO set false on release
+    private static final boolean DEBUG = BuildConfig.DEBUG;    // TODO set false on release / 发布时请设为 false
     private static final String TAG = "MediaSurfaceEncoder";
 
     private static final String MIME_TYPE = "video/avc";
     // parameters for recording
+    // 录制参数
     private final int mWidth, mHeight;
     protected int mColorFormat;
     private static final int FRAME_RATE = 25;
@@ -67,7 +68,7 @@ public class MediaSurfaceEncoder extends MediaEncoder implements IVideoEncoder {
         if (DEBUG) Log.i(TAG, "selected codec: " + videoCodecInfo.getName());
 
         final MediaFormat format = MediaFormat.createVideoFormat(MIME_TYPE, mWidth, mHeight);
-        format.setInteger(MediaFormat.KEY_COLOR_FORMAT, mColorFormat);    // API >= 18
+        format.setInteger(MediaFormat.KEY_COLOR_FORMAT, mColorFormat);    // API >= 18 / 需要 API >= 18
         format.setInteger(MediaFormat.KEY_BIT_RATE, calcBitRate());
         format.setInteger(MediaFormat.KEY_FRAME_RATE, FRAME_RATE);
         format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, I_FRAME_INTERVAL);
@@ -77,7 +78,9 @@ public class MediaSurfaceEncoder extends MediaEncoder implements IVideoEncoder {
         mMediaCodec.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
         // get Surface for encoder input
         // this method only can call between #configure and #start
-        mSurface = mMediaCodec.createInputSurface();    // API >= 18
+        // 获取编码器输入用的 Surface
+        // 此方法只能在 #configure 与 #start 之间调用
+        mSurface = mMediaCodec.createInputSurface();    // API >= 18 / 需要 API >= 18
         mMediaCodec.start();
         if (DEBUG) Log.i(TAG, "prepare finishing");
         if (mListener != null) {
@@ -98,21 +101,26 @@ public class MediaSurfaceEncoder extends MediaEncoder implements IVideoEncoder {
     /**
      * select the first codec that match a specific MIME type
      *
+     * 选择第一个匹配指定 MIME 类型的编解码器
+     *
      * @param mimeType
-     * @return null if no codec matched
+     *
+     * @return null if no codec matched / 没有匹配的编解码器时返回 null
      */
     protected final MediaCodecInfo selectVideoCodec(final String mimeType) {
         if (DEBUG) Log.v(TAG, "selectVideoCodec:");
 
         // get the list of available codecs
+        // 获取可用编解码器列表
         final int numCodecs = MediaCodecList.getCodecCount();
         for (int i = 0; i < numCodecs; i++) {
             final MediaCodecInfo codecInfo = MediaCodecList.getCodecInfoAt(i);
 
-            if (!codecInfo.isEncoder()) {    // skipp decoder
+            if (!codecInfo.isEncoder()) {    // skipp decoder / 跳过解码器
                 continue;
             }
             // select first codec that match a specific MIME type and color format
+            // 选择第一个匹配指定 MIME 类型和颜色格式的编解码器
             final String[] types = codecInfo.getSupportedTypes();
             for (String type : types) {
                 if (type.equalsIgnoreCase(mimeType)) {
@@ -131,7 +139,9 @@ public class MediaSurfaceEncoder extends MediaEncoder implements IVideoEncoder {
     /**
      * select color format available on specific codec and we can use.
      *
-     * @return 0 if no colorFormat is matched
+     * 选择指定编解码器支持且我们可以使用的颜色格式。
+     *
+     * @return 0 if no colorFormat is matched / 没有匹配的颜色格式时返回 0
      */
     protected static int selectColorFormat(final MediaCodecInfo codecInfo, final String mimeType) {
         if (DEBUG) Log.i(TAG, "selectColorFormat: ");
@@ -159,6 +169,8 @@ public class MediaSurfaceEncoder extends MediaEncoder implements IVideoEncoder {
 
     /**
      * color formats that we can use in this class
+     *
+     * 此类中可以使用的颜色格式
      */
     protected static int[] recognizedFormats;
 

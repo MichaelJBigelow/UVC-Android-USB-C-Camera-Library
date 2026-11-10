@@ -19,7 +19,9 @@ package com.serenegiant.widget;
 */
 
 /**
- * アスペクト比を一定に保つView用のインターフェースを定義
+ * Defines an interface for a View that keeps its aspect ratio constant
+ *
+ * 定义用于保持宽高比恒定的 View 的接口
  */
 public interface IAspectRatioView {
 	public void setAspectRatio(double aspectRatio);

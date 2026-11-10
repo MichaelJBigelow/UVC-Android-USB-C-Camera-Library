@@ -101,12 +101,15 @@ public class VideoFormatDialogFragment extends DialogFragment {
 
     private void showAllSpinner() {
         // Format Spinner
+        // 格式下拉框
         refreshFormatSpinner();
 
         // Resolution Spinner
+        // 分辨率下拉框
         refreshResolutionSpinner();
 
         // Frame Rate Spinner
+        // 帧率下拉框
         refreshFrameRateSpinner();
     }
 
@@ -152,6 +155,7 @@ public class VideoFormatDialogFragment extends DialogFragment {
 
     private void setListeners() {
         // Set listener of Format
+        // 设置格式的监听器
         spVideoFormatFormat.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -169,6 +173,7 @@ public class VideoFormatDialogFragment extends DialogFragment {
             }
         });
         // Set listener of Resolution
+        // 设置分辨率的监听器
         spVideoFormatResolution.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -188,6 +193,7 @@ public class VideoFormatDialogFragment extends DialogFragment {
             }
         });
         // Set listener of Format Rate
+        // 设置帧率的监听器
         spVideoFormatFrameRate.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {

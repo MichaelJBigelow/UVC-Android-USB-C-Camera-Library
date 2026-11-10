@@ -11,19 +11,26 @@ import androidx.annotation.Nullable;
 
 /**
  * Utility class for video recording related operations.
+ *
+ * 与视频录制相关操作的工具类。
  */
 public final class VideoUtil {
     private static final String TAG = "VideoUtil";
 
     private VideoUtil(){}
 
-    /** Gets the absolute path from a Uri. */
+    /**
+     * Gets the absolute path from a Uri.
+     *
+     * 从 Uri 获取绝对路径。
+     */
     @Nullable
     public static String getAbsolutePathFromUri(@NonNull ContentResolver resolver,
                                                 @NonNull Uri contentUri) {
         Cursor cursor = null;
         try {
             // We should include in any Media collections.
+            // 我们应将其包含在任何媒体集合中。
             String[] proj;
             int columnIndex;
             proj = new String[]{MediaStore.Video.Media.DATA};

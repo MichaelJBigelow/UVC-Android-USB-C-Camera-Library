@@ -16,6 +16,11 @@ import java.util.List;
  * <openCamera				open device once again, open camera and start streaming
  * closeCamera>				stop streaming and close device
  * release>					release camera
+ *
+ * <selectDevice						检查 USB 权限，打开设备
+ * <openCamera				再次打开设备，打开相机并开始推流
+ * closeCamera>				停止推流并关闭设备
+ * release>					释放相机
  */
 interface ICameraConnection {
     void register(ICameraHelper.StateCallback callback);

@@ -24,13 +24,17 @@ public class ImageSaver implements Runnable {
     private static final int NOT_PENDING = 0;
 
     // The image that was captured
+    // 捕获到的图像
     private final ImageRawData mImage;
     // The compression quality level of the output JPEG image
+    // 输出 JPEG 图像的压缩质量等级
     private final int mJpegQuality;
     // The target location to save the image to.
+    // 图像的保存目标位置。
     @NonNull
     private final ImageCapture.OutputFileOptions mOutputFileOptions;
     // The callback to call on completion
+    // 完成时调用的回调
     @NonNull
     private final OnImageSavedCallback mCallback;
 
@@ -126,6 +130,8 @@ public class ImageSaver implements Runnable {
 
     /**
      * Set IS_PENDING flag to {@link ContentValues}.
+     *
+     * 为 {@link ContentValues} 设置 IS_PENDING 标志。
      */
     private void setContentValuePending(@NonNull ContentValues values, int isPending) {
         values.put(MediaStore.Images.Media.IS_PENDING, isPending);
@@ -133,6 +139,8 @@ public class ImageSaver implements Runnable {
 
     /**
      * Removes IS_PENDING flag during the writing to {@link Uri}.
+     *
+     * 在写入 {@link Uri} 的过程中移除 IS_PENDING 标志。
      */
     private void setUriNotPending(@NonNull Uri outputUri) {
         ContentValues values = new ContentValues();
@@ -143,13 +151,16 @@ public class ImageSaver implements Runnable {
     /**
      * Copies  byte array to {@link Uri}.
      *
-     * @return false if the {@link Uri} is not writable.
+     * 将字节数组复制到 {@link Uri}。
+     *
+     * @return false if the {@link Uri} is not writable. / 如果 {@link Uri} 不可写则返回 false。
      */
     private boolean copyByteArrayToUri(@NonNull byte[] data, @NonNull Uri uri) throws IOException {
         try (OutputStream outputStream =
                      mOutputFileOptions.getContentResolver().openOutputStream(uri)) {
             if (outputStream == null) {
                 // The URI is not writable.
+                // 该 URI 不可写。
                 return false;
             }
             outputStream.write(data);
@@ -160,7 +171,9 @@ public class ImageSaver implements Runnable {
     /**
      * Copies  byte array to {@link File}.
      *
-     * @return false if the {@link File} is not writable.
+     * 将字节数组复制到 {@link File}。
+     *
+     * @return false if the {@link File} is not writable. / 如果 {@link File} 不可写则返回 false。
      */
     private boolean copyByteArrayToFile(@NonNull byte[] data, @NonNull File file) throws IOException {
         try (FileOutputStream outputStream = new FileOutputStream(file)) {
@@ -171,14 +184,20 @@ public class ImageSaver implements Runnable {
 
     /**
      * Type of error that occurred during save
+     *
+     * 保存过程中发生的错误类型
      */
     public enum SaveError {
         /**
          * Failed to write to or close the file
+         *
+         * 写入或关闭文件失败
          */
         FILE_IO_FAILED,
         /**
          * Failure when attempting to encode image
+         *
+         * 尝试编码图像时失败
          */
         ENCODE_FAILED,
         UNKNOWN

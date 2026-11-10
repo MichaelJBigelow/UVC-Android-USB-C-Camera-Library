@@ -60,6 +60,7 @@ public class CameraControlsDialogFragment extends DialogFragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //transparent background
+        // 透明背景
         setStyle(STYLE_NO_TITLE, R.style.TransparentDialogFragment);
     }
 
@@ -131,6 +132,8 @@ public class CameraControlsDialogFragment extends DialogFragment {
 
     /**
      * disable feature that everything behind this window will be dimmed.
+     *
+     * 禁用“此窗口后面的所有内容都会变暗”的功能。
      */
     private void disableDimBehind() {
         Window window = getDialog().getWindow();
@@ -152,6 +155,7 @@ public class CameraControlsDialogFragment extends DialogFragment {
 
     private void setAllControlParams(UVCControl control) {
         // Brightness
+        // 亮度
         setSeekBarParams(
                 isbBrightness,
                 control.isBrightnessEnable(),
@@ -159,6 +163,7 @@ public class CameraControlsDialogFragment extends DialogFragment {
                 control.getBrightness());
 
         // Contrast
+        // 对比度
         setSeekBarParams(
                 isbContrast,
                 control.isContrastEnable(),
@@ -168,12 +173,14 @@ public class CameraControlsDialogFragment extends DialogFragment {
             isbContrast.setEnabled(false);
         }
         // Contrast Auto
+        // 自动对比度
         setCheckBoxParams(
                 cbContrastAuto,
                 control.isContrastAutoEnable(),
                 control.getContrastAuto());
 
         // Hue
+        // 色调
         setSeekBarParams(
                 isbHue,
                 control.isHueEnable(),
@@ -183,12 +190,14 @@ public class CameraControlsDialogFragment extends DialogFragment {
             isbHue.setEnabled(false);
         }
         // Hue Auto
+        // 自动色调
         setCheckBoxParams(
                 cbHueAuto,
                 control.isHueAutoEnable(),
                 control.getHueAuto());
 
         // Saturation
+        // 饱和度
         setSeekBarParams(
                 isbSaturation,
                 control.isSaturationEnable(),
@@ -196,6 +205,7 @@ public class CameraControlsDialogFragment extends DialogFragment {
                 control.getSaturation());
 
         // Sharpness
+        // 锐度
         setSeekBarParams(
                 isbSharpness,
                 control.isSharpnessEnable(),
@@ -203,6 +213,7 @@ public class CameraControlsDialogFragment extends DialogFragment {
                 control.getSharpness());
 
         // Gamma
+        // 伽马
         setSeekBarParams(
                 isbGamma,
                 control.isGammaEnable(),
@@ -210,6 +221,7 @@ public class CameraControlsDialogFragment extends DialogFragment {
                 control.getGamma());
 
         // White Balance
+        // 白平衡
         setSeekBarParams(
                 isbWhiteBalance,
                 control.isWhiteBalanceEnable(),
@@ -219,12 +231,14 @@ public class CameraControlsDialogFragment extends DialogFragment {
             isbWhiteBalance.setEnabled(false);
         }
         // White Balance Auto
+        // 自动白平衡
         setCheckBoxParams(
                 cbWhiteBalanceAuto,
                 control.isWhiteBalanceAutoEnable(),
                 control.getWhiteBalanceAuto());
 
         // Backlight Compensation
+        // 背光补偿
         setSeekBarParams(
                 isbBacklightComp,
                 control.isBacklightCompEnable(),
@@ -232,6 +246,7 @@ public class CameraControlsDialogFragment extends DialogFragment {
                 control.getBacklightComp());
 
         // Gain
+        // 增益
         setSeekBarParams(
                 isbGain,
                 control.isGainEnable(),
@@ -239,6 +254,7 @@ public class CameraControlsDialogFragment extends DialogFragment {
                 control.getGain());
 
         // Exposure Time
+        // 曝光时间
         setSeekBarParams(
                 isbExposureTime,
                 control.isExposureTimeAbsoluteEnable(),
@@ -248,12 +264,14 @@ public class CameraControlsDialogFragment extends DialogFragment {
             isbExposureTime.setEnabled(false);
         }
         // Auto-Exposure Mode
+        // 自动曝光模式
         setCheckBoxParams(
                 cbExposureTimeAuto,
                 control.isAutoExposureModeEnable(),
                 control.isExposureTimeAuto());
 
         // Iris
+        // 光圈
         setSeekBarParams(
                 isbIris,
                 control.isIrisAbsoluteEnable(),
@@ -261,6 +279,7 @@ public class CameraControlsDialogFragment extends DialogFragment {
                 control.getIrisAbsolute());
 
         // Focus
+        // 对焦
         setSeekBarParams(
                 isbFocus,
                 control.isFocusAbsoluteEnable(),
@@ -270,12 +289,14 @@ public class CameraControlsDialogFragment extends DialogFragment {
             isbFocus.setEnabled(false);
         }
         // Focus Auto
+        // 自动对焦
         setCheckBoxParams(
                 cbFocusAuto,
                 control.isFocusAutoEnable(),
                 control.getFocusAuto());
 
         // Zoom
+        // 变焦
         setSeekBarParams(
                 isbZoom,
                 control.isZoomAbsoluteEnable(),
@@ -283,6 +304,7 @@ public class CameraControlsDialogFragment extends DialogFragment {
                 control.getZoomAbsolute());
 
         // Pan
+        // 平移
         setSeekBarParams(
                 isbPan,
                 control.isPanAbsoluteEnable(),
@@ -290,6 +312,7 @@ public class CameraControlsDialogFragment extends DialogFragment {
                 control.getPanAbsolute());
 
         // Tilt
+        // 倾斜
         setSeekBarParams(
                 isbTilt,
                 control.isTiltAbsoluteEnable(),
@@ -297,6 +320,7 @@ public class CameraControlsDialogFragment extends DialogFragment {
                 control.getTiltAbsolute());
 
         // Roll
+        // 翻滚
         setSeekBarParams(
                 isbRoll,
                 control.isRollAbsoluteEnable(),
@@ -304,6 +328,7 @@ public class CameraControlsDialogFragment extends DialogFragment {
                 control.getRollAbsolute());
 
         // Power Line Frequency
+        // 电源频率
         setPowerLineFrequencyRadioGroup(
                 rgPowerLineFrequency,
                 control.isPowerlineFrequencyEnable(),
@@ -313,16 +338,20 @@ public class CameraControlsDialogFragment extends DialogFragment {
 
     private void setAllControlChangeListener(UVCControl controls) {
         // Brightness
+        // 亮度
         isbBrightness.setOnSeekChangeListener(
                 (MyOnSeekChangeListener) seekParams -> controls.setBrightness(seekParams.progress));
 
         // Contrast
+        // 对比度
         isbContrast.setOnSeekChangeListener(
                 (MyOnSeekChangeListener) seekParams -> controls.setContrast(seekParams.progress));
         // Contrast Auto
+        // 自动对比度
         cbContrastAuto.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
                 // Before enable Contrast Auto, must reset Contrast
+                // 启用自动对比度之前，必须先重置对比度
                 controls.resetContrast();
                 setSeekBarParams(
                         isbContrast,
@@ -337,12 +366,15 @@ public class CameraControlsDialogFragment extends DialogFragment {
         });
 
         // Hue
+        // 色调
         isbHue.setOnSeekChangeListener(
                 (MyOnSeekChangeListener) seekParams -> controls.setHue(seekParams.progress));
         // Hue Auto
+        // 自动色调
         cbHueAuto.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
                 // Before enable Hue Auto, must reset Hue
+                // 启用自动色调之前，必须先重置色调
                 controls.resetHue();
                 setSeekBarParams(
                         isbHue,
@@ -357,22 +389,28 @@ public class CameraControlsDialogFragment extends DialogFragment {
         });
 
         // Saturation
+        // 饱和度
         isbSaturation.setOnSeekChangeListener(
                 (MyOnSeekChangeListener) seekParams -> controls.setSaturation(seekParams.progress));
         // Sharpness
+        // 锐度
         isbSharpness.setOnSeekChangeListener(
                 (MyOnSeekChangeListener) seekParams -> controls.setSharpness(seekParams.progress));
         // Gamma
+        // 伽马
         isbGamma.setOnSeekChangeListener(
                 (MyOnSeekChangeListener) seekParams -> controls.setGamma(seekParams.progress));
 
         // White Balance
+        // 白平衡
         isbWhiteBalance.setOnSeekChangeListener(
                 (MyOnSeekChangeListener) seekParams -> controls.setWhiteBalance(seekParams.progress));
         // White Balance Auto
+        // 自动白平衡
         cbWhiteBalanceAuto.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
                 // Before enable White Balance Auto, must reset White Balance
+                // 启用自动白平衡之前，必须先重置白平衡
                 controls.resetWhiteBalance();
                 setSeekBarParams(
                         isbWhiteBalance,
@@ -387,20 +425,25 @@ public class CameraControlsDialogFragment extends DialogFragment {
         });
 
         // Backlight Compensation
+        // 背光补偿
         isbBacklightComp.setOnSeekChangeListener(
                 (MyOnSeekChangeListener) seekParams -> controls.setBacklightComp(seekParams.progress));
 
         // Gain
+        // 增益
         isbGain.setOnSeekChangeListener(
                 (MyOnSeekChangeListener) seekParams -> controls.setGain(seekParams.progress));
 
         // Exposure Time
+        // 曝光时间
         isbExposureTime.setOnSeekChangeListener(
                 (MyOnSeekChangeListener) seekParams -> controls.setExposureTimeAbsolute(seekParams.progress));
         // Exposure Time Auto
+        // 自动曝光时间
         cbExposureTimeAuto.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
                 // Before enable Exposure Time Auto, must reset Exposure Time
+                // 启用自动曝光时间之前，必须先重置曝光时间
                 controls.resetExposureTimeAbsolute();
                 setSeekBarParams(
                         isbExposureTime,
@@ -415,16 +458,20 @@ public class CameraControlsDialogFragment extends DialogFragment {
         });
 
         // Iris
+        // 光圈
         isbIris.setOnSeekChangeListener(
                 (MyOnSeekChangeListener) seekParams -> controls.setIrisAbsolute(seekParams.progress));
 
         // Focus
+        // 对焦
         isbFocus.setOnSeekChangeListener(
                 (MyOnSeekChangeListener) seekParams -> controls.setFocusAbsolute(seekParams.progress));
         // Focus Auto
+        // 自动对焦
         cbFocusAuto.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
                 // Before enable Focus Auto, must reset Focus absolute
+                // 启用自动对焦之前，必须先重置绝对对焦值
                 controls.resetFocusAbsolute();
                 setSeekBarParams(
                         isbFocus,
@@ -439,22 +486,27 @@ public class CameraControlsDialogFragment extends DialogFragment {
         });
 
         // Zoom
+        // 变焦
         isbZoom.setOnSeekChangeListener(
                 (MyOnSeekChangeListener) seekParams -> controls.setZoomAbsolute(seekParams.progress));
 
         // Pan
+        // 平移
         isbPan.setOnSeekChangeListener(
                 (MyOnSeekChangeListener) seekParams -> controls.setPanAbsolute(seekParams.progress));
 
         // Tilt
+        // 倾斜
         isbTilt.setOnSeekChangeListener(
                 (MyOnSeekChangeListener) seekParams -> controls.setTiltAbsolute(seekParams.progress));
 
         // Roll
+        // 翻滚
         isbRoll.setOnSeekChangeListener(
                 (MyOnSeekChangeListener) seekParams -> controls.setRollAbsolute(seekParams.progress));
 
         // Power Line Frequency
+        // 电源频率
         rgPowerLineFrequency.setOnCheckedChangeListener((group, checkedId) -> {
             int value = 0;
             if (checkedId == R.id.rbPowerLineFrequencyDisable) {
@@ -472,64 +524,86 @@ public class CameraControlsDialogFragment extends DialogFragment {
 
     private void resetAllControlParams(UVCControl control) {
         // Brightness
+        // 亮度
         control.resetBrightness();
 
         // Contrast
+        // 对比度
         control.resetContrast();
         // Contrast Auto
+        // 自动对比度
         control.resetContrastAuto();
 
         // Hue
+        // 色调
         control.resetHue();
         // Hue Auto
+        // 自动色调
         control.resetHueAuto();
 
         // Saturation
+        // 饱和度
         control.resetSaturation();
 
         // Sharpness
+        // 锐度
         control.resetSharpness();
 
         // Gamma
+        // 伽马
         control.resetGamma();
 
         // White Balance
+        // 白平衡
         control.resetWhiteBalance();
         // White Balance Auto
+        // 自动白平衡
         control.resetWhiteBalanceAuto();
 
         // Backlight Compensation
+        // 背光补偿
         control.resetBacklightComp();
 
         // Gain
+        // 增益
         control.resetGain();
 
         // Exposure Time
+        // 曝光时间
         control.resetExposureTimeAbsolute();
         // Auto-Exposure Mode
+        // 自动曝光模式
         control.resetAutoExposureMode();
 
         // Iris
+        // 光圈
         control.resetIrisAbsolute();
 
         // Focus
+        // 对焦
         control.resetFocusAbsolute();
         // Focus Auto
+        // 自动对焦
         control.resetFocusAuto();
 
         // Zoom
+        // 变焦
         control.resetZoomAbsolute();
 
         // Pan
+        // 平移
         control.resetPanAbsolute();
 
         // Tilt
+        // 倾斜
         control.resetTiltAbsolute();
 
         // Roll
+        // 翻滚
         control.resetRollAbsolute();
 
         // Power Line Frequency
+        // 电源频率
         control.resetPowerlineFrequency();
     }
 
@@ -555,16 +629,16 @@ public class CameraControlsDialogFragment extends DialogFragment {
         radioGroup.setEnabled(isEnable);
         if (isEnable) {
             switch (value) {
-                case 0: // Disable
+                case 0: // Disable / 禁用
                     radioGroup.check(R.id.rbPowerLineFrequencyDisable);
                     break;
-                case 1: // 50Hz
+                case 1: // 50Hz / 50Hz
                     radioGroup.check(R.id.rbPowerLineFrequency50Hz);
                     break;
-                case 2: // 60Hz
+                case 2: // 60Hz / 60Hz
                     radioGroup.check(R.id.rbPowerLineFrequency60Hz);
                     break;
-                case 3: // Auto
+                case 3: // Auto / 自动
                     radioGroup.check(R.id.rbPowerLineFrequencyAuto);
                     break;
             }

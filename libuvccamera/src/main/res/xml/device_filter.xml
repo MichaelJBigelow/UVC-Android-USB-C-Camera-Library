@@ -24,8 +24,10 @@
   -->
 
 <usb>
-	<!-- Interface Descriptors Base Class 0Eh (Video) -->
+	<!-- Interface Descriptors Base Class 0Eh (Video)
+	     接口描述符基类 0Eh（视频） -->
 	<usb-device class="14"/>
-	<!-- Interface Descriptors Base Class EFh (Miscellaneous), i.e. all other UVC devices -->
+	<!-- Interface Descriptors Base Class EFh (Miscellaneous), i.e. all other UVC devices
+	     接口描述符基类 EFh（杂项），即所有其他 UVC 设备 -->
 	<usb-device class="239" subclass="2" />
 </usb>

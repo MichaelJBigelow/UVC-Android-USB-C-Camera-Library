@@ -40,6 +40,7 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved) {
         return JNI_ERR;
     }
     // register native methods
+    // 注册 native 方法
     int result1 = register_uvccamera(env);
     int result2 = register_uvccontrol(env);
 	setVM(vm);

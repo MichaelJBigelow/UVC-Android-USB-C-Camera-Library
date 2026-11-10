@@ -41,8 +41,11 @@
 
 /**
  * set the value into the long field
- * @param env: this param should not be null
- * @param bullet_obj: this param should not be null
+ *
+ * 将值设置到 long 类型字段中
+ *
+ * @param env: this param should not be null / 此参数不应为 null
+ * @param bullet_obj: this param should not be null / 此参数不应为 null
  * @param field_name
  * @params val
  */
@@ -65,8 +68,8 @@ static jlong setField_long(JNIEnv *env, jobject java_obj, const char *field_name
 }
 
 /**
- * @param env: this param should not be null
- * @param bullet_obj: this param should not be null
+ * @param env: this param should not be null / 此参数不应为 null
+ * @param bullet_obj: this param should not be null / 此参数不应为 null
  */
 static jlong __setField_long(JNIEnv *env, jobject java_obj, jclass clazz,
                              const char *field_name, jlong val) {
@@ -84,8 +87,8 @@ static jlong __setField_long(JNIEnv *env, jobject java_obj, jclass clazz,
 }
 
 /**
- * @param env: this param should not be null
- * @param bullet_obj: this param should not be null
+ * @param env: this param should not be null / 此参数不应为 null
+ * @param bullet_obj: this param should not be null / 此参数不应为 null
  */
 jint __setField_int(JNIEnv *env, jobject java_obj, jclass clazz, const char *field_name, jint val) {
     LOGV("__setField_int:");
@@ -95,15 +98,18 @@ jint __setField_int(JNIEnv *env, jobject java_obj, jclass clazz, const char *fie
         env->SetIntField(java_obj, id, val);
     else {
         LOGE("__setField_int:field '%s' not found", field_name);
-        env->ExceptionClear();    // clear java.lang.NoSuchFieldError exception
+        env->ExceptionClear();    // clear java.lang.NoSuchFieldError exception / 清除 java.lang.NoSuchFieldError 异常
     }
     return val;
 }
 
 /**
  * set the value into int field
- * @param env: this param should not be null
- * @param java_obj: this param should not be null
+ *
+ * 将值设置到 int 类型字段中
+ *
+ * @param env: this param should not be null / 此参数不应为 null
+ * @param java_obj: this param should not be null / 此参数不应为 null
  * @param field_name
  * @params val
  */
@@ -126,6 +132,7 @@ static ID_TYPE nativeCreate(JNIEnv *env, jobject thiz) {
 }
 
 // destroy camera object of native side
+// 销毁原生层的 camera 对象
 static void nativeDestroy(JNIEnv *env, jobject thiz,
                           ID_TYPE id_camera) {
 
@@ -139,6 +146,7 @@ static void nativeDestroy(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // connect camera
+// 连接摄像头
 static jint nativeConnect(JNIEnv *env, jobject thiz, ID_TYPE id_camera, jint fd, jint quirks) {
 
     ENTER();
@@ -152,6 +160,7 @@ static jint nativeConnect(JNIEnv *env, jobject thiz, ID_TYPE id_camera, jint fd,
 }
 
 // release camera
+// 释放摄像头
 static jint nativeRelease(JNIEnv *env, jobject thiz,
                           ID_TYPE id_camera) {
 
@@ -222,6 +231,7 @@ static jobject nativeGetSupportedFormats(JNIEnv *env, jobject thiz,
 
 //======================================================================
 // set preview size
+// 设置预览尺寸
 static jint nativeSetPreviewSize(JNIEnv *env, jobject thiz,
                                  ID_TYPE id_camera, jint width, jint height,
                                  jint frameType, jint fps) {
@@ -245,7 +255,8 @@ static jint nativeStartPreview(JNIEnv *env, jobject thiz,
     RETURN(JNI_ERR, jint);
 }
 
-// プレビューを停止
+// stop preview
+// 停止预览
 static jint nativeStopPreview(JNIEnv *env, jobject thiz,
                               ID_TYPE id_camera) {
 

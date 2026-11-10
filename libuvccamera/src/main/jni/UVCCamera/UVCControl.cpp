@@ -21,6 +21,8 @@
 //**********************************************************************
 /**
  * constructor
+ *
+ * 构造函数
  */
 UVCControl::UVCControl(uvc_device_handle_t *devh)
         : mDeviceHandle(devh),
@@ -35,6 +37,8 @@ UVCControl::UVCControl(uvc_device_handle_t *devh)
 
 /**
  * destructor
+ *
+ * 析构函数
  */
 UVCControl::~UVCControl() {
     ENTER();
@@ -93,12 +97,14 @@ void UVCControl::clearControlParams() {
 
 //======================================================================
 // Get the bmControls ( a entry of bit set )  of Camera Terminal (CT) that is supported  by the camera
+// 获取相机支持的相机终端（CT）的 bmControls（位集合条目）
 int UVCControl::getCameraTerminalControls(uint64_t *supports) {
     ENTER();
     uvc_error_t ret = UVC_ERROR_NOT_FOUND;
     if (LIKELY(mDeviceHandle)) {
         if (!mCTControls) {
             // Get camera terminal descriptor for the open device, and return bmControls of the descriptor
+            // 获取已打开设备的相机终端描述符，并返回该描述符的 bmControls
             const uvc_input_terminal_t *it = uvc_get_camera_terminal(mDeviceHandle);
             if (it != NULL) {
                 mCTControls = it->bmControls;
@@ -114,12 +120,14 @@ int UVCControl::getCameraTerminalControls(uint64_t *supports) {
 }
 
 // Get the bmControls ( a entry of bit set )  of Processing Unit (PU) that is supported  by the camera
+// 获取相机支持的处理单元（PU）的 bmControls（位集合条目）
 int UVCControl::getProcessingUnitControls(uint64_t *supports) {
     ENTER();
     uvc_error_t ret = UVC_ERROR_NOT_FOUND;
     if (LIKELY(mDeviceHandle)) {
         if (!mPUControls) {
             // get processing units linked list, and return bmControls of the first item
+            // 获取处理单元链表，并返回第一项的 bmControls
             const uvc_processing_unit_t *proc_units = uvc_get_processing_units(mDeviceHandle);
             const uvc_processing_unit_t *pu;
             DL_FOREACH(proc_units, pu) {
@@ -464,6 +472,7 @@ int UVCControl::internalSetCtrlValue(control_value_t &values, int8_t value,
                                      paramget_func_i8 get_func, paramset_func_i8 set_func) {
     int ret = update_ctrl_values(mDeviceHandle, values, get_func);
     // When the minimum and maximum values are obtained successfully
+    // 成功获取最小值和最大值时
     if (LIKELY(!ret)) {
         value = value < values.min
                 ? values.min
@@ -477,6 +486,7 @@ int UVCControl::internalSetCtrlValue(control_value_t &values, uint8_t value,
                                      paramget_func_u8 get_func, paramset_func_u8 set_func) {
     int ret = update_ctrl_values(mDeviceHandle, values, get_func);
     // When the minimum and maximum values are obtained successfully
+    // 成功获取最小值和最大值时
     if (LIKELY(!ret)) {
         value = value < values.min
                 ? values.min
@@ -490,6 +500,7 @@ int UVCControl::internalSetCtrlValue(control_value_t &values, uint8_t value1, ui
                                      paramget_func_u8u8 get_func, paramset_func_u8u8 set_func) {
     int ret = update_ctrl_values(mDeviceHandle, values, get_func);
     // When the minimum and maximum values are obtained successfully
+    // 成功获取最小值和最大值时
     if (LIKELY(!ret)) {
         uint8_t v1min = (uint8_t) ((values.min >> 8) & 0xff);
         uint8_t v2min = (uint8_t) (values.min & 0xff);
@@ -510,6 +521,7 @@ int UVCControl::internalSetCtrlValue(control_value_t &values, int8_t value1, uin
                                      paramget_func_i8u8 get_func, paramset_func_i8u8 set_func) {
     int ret = update_ctrl_values(mDeviceHandle, values, get_func);
     // When the minimum and maximum values are obtained successfully
+    // 成功获取最小值和最大值时
     if (LIKELY(!ret)) {
         int8_t v1min = (int8_t) ((values.min >> 8) & 0xff);
         uint8_t v2min = (uint8_t) (values.min & 0xff);
@@ -531,6 +543,7 @@ int UVCControl::internalSetCtrlValue(control_value_t &values, int8_t value1, uin
                                      paramget_func_i8u8u8 get_func, paramset_func_i8u8u8 set_func) {
     int ret = update_ctrl_values(mDeviceHandle, values, get_func);
     // When the minimum and maximum values are obtained successfully
+    // 成功获取最小值和最大值时
     if (LIKELY(!ret)) {
         int8_t v1min = (int8_t) ((values.min >> 16) & 0xff);
         uint8_t v2min = (uint8_t) ((values.min >> 8) & 0xff);
@@ -556,6 +569,7 @@ int UVCControl::internalSetCtrlValue(control_value_t &values, int16_t value,
                                      paramget_func_i16 get_func, paramset_func_i16 set_func) {
     int ret = update_ctrl_values(mDeviceHandle, values, get_func);
     // When the minimum and maximum values are obtained successfully
+    // 成功获取最小值和最大值时
     if (LIKELY(!ret)) {
         value = value < values.min
                 ? values.min
@@ -569,6 +583,7 @@ int UVCControl::internalSetCtrlValue(control_value_t &values, uint16_t value,
                                      paramget_func_u16 get_func, paramset_func_u16 set_func) {
     int ret = update_ctrl_values(mDeviceHandle, values, get_func);
     // When the minimum and maximum values are obtained successfully
+    // 成功获取最小值和最大值时
     if (LIKELY(!ret)) {
         value = value < values.min
                 ? values.min
@@ -582,6 +597,7 @@ int UVCControl::internalSetCtrlValue(control_value_t &values, int32_t value,
                                      paramget_func_i32 get_func, paramset_func_i32 set_func) {
     int ret = update_ctrl_values(mDeviceHandle, values, get_func);
     // When the minimum and maximum values are obtained successfully
+    // 成功获取最小值和最大值时
     if (LIKELY(!ret)) {
         value = value < values.min
                 ? values.min
@@ -595,6 +611,7 @@ int UVCControl::internalSetCtrlValue(control_value_t &values, uint32_t value,
                                      paramget_func_u32 get_func, paramset_func_u32 set_func) {
     int ret = update_ctrl_values(mDeviceHandle, values, get_func);
     // When the minimum and maximum values are obtained successfully
+    // 成功获取最小值和最大值时
     if (LIKELY(!ret)) {
         value = value < values.min
                 ? values.min
@@ -606,6 +623,7 @@ int UVCControl::internalSetCtrlValue(control_value_t &values, uint32_t value,
 
 //======================================================================
 // Obtain limit of Scanning Mode
+// 获取扫描模式的限值
 int UVCControl::obtainScanningModeLimit(int &min, int &max, int &def) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -616,6 +634,7 @@ int UVCControl::obtainScanningModeLimit(int &min, int &max, int &def) {
 }
 
 // Set Scanning Mode
+// 设置扫描模式
 int UVCControl::setScanningMode(int mode) {
     ENTER();
     int r = UVC_ERROR_ACCESS;
@@ -633,6 +652,7 @@ int UVCControl::setScanningMode(int mode) {
 }
 
 // get value of Scanning Mode
+// 获取扫描模式的值
 int UVCControl::getScanningMode() {
 
     ENTER();
@@ -650,6 +670,7 @@ int UVCControl::getScanningMode() {
 
 //======================================================================
 // Obtain limit of Auto Exposure Mode
+// 获取自动曝光模式的限值
 int UVCControl::obtainAutoExposureModeLimit(int &min, int &max, int &def) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -660,6 +681,7 @@ int UVCControl::obtainAutoExposureModeLimit(int &min, int &max, int &def) {
 }
 
 // Set Auto Exposure Mode
+// 设置自动曝光模式
 int UVCControl::setAutoExposureMode(int mode) {
     ENTER();
     int r = UVC_ERROR_ACCESS;
@@ -677,6 +699,7 @@ int UVCControl::setAutoExposureMode(int mode) {
 }
 
 // Get value of Auto Exposure Mode
+// 获取自动曝光模式的值
 int UVCControl::getAutoExposureMode() {
 
     ENTER();
@@ -694,6 +717,7 @@ int UVCControl::getAutoExposureMode() {
 
 //======================================================================
 // Obtain limit of Auto Exposure Priority
+// 获取自动曝光优先级的限值
 int UVCControl::obtainAutoExposurePriorityLimit(int &min, int &max, int &def) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -704,6 +728,7 @@ int UVCControl::obtainAutoExposurePriorityLimit(int &min, int &max, int &def) {
 }
 
 // Set Auto Exposure Priority
+// 设置自动曝光优先级
 int UVCControl::setAutoExposurePriority(int priority) {
     ENTER();
     int r = UVC_ERROR_ACCESS;
@@ -721,6 +746,7 @@ int UVCControl::setAutoExposurePriority(int priority) {
 }
 
 // Get value of Auto Exposure Priority
+// 获取自动曝光优先级的值
 int UVCControl::getAutoExposurePriority() {
 
     ENTER();
@@ -738,6 +764,7 @@ int UVCControl::getAutoExposurePriority() {
 
 //======================================================================
 // Obtain limit of Exposure Time (Absolute)
+// 获取曝光时间（绝对值）的限值
 int UVCControl::obtainExposureTimeAbsoluteLimit(int &min, int &max, int &def) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -748,6 +775,7 @@ int UVCControl::obtainExposureTimeAbsoluteLimit(int &min, int &max, int &def) {
 }
 
 // Set Exposure Time (Absolute)
+// 设置曝光时间（绝对值）
 int UVCControl::setExposureTimeAbsolute(int time) {
     ENTER();
     int r = UVC_ERROR_ACCESS;
@@ -765,6 +793,7 @@ int UVCControl::setExposureTimeAbsolute(int time) {
 }
 
 // Get value of Exposure Time (Absolute)
+// 获取曝光时间（绝对值）的值
 int UVCControl::getExposureTimeAbsolute() {
 
     ENTER();
@@ -782,6 +811,7 @@ int UVCControl::getExposureTimeAbsolute() {
 
 //======================================================================
 // Obtain limit of Exposure Time (Relative)
+// 获取曝光时间（相对值）的限值
 int UVCControl::obtainExposureTimeRelativeLimit(int &min, int &max, int &def) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -792,6 +822,7 @@ int UVCControl::obtainExposureTimeRelativeLimit(int &min, int &max, int &def) {
 }
 
 // Set Exposure Time (Relative)
+// 设置曝光时间（相对值）
 int UVCControl::setExposureTimeRelative(int ae_rel) {
     ENTER();
     int r = UVC_ERROR_ACCESS;
@@ -809,6 +840,7 @@ int UVCControl::setExposureTimeRelative(int ae_rel) {
 }
 
 // Get value of Exposure Time (Relative)
+// 获取曝光时间（相对值）的值
 int UVCControl::getExposureTimeRelative() {
 
     ENTER();
@@ -826,6 +858,7 @@ int UVCControl::getExposureTimeRelative() {
 
 //======================================================================
 // Obtain limit of Focus (Absolute)
+// 获取对焦（绝对值）的限值
 int UVCControl::obtainFocusAbsoluteLimit(int &min, int &max, int &def) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -836,6 +869,7 @@ int UVCControl::obtainFocusAbsoluteLimit(int &min, int &max, int &def) {
 }
 
 // Set Focus (Absolute)
+// 设置对焦（绝对值）
 int UVCControl::setFocusAbsolute(int focus) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -852,6 +886,7 @@ int UVCControl::setFocusAbsolute(int focus) {
 }
 
 // Get value of Focus (Absolute)
+// 获取对焦（绝对值）的值
 int UVCControl::getFocusAbsolute() {
     ENTER();
     if (mCTControls & CT_FOCUS_ABSOLUTE_CONTROL) {
@@ -868,6 +903,7 @@ int UVCControl::getFocusAbsolute() {
 
 //======================================================================
 // Obtain limit of Focus (Relative)
+// 获取对焦（相对值）的限值
 int UVCControl::obtainFocusRelativeLimit(int &min, int &max, int &def) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -878,6 +914,7 @@ int UVCControl::obtainFocusRelativeLimit(int &min, int &max, int &def) {
 }
 
 // Set Focus (Relative)
+// 设置对焦（相对值）
 int UVCControl::setFocusRelative(int focus_rel) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -896,6 +933,7 @@ int UVCControl::setFocusRelative(int focus_rel) {
 }
 
 // Get value of Focus (Relative)
+// 获取对焦（相对值）的值
 int UVCControl::getFocusRelative() {
     ENTER();
     if (mCTControls & CT_FOCUS_RELATIVE_CONTROL) {
@@ -913,6 +951,7 @@ int UVCControl::getFocusRelative() {
 
 //======================================================================
 // Obtain limit of Iris (Absolute)
+// 获取光圈（绝对值）的限值
 int UVCControl::obtainIrisAbsoluteLimit(int &min, int &max, int &def) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -923,6 +962,7 @@ int UVCControl::obtainIrisAbsoluteLimit(int &min, int &max, int &def) {
 }
 
 // Set Iris (Absolute)
+// 设置光圈（绝对值）
 int UVCControl::setIrisAbsolute(int iris) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -939,6 +979,7 @@ int UVCControl::setIrisAbsolute(int iris) {
 }
 
 // Get value of Iris (Absolute)
+// 获取光圈（绝对值）的值
 int UVCControl::getIrisAbsolute() {
     ENTER();
     if (mCTControls & CT_IRIS_ABSOLUTE_CONTROL) {
@@ -955,6 +996,7 @@ int UVCControl::getIrisAbsolute() {
 
 //======================================================================
 // Obtain limit of Iris (Relative)
+// 获取光圈（相对值）的限值
 int UVCControl::obtainIrisRelativeLimit(int &min, int &max, int &def) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -965,6 +1007,7 @@ int UVCControl::obtainIrisRelativeLimit(int &min, int &max, int &def) {
 }
 
 // Set Iris (Relative)
+// 设置光圈（相对值）
 int UVCControl::setIrisRelative(int iris_rel) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -981,6 +1024,7 @@ int UVCControl::setIrisRelative(int iris_rel) {
 }
 
 // Get value of Iris (Relative)
+// 获取光圈（相对值）的值
 int UVCControl::getIrisRelative() {
     ENTER();
     if (mCTControls & CT_IRIS_RELATIVE_CONTROL) {
@@ -997,6 +1041,7 @@ int UVCControl::getIrisRelative() {
 
 //======================================================================
 // Obtain limit of Zoom (Absolute)
+// 获取变焦（绝对值）的限值
 int UVCControl::obtainZoomAbsoluteLimit(int &min, int &max, int &def) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -1007,6 +1052,7 @@ int UVCControl::obtainZoomAbsoluteLimit(int &min, int &max, int &def) {
 }
 
 // Set Zoom (Absolute)
+// 设置变焦（绝对值）
 int UVCControl::setZoomAbsolute(int zoom) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -1023,6 +1069,7 @@ int UVCControl::setZoomAbsolute(int zoom) {
 }
 
 // Get value of Zoom (Absolute)
+// 获取变焦（绝对值）的值
 int UVCControl::getZoomAbsolute() {
     ENTER();
     if (mCTControls & CT_ZOOM_ABSOLUTE_CONTROL) {
@@ -1039,6 +1086,7 @@ int UVCControl::getZoomAbsolute() {
 
 //======================================================================
 // Obtain limit of Zoom (Relative)
+// 获取变焦（相对值）的限值
 int UVCControl::obtainZoomRelativeLimit(int &min, int &max, int &def) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -1049,6 +1097,7 @@ int UVCControl::obtainZoomRelativeLimit(int &min, int &max, int &def) {
 }
 
 // Set Zoom (Relative)
+// 设置变焦（相对值）
 int UVCControl::setZoomRelative(int zoom) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -1068,6 +1117,7 @@ int UVCControl::setZoomRelative(int zoom) {
 }
 
 // Get value of Zoom (Relative)
+// 获取变焦（相对值）的值
 int UVCControl::getZoomRelative() {
     ENTER();
     if (mCTControls & CT_ZOOM_RELATIVE_CONTROL) {
@@ -1086,6 +1136,7 @@ int UVCControl::getZoomRelative() {
 
 //======================================================================
 // Obtain limit of Pan (Absolute)
+// 获取平移（绝对值）的限值
 int UVCControl::obtainPanAbsoluteLimit(int &min, int &max, int &def) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -1103,6 +1154,7 @@ int UVCControl::obtainPanAbsoluteLimit(int &min, int &max, int &def) {
 }
 
 // Set Pan (Absolute)
+// 设置平移（绝对值）
 int UVCControl::setPanAbsolute(int pan) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -1138,6 +1190,7 @@ int UVCControl::setPanAbsolute(int pan) {
 }
 
 // Get value of Pan (Absolute)
+// 获取平移（绝对值）的值
 int UVCControl::getPanAbsolute() {
     ENTER();
     if (mCTControls & CT_PANTILT_ABSOLUTE_CONTROL) {
@@ -1158,6 +1211,7 @@ int UVCControl::getPanAbsolute() {
 
 //======================================================================
 // Obtain limit of Tilt (Absolute)
+// 获取倾斜（绝对值）的限值
 int UVCControl::obtainTiltAbsoluteLimit(int &min, int &max, int &def) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -1175,6 +1229,7 @@ int UVCControl::obtainTiltAbsoluteLimit(int &min, int &max, int &def) {
 }
 
 // Set Tilt (Absolute)
+// 设置倾斜（绝对值）
 int UVCControl::setTiltAbsolute(int tilt) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -1210,6 +1265,7 @@ int UVCControl::setTiltAbsolute(int tilt) {
 }
 
 // Get value of Tilt (Absolute)
+// 获取倾斜（绝对值）的值
 int UVCControl::getTiltAbsolute() {
     ENTER();
     if (mCTControls & CT_PANTILT_ABSOLUTE_CONTROL) {
@@ -1232,18 +1288,21 @@ int UVCControl::getTiltAbsolute() {
 int UVCControl::updatePanRelativeLimit(int &min, int &max, int &def) {
     ENTER();
     // FIXME not implemented yet
+    // FIXME 尚未实现
     RETURN(UVC_ERROR_ACCESS, int);
 }
 
 int UVCControl::setPanRelative(int pan_rel) {
     ENTER();
     // FIXME not implemented yet
+    // FIXME 尚未实现
     RETURN(UVC_ERROR_ACCESS, int);
 }
 
 int UVCControl::getPanRelative() {
     ENTER();
     // FIXME not implemented yet
+    // FIXME 尚未实现
     RETURN(UVC_ERROR_ACCESS, int);
 }
 
@@ -1251,23 +1310,27 @@ int UVCControl::getPanRelative() {
 int UVCControl::updateTiltRelativeLimit(int &min, int &max, int &def) {
     ENTER();
     // FIXME not implemented yet
+    // FIXME 尚未实现
     RETURN(UVC_ERROR_ACCESS, int);
 }
 
 int UVCControl::setTiltRelative(int tilt_rel) {
     ENTER();
     // FIXME not implemented yet
+    // FIXME 尚未实现
     RETURN(UVC_ERROR_ACCESS, int);
 }
 
 int UVCControl::getTiltRelative() {
     ENTER();
     // FIXME not implemented yet
+    // FIXME 尚未实现
     RETURN(UVC_ERROR_ACCESS, int);
 }
 
 //======================================================================
 // Obtain limit of Roll (Absolute)
+// 获取翻滚（绝对值）的限值
 int UVCControl::obtainRollAbsoluteLimit(int &min, int &max, int &def) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -1278,6 +1341,7 @@ int UVCControl::obtainRollAbsoluteLimit(int &min, int &max, int &def) {
 }
 
 // Set Roll (Absolute)
+// 设置翻滚（绝对值）
 int UVCControl::setRollAbsolute(int roll) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -1294,6 +1358,7 @@ int UVCControl::setRollAbsolute(int roll) {
 }
 
 // get value of Roll (Absolute)
+// 获取翻滚（绝对值）的值
 int UVCControl::getRollAbsolute() {
     ENTER();
     if (mCTControls & CT_ROLL_ABSOLUTE_CONTROL) {
@@ -1314,23 +1379,27 @@ int UVCControl::getRollAbsolute() {
 int UVCControl::updateRollRelativeLimit(int &min, int &max, int &def) {
     ENTER();
     // FIXME not implemented yet
+    // FIXME 尚未实现
     RETURN(UVC_ERROR_ACCESS, int);
 }
 
 int UVCControl::setRollRelative(int roll_rel) {
     ENTER();
     // FIXME not implemented yet
+    // FIXME 尚未实现
     RETURN(UVC_ERROR_ACCESS, int);
 }
 
 int UVCControl::getRollRelative() {
     ENTER();
     // FIXME not implemented yet
+    // FIXME 尚未实现
     RETURN(UVC_ERROR_ACCESS, int);
 }
 
 //======================================================================
 // Obtain limit of Focus, Auto
+// 获取自动对焦的限值
 int UVCControl::obtainFocusAutoLimit(int &min, int &max, int &def) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -1341,6 +1410,7 @@ int UVCControl::obtainFocusAutoLimit(int &min, int &max, int &def) {
 }
 
 // set on/off of Focus, Auto
+// 设置自动对焦的开/关
 int UVCControl::setFocusAuto(bool autoFocus) {
     ENTER();
 
@@ -1358,6 +1428,7 @@ int UVCControl::setFocusAuto(bool autoFocus) {
 }
 
 // get value of Focus, Auto
+// 获取自动对焦的值
 bool UVCControl::getFocusAuto() {
     ENTER();
     int r = UVC_ERROR_ACCESS;
@@ -1372,6 +1443,7 @@ bool UVCControl::getFocusAuto() {
 
 //======================================================================
 // Obtain limit of Privacy
+// 获取隐私的限值
 int UVCControl::obtainPrivacyLimit(int &min, int &max, int &def) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -1382,6 +1454,7 @@ int UVCControl::obtainPrivacyLimit(int &min, int &max, int &def) {
 }
 
 // Set Privacy
+// 设置隐私
 int UVCControl::setPrivacy(int privacy) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -1398,6 +1471,7 @@ int UVCControl::setPrivacy(int privacy) {
 }
 
 // get value of Privacy
+// 获取隐私的值
 int UVCControl::getPrivacy() {
     ENTER();
     if (mCTControls & CT_PRIVACY_CONTROL) {
@@ -1501,6 +1575,7 @@ int UVCControl::getDigitalRoi(int &top, int &reft, int &bottom, int &right) {
 
 //======================================================================
 // Obtain limit of Brightness
+// 获取亮度的限值
 int UVCControl::obtainBrightnessLimit(int &min, int &max, int &def) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -1511,6 +1586,7 @@ int UVCControl::obtainBrightnessLimit(int &min, int &max, int &def) {
 }
 
 //Set Brightness
+// 设置亮度
 int UVCControl::setBrightness(int brightness) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -1527,6 +1603,7 @@ int UVCControl::setBrightness(int brightness) {
 }
 
 // Get value of Brightness
+// 获取亮度的值
 int UVCControl::getBrightness() {
     ENTER();
     if (mPUControls & PU_BRIGHTNESS_CONTROL) {
@@ -1543,6 +1620,7 @@ int UVCControl::getBrightness() {
 
 //======================================================================
 // Obtain limit of Contrast
+// 获取对比度的限值
 int UVCControl::obtainContrastLimit(int &min, int &max, int &def) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -1553,6 +1631,7 @@ int UVCControl::obtainContrastLimit(int &min, int &max, int &def) {
 }
 
 // Set Contrast
+// 设置对比度
 int UVCControl::setContrast(uint16_t contrast) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -1569,6 +1648,7 @@ int UVCControl::setContrast(uint16_t contrast) {
 }
 
 // Get value of Contrast
+// 获取对比度的值
 int UVCControl::getContrast() {
     ENTER();
     if (mPUControls & PU_CONTRAST_CONTROL) {
@@ -1585,6 +1665,7 @@ int UVCControl::getContrast() {
 
 //======================================================================
 // Obtain limit of Hue
+// 获取色调的限值
 int UVCControl::obtainHueLimit(int &min, int &max, int &def) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -1595,6 +1676,7 @@ int UVCControl::obtainHueLimit(int &min, int &max, int &def) {
 }
 
 // Set Hue
+// 设置色调
 int UVCControl::setHue(int hue) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -1611,6 +1693,7 @@ int UVCControl::setHue(int hue) {
 }
 
 // Get value of Hue
+// 获取色调的值
 int UVCControl::getHue() {
     ENTER();
     if (mPUControls & PU_HUE_CONTROL) {
@@ -1627,6 +1710,7 @@ int UVCControl::getHue() {
 
 //======================================================================
 // Obtain limit of Saturation
+// 获取饱和度的限值
 int UVCControl::obtainSaturationLimit(int &min, int &max, int &def) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -1637,6 +1721,7 @@ int UVCControl::obtainSaturationLimit(int &min, int &max, int &def) {
 }
 
 // Set Saturation
+// 设置饱和度
 int UVCControl::setSaturation(int saturation) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -1653,6 +1738,7 @@ int UVCControl::setSaturation(int saturation) {
 }
 
 // Get value of Saturation
+// 获取饱和度的值
 int UVCControl::getSaturation() {
     ENTER();
     if (mPUControls & PU_SATURATION_CONTROL) {
@@ -1669,6 +1755,7 @@ int UVCControl::getSaturation() {
 
 //======================================================================
 // Obtain limit of Sharpness
+// 获取锐度的限值
 int UVCControl::obtainSharpnessLimit(int &min, int &max, int &def) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -1679,6 +1766,7 @@ int UVCControl::obtainSharpnessLimit(int &min, int &max, int &def) {
 }
 
 // Set Sharpness
+// 设置锐度
 int UVCControl::setSharpness(int sharpness) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -1695,6 +1783,7 @@ int UVCControl::setSharpness(int sharpness) {
 }
 
 // Get value of Sharpness
+// 获取锐度的值
 int UVCControl::getSharpness() {
     ENTER();
     if (mPUControls & PU_SHARPNESS_CONTROL) {
@@ -1711,6 +1800,7 @@ int UVCControl::getSharpness() {
 
 //======================================================================
 // Obtain limit of Gamma
+// 获取伽马的限值
 int UVCControl::obtainGammaLimit(int &min, int &max, int &def) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -1721,6 +1811,7 @@ int UVCControl::obtainGammaLimit(int &min, int &max, int &def) {
 }
 
 // Set Gamma
+// 设置伽马
 int UVCControl::setGamma(int gamma) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -1738,6 +1829,7 @@ int UVCControl::setGamma(int gamma) {
 }
 
 // Get value of Gamma
+// 获取伽马的值
 int UVCControl::getGamma() {
     ENTER();
     if (mPUControls & PU_GAMMA_CONTROL) {
@@ -1755,6 +1847,7 @@ int UVCControl::getGamma() {
 
 //======================================================================
 // Obtain limit of White Balance Temperature
+// 获取白平衡色温的限值
 int UVCControl::obtainWhiteBalanceLimit(int &min, int &max, int &def) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -1765,6 +1858,7 @@ int UVCControl::obtainWhiteBalanceLimit(int &min, int &max, int &def) {
 }
 
 // Set White Balance Temperature
+// 设置白平衡色温
 int UVCControl::setWhiteBalance(int white_balance) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -1783,6 +1877,7 @@ int UVCControl::setWhiteBalance(int white_balance) {
 }
 
 // Get value of White Balance Temperature
+// 获取白平衡色温的值
 int UVCControl::getWhiteBalance() {
     ENTER();
     if (mPUControls & PU_WHITE_BALANCE_TEMPERATURE_CONTROL) {
@@ -1800,6 +1895,7 @@ int UVCControl::getWhiteBalance() {
 
 //======================================================================
 // Obtain limit of White Balance Component
+// 获取白平衡分量的限值
 int UVCControl::obtainWhiteBalanceCompoLimit(int &min, int &max, int &def) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -1810,6 +1906,7 @@ int UVCControl::obtainWhiteBalanceCompoLimit(int &min, int &max, int &def) {
 }
 
 // Set White Balance Component
+// 设置白平衡分量
 int UVCControl::setWhiteBalanceCompo(int white_balance_compo) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -1828,6 +1925,7 @@ int UVCControl::setWhiteBalanceCompo(int white_balance_compo) {
 }
 
 // Get value of White Balance Component
+// 获取白平衡分量的值
 int UVCControl::getWhiteBalanceCompo() {
     ENTER();
     if (mPUControls & PU_WHITE_BALANCE_COMPONENT_CONTROL) {
@@ -1846,6 +1944,7 @@ int UVCControl::getWhiteBalanceCompo() {
 
 //======================================================================
 // Obtain limit of Backlight Compensation
+// 获取背光补偿的限值
 int UVCControl::obtainBacklightCompLimit(int &min, int &max, int &def) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -1856,6 +1955,7 @@ int UVCControl::obtainBacklightCompLimit(int &min, int &max, int &def) {
 }
 
 // Set Backlight Compensation
+// 设置背光补偿
 int UVCControl::setBacklightComp(int backlight) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -1873,6 +1973,7 @@ int UVCControl::setBacklightComp(int backlight) {
 }
 
 // Get value of Backlight Compensation
+// 获取背光补偿的值
 int UVCControl::getBacklightComp() {
     ENTER();
     if (mPUControls & PU_BACKLIGHT_COMPENSATION_CONTROL) {
@@ -1889,6 +1990,7 @@ int UVCControl::getBacklightComp() {
 
 //======================================================================
 // Obtain limit of Gain
+// 获取增益的限值
 int UVCControl::obtainGainLimit(int &min, int &max, int &def) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -1899,6 +2001,7 @@ int UVCControl::obtainGainLimit(int &min, int &max, int &def) {
 }
 
 // Set Gain
+// 设置增益
 int UVCControl::setGain(int gain) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -1916,6 +2019,7 @@ int UVCControl::setGain(int gain) {
 }
 
 // Get value of Gain
+// 获取增益的值
 int UVCControl::getGain() {
     ENTER();
     if (mPUControls & PU_GAIN_CONTROL) {
@@ -1933,6 +2037,7 @@ int UVCControl::getGain() {
 
 //======================================================================
 // Obtain limit of Power Line Frequency
+// 获取电源频率的限值
 int UVCControl::obtainPowerlineFrequencyLimit(int &min, int &max, int &def) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -1943,6 +2048,7 @@ int UVCControl::obtainPowerlineFrequencyLimit(int &min, int &max, int &def) {
 }
 
 // Set Power Line Frequency
+// 设置电源频率
 int UVCControl::setPowerlineFrequency(int frequency) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -1968,6 +2074,7 @@ int UVCControl::setPowerlineFrequency(int frequency) {
 }
 
 // Get value of Power Line Frequency
+// 获取电源频率的值
 int UVCControl::getPowerlineFrequency() {
     ENTER();
     if (mPUControls & PU_POWER_LINE_FREQUENCY_CONTROL) {
@@ -1982,6 +2089,7 @@ int UVCControl::getPowerlineFrequency() {
 
 //======================================================================
 // Obtain limit of Hue, Auto
+// 获取自动色调的限值
 int UVCControl::obtainHueAutoLimit(int &min, int &max, int &def) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -1992,6 +2100,7 @@ int UVCControl::obtainHueAutoLimit(int &min, int &max, int &def) {
 }
 
 // Set on/off to Hue, Auto
+// 设置自动色调的开/关
 int UVCControl::setHueAuto(bool hueAuto) {
     ENTER();
     int r = UVC_ERROR_ACCESS;
@@ -2008,6 +2117,7 @@ int UVCControl::setHueAuto(bool hueAuto) {
 }
 
 // Get value of Hue, Auto
+// 获取自动色调的值
 bool UVCControl::getHueAuto() {
     ENTER();
     int r = UVC_ERROR_ACCESS;
@@ -2022,6 +2132,7 @@ bool UVCControl::getHueAuto() {
 
 //======================================================================
 // Obtain limit of White Balance Temperature, Auto
+// 获取自动白平衡色温的限值
 int UVCControl::obtainWhiteBalanceAutoLimit(int &min, int &max, int &def) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -2032,6 +2143,7 @@ int UVCControl::obtainWhiteBalanceAutoLimit(int &min, int &max, int &def) {
 }
 
 // Set White Balance Temperature, Auto
+// 设置自动白平衡色温
 int UVCControl::setWhiteBalanceAuto(bool whiteBalanceAuto) {
     ENTER();
     int r = UVC_ERROR_ACCESS;
@@ -2048,6 +2160,7 @@ int UVCControl::setWhiteBalanceAuto(bool whiteBalanceAuto) {
 }
 
 // Get value of White Balance Temperature, Auto
+// 获取自动白平衡色温的值
 bool UVCControl::getWhiteBalanceAuto() {
     ENTER();
     int r = UVC_ERROR_ACCESS;
@@ -2062,6 +2175,7 @@ bool UVCControl::getWhiteBalanceAuto() {
 
 //======================================================================
 // Obtain limit of White Balance Component, Auto
+// 获取自动白平衡分量的限值
 int UVCControl::obtainWhiteBalanceCompoAutoLimit(int &min, int &max, int &def) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -2072,6 +2186,7 @@ int UVCControl::obtainWhiteBalanceCompoAutoLimit(int &min, int &max, int &def) {
 }
 
 // Set White Balance Component, Auto
+// 设置自动白平衡分量
 int UVCControl::setWhiteBalanceCompoAuto(bool whiteBalanceCompoAuto) {
     ENTER();
     int r = UVC_ERROR_ACCESS;
@@ -2088,6 +2203,7 @@ int UVCControl::setWhiteBalanceCompoAuto(bool whiteBalanceCompoAuto) {
 }
 
 // Get value of White Balance Component, Auto
+// 获取自动白平衡分量的值
 bool UVCControl::getWhiteBalanceCompoAuto() {
     ENTER();
     int r = UVC_ERROR_ACCESS;
@@ -2103,6 +2219,7 @@ bool UVCControl::getWhiteBalanceCompoAuto() {
 
 //======================================================================
 // Obtain limit of Digital Multiplier
+// 获取数字倍增器的限值
 int UVCControl::obtainDigitalMultiplierLimit(int &min, int &max, int &def) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -2113,6 +2230,7 @@ int UVCControl::obtainDigitalMultiplierLimit(int &min, int &max, int &def) {
 }
 
 // Set Digital Multiplier
+// 设置数字倍增器
 int UVCControl::setDigitalMultiplier(int multiplier) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -2131,6 +2249,7 @@ int UVCControl::setDigitalMultiplier(int multiplier) {
 }
 
 // Get value of Digital Multiplier
+// 获取数字倍增器的值
 int UVCControl::getDigitalMultiplier() {
     ENTER();
     if (mPUControls & PU_DIGITAL_MULTIPLIER_CONTROL) {
@@ -2148,6 +2267,7 @@ int UVCControl::getDigitalMultiplier() {
 
 //======================================================================
 // Obtain limit of Digital Multiplier Limit
+// 获取数字倍增器上限的限值
 int UVCControl::obtainDigitalMultiplierLimitLimit(int &min, int &max, int &def) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -2158,6 +2278,7 @@ int UVCControl::obtainDigitalMultiplierLimitLimit(int &min, int &max, int &def) 
 }
 
 // Set Digital Multiplier Limit
+// 设置数字倍增器上限
 int UVCControl::setDigitalMultiplierLimit(int multiplier_limit) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -2177,6 +2298,7 @@ int UVCControl::setDigitalMultiplierLimit(int multiplier_limit) {
 }
 
 // Get value of Digital Multiplier Limit
+// 获取数字倍增器上限的值
 int UVCControl::getDigitalMultiplierLimit() {
     ENTER();
     if (mPUControls & PU_DIGITAL_MULTIPLIER_LIMIT_CONTROL) {
@@ -2195,6 +2317,7 @@ int UVCControl::getDigitalMultiplierLimit() {
 
 //======================================================================
 // Obtain limit of Analog Video Standard
+// 获取模拟视频标准的限值
 int UVCControl::obtainAnalogVideoStandardLimit(int &min, int &max, int &def) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -2205,6 +2328,7 @@ int UVCControl::obtainAnalogVideoStandardLimit(int &min, int &max, int &def) {
 }
 
 // Set Analog Video Standard
+// 设置模拟视频标准
 int UVCControl::setAnalogVideoStandard(int standard) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -2223,6 +2347,7 @@ int UVCControl::setAnalogVideoStandard(int standard) {
 }
 
 // Get value of Analog Video Standard
+// 获取模拟视频标准的值
 int UVCControl::getAnalogVideoStandard() {
     ENTER();
     if (mPUControls & PU_ANALOG_VIDEO_STANDARD_CONTROL) {
@@ -2241,6 +2366,7 @@ int UVCControl::getAnalogVideoStandard() {
 
 //======================================================================
 // Obtain limit of Analog Video Lock Status
+// 获取模拟视频锁定状态的限值
 int UVCControl::obtainAnalogVideoLockStateLimit(int &min, int &max, int &def) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -2251,6 +2377,7 @@ int UVCControl::obtainAnalogVideoLockStateLimit(int &min, int &max, int &def) {
 }
 
 // Set Analog Video Lock Status
+// 设置模拟视频锁定状态
 int UVCControl::setAnalogVideoLockState(int state) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -2269,6 +2396,7 @@ int UVCControl::setAnalogVideoLockState(int state) {
 }
 
 // Get value of Analog Video Lock Status
+// 获取模拟视频锁定状态的值
 int UVCControl::getAnalogVideoLockState() {
     ENTER();
     if (mPUControls & PU_ANALOG_LOCK_STATUS_CONTROL) {
@@ -2287,6 +2415,7 @@ int UVCControl::getAnalogVideoLockState() {
 
 //======================================================================
 // Obtain limit of Contrast, Auto
+// 获取自动对比度的限值
 int UVCControl::obtainContrastAutoLimit(int &min, int &max, int &def) {
     ENTER();
     int ret = UVC_ERROR_ACCESS;
@@ -2297,6 +2426,7 @@ int UVCControl::obtainContrastAutoLimit(int &min, int &max, int &def) {
 }
 
 // Set Contrast, Auto
+// 设置自动对比度
 int UVCControl::setContrastAuto(bool contrastAuto) {
     ENTER();
     int r = UVC_ERROR_ACCESS;
@@ -2313,6 +2443,7 @@ int UVCControl::setContrastAuto(bool contrastAuto) {
 }
 
 // Get value of Contrast, Auto
+// 获取自动对比度的值
 bool UVCControl::getContrastAuto() {
     ENTER();
     int r = UVC_ERROR_ACCESS;

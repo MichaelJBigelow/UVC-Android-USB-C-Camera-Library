@@ -137,6 +137,7 @@ public class TakePictureActivity extends AppCompatActivity implements View.OnCli
                 int width = size.width;
                 int height = size.height;
                 //auto aspect ratio
+                //自动宽高比
                 mCameraViewMain.setAspectRatio(width, height);
             }
 

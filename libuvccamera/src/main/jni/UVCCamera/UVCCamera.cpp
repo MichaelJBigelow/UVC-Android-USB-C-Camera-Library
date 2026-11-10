@@ -46,6 +46,8 @@
 //**********************************************************************
 /**
  * constructor
+ *
+ * 构造函数
  */
 UVCCamera::UVCCamera()
         : mFd(0),
@@ -62,6 +64,8 @@ UVCCamera::UVCCamera()
 
 /**
  * destructor
+ *
+ * 析构函数
  */
 UVCCamera::~UVCCamera() {
     ENTER();
@@ -84,6 +88,8 @@ UVCControl *UVCCamera::getControl() {
 
 /**
  * connect uvc camera
+ *
+ * 连接 uvc 相机
  */
 int UVCCamera::connect(int fd, int quirks) {
     ENTER();
@@ -103,9 +109,11 @@ int UVCCamera::connect(int fd, int quirks) {
         fd = dup(fd);
 
         // Wrap a platform-specific system device handle(File Descriptor) and obtain a UVC device handle.
+        // 封装平台特定的系统设备句柄（文件描述符），并获取 UVC 设备句柄。
         result = uvc_wrap(fd, mContext, &mDeviceHandle);
         if (LIKELY(!result)) {
             // success to obtain device handle
+            // 成功获取设备句柄
 #if LOCAL_DEBUG
             uvc_print_diag(mDeviceHandle, stderr);
 #endif
@@ -127,6 +135,7 @@ int UVCCamera::connect(int fd, int quirks) {
 }
 
 // release uvc camera
+// 释放 uvc 相机
 int UVCCamera::release() {
     ENTER();
     stopPreview();
@@ -137,6 +146,7 @@ int UVCCamera::release() {
         SAFE_DELETE(mPreview);
         SAFE_DELETE(mControl);
         // close camera
+        // 关闭相机
         uvc_close(mDeviceHandle);
         mDeviceHandle = NULL;
     }

@@ -45,8 +45,16 @@ public class ImageCaptureConfig implements Cloneable {
      * <p>If not set, the capture strategy will default to
      * {@link CaptureStrategy#CAPTURE_STRATEGY_OPENGL_ES}.
      *
-     * @param strategy The requested image capture strategy.
-     * @return The current Builder.
+     * <p>设置图像捕获策略。
+     *
+     * <p>有效的捕获策略为：由 OpenGLES 实现的 {@link CaptureStrategy#CAPTURE_STRATEGY_OPENGL_ES}，
+     * 或由 ImageReader 实现的 {@link CaptureStrategy#CAPTURE_STRATEGY_IMAGE_READER}。
+     *
+     * <p>如果未设置，捕获策略默认为
+     * {@link CaptureStrategy#CAPTURE_STRATEGY_OPENGL_ES}。
+     *
+     * @param strategy The requested image capture strategy. / 请求的图像捕获策略
+     * @return The current Builder. / 当前的 Builder
      */
     public ImageCaptureConfig setCaptureStrategy(@CaptureStrategy int strategy) {
         getMutableConfig().putInt(OPTION_CAPTURE_STRATEGY, strategy);
@@ -70,8 +78,16 @@ public class ImageCaptureConfig implements Cloneable {
      * <p>If not set, the capture mode will default to
      * {@link CaptureMode#CAPTURE_MODE_MINIMIZE_LATENCY}.
      *
-     * @param mode The requested image capture mode.
-     * @return The current Builder.
+     * <p>设置图像捕获模式。
+     *
+     * <p>有效的捕获模式为：{@link CaptureMode#CAPTURE_MODE_MINIMIZE_LATENCY}（延迟优先于图像质量），
+     * 或 {@link CaptureMode#CAPTURE_MODE_MAXIMIZE_QUALITY}（图像质量优先于延迟）。
+     *
+     * <p>如果未设置，捕获模式默认为
+     * {@link CaptureMode#CAPTURE_MODE_MINIMIZE_LATENCY}。
+     *
+     * @param mode The requested image capture mode. / 请求的图像捕获模式
+     * @return The current Builder. / 当前的 Builder
      */
     public ImageCaptureConfig setCaptureMode(@CaptureMode int mode) {
         getMutableConfig().putInt(OPTION_CAPTURE_MODE, mode);
@@ -86,8 +102,10 @@ public class ImageCaptureConfig implements Cloneable {
     /**
      * Sets the image jpeg compression quality.
      *
-     * @param quality The requested image jpeg compression quality.
-     * @return The current Builder.
+     * 设置图像的 jpeg 压缩质量。
+     *
+     * @param quality The requested image jpeg compression quality. / 请求的图像 jpeg 压缩质量
+     * @return The current Builder. / 当前的 Builder
      */
     public ImageCaptureConfig setJpegCompressionQuality(@IntRange(from = 1, to = 100) int quality) {
         getMutableConfig().putInt(OPTION_JPEG_COMPRESSION_QUALITY, quality);

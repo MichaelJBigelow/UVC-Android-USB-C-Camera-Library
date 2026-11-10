@@ -57,6 +57,7 @@ int convert_mjpeg_to_rgbx_tj(void *in, int inSize, void *out, int width, int hei
 //           subsampName[inSubsamp], colorspaceName[inColorspace]);
 
     // will cause memory overflow
+    // 将导致内存溢出
 //    if ((out->data = (unsigned char *) tjAlloc(tjBufSizeYUV2(width, padding, height, outSubsamp))) ==NULL)
 //        THROW_UNIX("allocating uncompressed image buffer");
 
@@ -76,11 +77,11 @@ int convert_mjpeg_to_rgbx_tj(void *in, int inSize, void *out, int width, int hei
     return retval;
 }
 
-/** @brief Convert an MJPEG frame to RGBX
+/** @brief Convert an MJPEG frame to RGBX / 将 MJPEG 帧转换为 RGBX
  * @ingroup frame
  *
- * @param in MJPEG frame
- * @param out RGBX frame
+ * @param in MJPEG frame / MJPEG 帧
+ * @param out RGBX frame / RGBX 帧
  */
 int uvc_mjpeg2rgbx_tj(uvc_frame_t *in, uvc_frame_t *out) {
     if (in->frame_format != UVC_FRAME_FORMAT_MJPEG)
@@ -103,11 +104,11 @@ int uvc_mjpeg2rgbx_tj(uvc_frame_t *in, uvc_frame_t *out) {
     return convert_mjpeg_to_rgbx_tj(in->data, in->data_bytes, out->data, out->width, out->height);
 }
 
-/** @brief Convert an MJPEG frame to RGBX
+/** @brief Convert an MJPEG frame to RGBX / 将 MJPEG 帧转换为 RGBX
  * @ingroup frame
  *
- * @param in MJPEG frame
- * @param out RGBX frame
+ * @param in MJPEG frame / MJPEG 帧
+ * @param out RGBX frame / RGBX 帧
  */
 int uvc_mjpeg2rgbx_new(uvc_frame_t *in, uvc_frame_t *out) {
     uint8_t *in_data = (uint8_t *) in->data;
@@ -150,10 +151,10 @@ int uvc_mjpeg2rgbx_new(uvc_frame_t *in, uvc_frame_t *out) {
 }
 
 
-/** @brief Convert a frame from RGBX8888 to YUYV
+/** @brief Convert a frame from RGBX8888 to YUYV / 将帧从 RGBX8888 转换为 YUYV
 * @ingroup frame
-* @param ini RGBX8888 frame
-* @param out YUYV frame
+* @param ini RGBX8888 frame / RGBX8888 帧
+* @param out YUYV frame / YUYV 帧
 */
 int uvc_rgbx_to_yuyv(uvc_frame_t *in, uvc_frame_t *out) {
     uint8_t *in_data = (uint8_t *) in->data;
@@ -182,10 +183,10 @@ int uvc_rgbx_to_yuyv(uvc_frame_t *in, uvc_frame_t *out) {
     return  ret;
 }
 
-/** @brief Convert a frame from RGBX8888 to NV12
+/** @brief Convert a frame from RGBX8888 to NV12 / 将帧从 RGBX8888 转换为 NV12
 * @ingroup frame
-* @param ini RGBX8888 frame
-* @param out NV12 frame
+* @param ini RGBX8888 frame / RGBX8888 帧
+* @param out NV12 frame / NV12 帧
 */
  int uvc_rgbx_to_nv12(uvc_frame_t *in, uvc_frame_t *out) {
     uint8_t *in_data = (uint8_t *) in->data;
@@ -215,10 +216,10 @@ int uvc_rgbx_to_yuyv(uvc_frame_t *in, uvc_frame_t *out) {
     return  ret;
 }
 
-/** @brief Convert a frame from RGBX8888 to NV21
+/** @brief Convert a frame from RGBX8888 to NV21 / 将帧从 RGBX8888 转换为 NV21
 * @ingroup frame
-* @param ini RGBX8888 frame
-* @param out NV21 frame
+* @param ini RGBX8888 frame / RGBX8888 帧
+* @param out NV21 frame / NV21 帧
 */
  int uvc_rgbx_to_nv21(uvc_frame_t *in, uvc_frame_t *out) {
     uint8_t *in_data = (uint8_t *) in->data;
@@ -248,10 +249,10 @@ int uvc_rgbx_to_yuyv(uvc_frame_t *in, uvc_frame_t *out) {
     return  ret;
 }
 
-/** @brief Convert a frame from RGBX8888 to RGB
+/** @brief Convert a frame from RGBX8888 to RGB / 将帧从 RGBX8888 转换为 RGB
 * @ingroup frame
-* @param ini RGBX8888 frame
-* @param out RGB frame
+* @param ini RGBX8888 frame / RGBX8888 帧
+* @param out RGB frame / RGB 帧
 */
  int uvc_rgbx_to_rgb(uvc_frame_t *in, uvc_frame_t *out) {
     uint8_t *in_data = (uint8_t *) in->data;
@@ -280,10 +281,10 @@ int uvc_rgbx_to_yuyv(uvc_frame_t *in, uvc_frame_t *out) {
     return  ret;
 }
 
-/** @brief Convert a frame from RGBX8888 to RGB565
+/** @brief Convert a frame from RGBX8888 to RGB565 / 将帧从 RGBX8888 转换为 RGB565
 * @ingroup frame
-* @param ini RGBX8888 frame
-* @param out RGB565 frame
+* @param ini RGBX8888 frame / RGBX8888 帧
+* @param out RGB565 frame / RGB565 帧
 */
  int uvc_rgbx_to_rgb565(uvc_frame_t *in, uvc_frame_t *out) {
     uint8_t *in_data = (uint8_t *) in->data;
@@ -312,10 +313,10 @@ int uvc_rgbx_to_yuyv(uvc_frame_t *in, uvc_frame_t *out) {
     return  ret;
 }
 
-/** @brief Convert a frame from RGBX8888 to BGR
+/** @brief Convert a frame from RGBX8888 to BGR / 将帧从 RGBX8888 转换为 BGR
 * @ingroup frame
-* @param ini RGBX8888 frame
-* @param out BGR frame
+* @param ini RGBX8888 frame / RGBX8888 帧
+* @param out BGR frame / BGR 帧
 */
  int uvc_rgbx_to_bgr(uvc_frame_t *in, uvc_frame_t *out) {
     uint8_t *in_data = (uint8_t *) in->data;

@@ -3,15 +3,21 @@ package com.herohan.uvcapp;
 public class CameraException extends Exception {
     /**
      * Unknown error occurred  when open camera
+     *
+     * 打开相机时发生未知错误
      */
     public static int CAMERA_OPEN_ERROR_UNKNOWN = 1;
     /**
      * The device is occupied when open camera.
+     *
+     * 打开相机时设备被占用。
      */
     public static int CAMERA_OPEN_ERROR_BUSY = 2;
 
     /**
      * Error code
+     *
+     * 错误码
      */
     private int code;
 

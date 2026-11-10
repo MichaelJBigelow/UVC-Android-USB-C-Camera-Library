@@ -25,7 +25,7 @@ tasks.register('clean', Delete) {
 }
 
 ext {
-    versionCompiler = 34
+    versionCompiler = 37
     versionTarget = 34
     versionMin = 29
 

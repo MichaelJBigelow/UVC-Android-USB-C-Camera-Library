@@ -1,6 +1,5 @@
 package com.herohan.uvcdemo;
 
-import android.Manifest;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -9,6 +8,8 @@ import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.hjq.permissions.XXPermissions;
+import com.hjq.permissions.permission.PermissionLists;
+import com.hjq.permissions.permission.base.IPermission;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,19 +46,19 @@ public class EntryActivity extends AppCompatActivity implements View.OnClickList
     @Override
     public void onClick(View v) {
 
-        List<String> needPermissions = new ArrayList<>();
-        needPermissions.add(Manifest.permission.CAMERA);
+        List<IPermission> needPermissions = new ArrayList<>();
+        needPermissions.add(PermissionLists.getCameraPermission());
         if (v.getId() == R.id.btnTakePicture) {
-            needPermissions.add(Manifest.permission.MANAGE_EXTERNAL_STORAGE);
+            needPermissions.add(PermissionLists.getManageExternalStoragePermission());
         } else if (v.getId() == R.id.btnRecordVideo) {
-            needPermissions.add(Manifest.permission.MANAGE_EXTERNAL_STORAGE);
-            needPermissions.add(Manifest.permission.RECORD_AUDIO);
+            needPermissions.add(PermissionLists.getManageExternalStoragePermission());
+            needPermissions.add(PermissionLists.getRecordAudioPermission());
         }
 
         XXPermissions.with(this)
-                .permission(needPermissions)
-                .request((permissions, all) -> {
-                    if (!all) {
+                .permissions(needPermissions)
+                .request((grantedList, deniedList) -> {
+                    if (!deniedList.isEmpty()) {
                         return;
                     }
 

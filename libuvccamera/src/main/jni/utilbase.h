@@ -40,17 +40,20 @@
 
 #if defined(__GNUC__)
 // the macro for branch prediction optimaization for gcc(-O2/-O3 required)
+// 用于 gcc 分支预测优化的宏(需要 -O2/-O3)
 #define		CONDITION(cond)				((__builtin_expect((cond)!=0, 0)))
-#define		LIKELY(x)					((__builtin_expect(!!(x), 1)))	// x is likely true
-#define		UNLIKELY(x)					((__builtin_expect(!!(x), 0)))	// x is likely false
+#define		LIKELY(x)					((__builtin_expect(!!(x), 1)))	// x is likely true / x 很可能为真
+#define		UNLIKELY(x)					((__builtin_expect(!!(x), 0)))	// x is likely false / x 很可能为假
 #else
 #define		CONDITION(cond)				((cond))
 #define		LIKELY(x)					((x))
 #define		UNLIKELY(x)					((x))
 #endif
 
-// XXX assertはNDEBUGが定義されていたら引数を含めて丸ごと削除されてしまうので
-// 関数実行を直接assertの引数にするとその関数はNDEBUGの時に実行されなくなるので注意
+// XXX assert is removed entirely, including its arguments, when NDEBUG is defined,
+// so note that if a function call is passed directly as an argument of assert, that function will not be executed when NDEBUG is defined
+// XXX 如果定义了 NDEBUG,assert 会连同其参数一起被整体删除,
+// 因此请注意:如果直接把函数调用作为 assert 的参数,在定义了 NDEBUG 时该函数将不会被执行
 #include <assert.h>
 #define CHECK(CONDITION) { bool RES = (CONDITION); assert(RES); }
 #define CHECK_EQ(X, Y) { bool RES = (X == Y); assert(RES); }

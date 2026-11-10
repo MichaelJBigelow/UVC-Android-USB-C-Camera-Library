@@ -32,7 +32,9 @@ import static com.serenegiant.opengl.ShaderConst.GL_TEXTURE_EXTERNAL_OES;
 import static com.serenegiant.opengl.ShaderConst.VERTEX_SHADER;
 
 /**
- * 描画領域全面にテクスチャを2D描画するためのヘルパークラス
+ * Helper class for drawing a texture in 2D over the entire drawing area
+ *
+ * 用于将纹理以 2D 方式绘制到整个绘制区域的辅助类
  */
 public class GLDrawer2D implements IDrawer2D {
 //	private static final boolean DEBUG = false; // FIXME set false on release
@@ -55,22 +57,26 @@ public class GLDrawer2D implements IDrawer2D {
 	private final float[] mMvpMatrix = new float[16];
 
 	/**
-	 * コンストラクタ
-	 * GLコンテキスト/EGLレンダリングコンテキストが有効な状態で呼ばないとダメ
-	 * @param isOES 外部テクスチャ(GL_TEXTURE_EXTERNAL_OES)を使う場合はtrue。
-	 * 				通常の2Dテキスチャならfalse
+	 * Constructor
+	 * Must be called while a GL context/EGL rendering context is valid
+	 *
+	 * 构造函数
+	 * 必须在 GL 上下文/EGL 渲染上下文有效的状态下调用
+	 * @param isOES true to use an external texture (GL_TEXTURE_EXTERNAL_OES), false for a normal 2D texture / 使用外部纹理(GL_TEXTURE_EXTERNAL_OES)时为 true，普通 2D 纹理为 false
 	 */
 	public GLDrawer2D(final boolean isOES) {
 		this(VERTICES, TEXCOORD, isOES);
 	}
 
 	/**
-	 * コンストラクタ
-	 * GLコンテキスト/EGLレンダリングコンテキストが有効な状態で呼ばないとダメ
-	 * @param vertices 頂点座標, floatを8個 = (x,y) x 4ペア
-	 * @param texcoord テクスチャ座標, floatを8個 = (s,t) x 4ペア
-	 * @param isOES 外部テクスチャ(GL_TEXTURE_EXTERNAL_OES)を使う場合はtrue。
-	 * 				通常の2Dテキスチャならfalse
+	 * Constructor
+	 * Must be called while a GL context/EGL rendering context is valid
+	 *
+	 * 构造函数
+	 * 必须在 GL 上下文/EGL 渲染上下文有效的状态下调用
+	 * @param vertices vertex coordinates, 8 floats = (x,y) x 4 pairs / 顶点坐标，8 个 float = (x,y) x 4 对
+	 * @param texcoord texture coordinates, 8 floats = (s,t) x 4 pairs / 纹理坐标，8 个 float = (s,t) x 4 对
+	 * @param isOES true to use an external texture (GL_TEXTURE_EXTERNAL_OES), false for a normal 2D texture / 使用外部纹理(GL_TEXTURE_EXTERNAL_OES)时为 true，普通 2D 纹理为 false
 	 */
 	public GLDrawer2D(final float[] vertices,
 		final float[] texcoord, final boolean isOES) {
@@ -95,13 +101,16 @@ public class GLDrawer2D implements IDrawer2D {
 		} else {
 			hProgram = GLHelper.loadShader(VERTEX_SHADER, FRAGMENT_SHADER_SIMPLE);
 		}
-		// モデルビュー変換行列を初期化
+		// initialize the model-view matrix
+		// 初始化模型视图变换矩阵
 		Matrix.setIdentityM(mMvpMatrix, 0);
 		init();
 	}
 
 	/**
-	 * 破棄処理。GLコンテキスト/EGLレンダリングコンテキスト内で呼び出さないとダメ
+	 * Release resources. Must be called within the GL context/EGL rendering context
+	 *
+	 * 释放资源。必须在 GL 上下文/EGL 渲染上下文内调用
 	 */
 	@Override
 	public void release() {
@@ -112,7 +121,9 @@ public class GLDrawer2D implements IDrawer2D {
 	}
 
 	/**
-	 * 外部テクスチャを使うかどうか
+	 * Whether an external texture is used
+	 *
+	 * 是否使用外部纹理
 	 * @return
 	 */
 	public boolean isOES() {
@@ -120,7 +131,9 @@ public class GLDrawer2D implements IDrawer2D {
 	}
 
 	/**
-	 * モデルビュー変換行列を取得(内部配列を直接返すので変更時は要注意)
+	 * Get the model-view matrix (the internal array is returned directly, so be careful when modifying it)
+	 *
+	 * 获取模型视图变换矩阵（直接返回内部数组，修改时需要注意）
 	 * @return
 	 */
 	@Override
@@ -129,8 +142,10 @@ public class GLDrawer2D implements IDrawer2D {
 	}
 
 	/**
-	 * モデルビュー変換行列に行列を割り当てる
-	 * @param matrix 領域チェックしていないのでoffsetから16個以上必須
+	 * Assign a matrix to the model-view matrix
+	 *
+	 * 将矩阵赋值给模型视图变换矩阵
+	 * @param matrix bounds are not checked, so at least 16 elements from offset are required / 不做范围检查，因此从 offset 起必须至少有 16 个元素
 	 * @param offset
 	 * @return
 	 */
@@ -141,8 +156,10 @@ public class GLDrawer2D implements IDrawer2D {
 	}
 
 	/**
-	 * モデルビュー変換行列のコピーを取得
-	 * @param matrix 領域チェックしていないのでoffsetから16個以上必須
+	 * Get a copy of the model-view matrix
+	 *
+	 * 获取模型视图变换矩阵的副本
+	 * @param matrix bounds are not checked, so at least 16 elements from offset are required / 不做范围检查，因此从 offset 起必须至少有 16 个元素
 	 * @param offset
 	 */
 	@Override
@@ -151,11 +168,13 @@ public class GLDrawer2D implements IDrawer2D {
 	}
 
 	/**
-	 * 指定したテクスチャを指定したテクスチャ変換行列を使って描画領域全面に描画するためのヘルパーメソッド
-	 * このクラスインスタンスのモデルビュー変換行列が設定されていればそれも適用された状態で描画する
+	 * Helper method that draws the specified texture over the entire drawing area using the specified texture transform matrix
+	 * If the model-view matrix of this class instance has been set, it is applied as well when drawing
+	 *
+	 * 用于使用指定的纹理变换矩阵将指定纹理绘制到整个绘制区域的辅助方法
+	 * 如果已设置此类实例的模型视图变换矩阵，则绘制时也会应用该矩阵
 	 * @param texId texture ID
-	 * @param tex_matrix テクスチャ変換行列、nullならば以前に適用したものが再利用される。
-	 * 					領域チェックしていないのでoffsetから16個以上確保しておくこと
+	 * @param tex_matrix texture transform matrix; if null, the previously applied one is reused. Bounds are not checked, so allocate at least 16 elements from offset / 纹理变换矩阵，为 null 则复用之前应用的矩阵。不做范围检查，因此从 offset 起须至少保留 16 个元素
 	 */
 	@Override
 	public synchronized void draw(final int texId,
@@ -165,10 +184,12 @@ public class GLDrawer2D implements IDrawer2D {
 		if (hProgram < 0) return;
 		GLES20.glUseProgram(hProgram);
 		if (tex_matrix != null) {
-			// テクスチャ変換行列が指定されている時
+			// when a texture transform matrix is specified
+			// 指定了纹理变换矩阵时
 			GLES20.glUniformMatrix4fv(muTexMatrixLoc, 1, false, tex_matrix, offset);
 		}
-		// モデルビュー変換行列をセット
+		// set the model-view matrix
+		// 设置模型视图变换矩阵
 		GLES20.glUniformMatrix4fv(muMVPMatrixLoc, 1, false, mMvpMatrix, 0);
 		GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
 		GLES20.glBindTexture(mTexTarget, texId);
@@ -178,8 +199,11 @@ public class GLDrawer2D implements IDrawer2D {
 	}
 
 	/**
-	 * Textureオブジェクトを描画するためのヘルパーメソッド
-	 * Textureオブジェクトで管理しているテクスチャ名とテクスチャ座標変換行列を使って描画する
+	 * Helper method for drawing a Texture object
+	 * Draws using the texture name and the texture coordinate transform matrix managed by the Texture object
+	 *
+	 * 用于绘制 Texture 对象的辅助方法
+	 * 使用 Texture 对象所管理的纹理名和纹理坐标变换矩阵进行绘制
 	 * @param texture
 	 */
 	@Override
@@ -188,7 +212,9 @@ public class GLDrawer2D implements IDrawer2D {
 	}
 
 	/**
-	 * TextureOffscreenオブジェクトを描画するためのヘルパーメソッド
+	 * Helper method for drawing a TextureOffscreen object
+	 *
+	 * 用于绘制 TextureOffscreen 对象的辅助方法
 	 * @param offscreen
 	 */
 	@Override
@@ -197,8 +223,11 @@ public class GLDrawer2D implements IDrawer2D {
 	}
 
 	/**
-	 * テクスチャ名生成のヘルパーメソッド
-	 * GLHelper#initTexを呼び出すだけ
+	 * Helper method for generating a texture name
+	 * Simply calls GLHelper#initTex
+	 *
+	 * 生成纹理名的辅助方法
+	 * 仅调用 GLHelper#initTex
 	 * @return texture ID
 	 */
 	public int initTex() {
@@ -206,8 +235,11 @@ public class GLDrawer2D implements IDrawer2D {
 	}
 
 	/**
-	 * テクスチャ名破棄のヘルパーメソッド
-	 * GLHelper.deleteTexを呼び出すだけ
+	 * Helper method for deleting a texture name
+	 * Simply calls GLHelper.deleteTex
+	 *
+	 * 删除纹理名的辅助方法
+	 * 仅调用 GLHelper.deleteTex
 	 * @param hTex
 	 */
 	public void deleteTex(final int hTex) {
@@ -215,11 +247,15 @@ public class GLDrawer2D implements IDrawer2D {
 	}
 
 	/**
-	 * 頂点シェーダー・フラグメントシェーダーを変更する
-	 * GLコンテキスト/EGLレンダリングコンテキスト内で呼び出さないとダメ
-	 * glUseProgramが呼ばれた状態で返る
-	 * @param vs 頂点シェーダー文字列
-	 * @param fs フラグメントシェーダー文字列
+	 * Change the vertex shader and fragment shader
+	 * Must be called within the GL context/EGL rendering context
+	 * Returns with glUseProgram having been called
+	 *
+	 * 更改顶点着色器和片段着色器
+	 * 必须在 GL 上下文/EGL 渲染上下文内调用
+	 * 返回时已调用 glUseProgram
+	 * @param vs vertex shader string / 顶点着色器字符串
+	 * @param fs fragment shader string / 片段着色器字符串
 	 */
 	public synchronized void updateShader(final String vs, final String fs) {
 		release();
@@ -228,17 +264,23 @@ public class GLDrawer2D implements IDrawer2D {
 	}
 
 	/**
-	 * フラグメントシェーダーを変更する
-	 * GLコンテキスト/EGLレンダリングコンテキスト内で呼び出さないとダメ
-	 * glUseProgramが呼ばれた状態で返る
-	 * @param fs フラグメントシェーダー文字列
+	 * Change the fragment shader
+	 * Must be called within the GL context/EGL rendering context
+	 * Returns with glUseProgram having been called
+	 *
+	 * 更改片段着色器
+	 * 必须在 GL 上下文/EGL 渲染上下文内调用
+	 * 返回时已调用 glUseProgram
+	 * @param fs fragment shader string / 片段着色器字符串
 	 */
 	public void updateShader(final String fs) {
 		updateShader(VERTEX_SHADER, fs);
 	}
 
 	/**
-	 * 頂点シェーダー・フラグメントシェーダーをデフォルトに戻す
+	 * Reset the vertex shader and fragment shader to the defaults
+	 *
+	 * 将顶点着色器和片段着色器恢复为默认值
 	 */
 	public void resetShader() {
 		release();
@@ -251,8 +293,11 @@ public class GLDrawer2D implements IDrawer2D {
 	}
 
 	/**
-	 * アトリビュート変数のロケーションを取得
-	 * glUseProgramが呼ばれた状態で返る
+	 * Get the location of an attribute variable
+	 * Returns with glUseProgram having been called
+	 *
+	 * 获取 attribute 变量的位置
+	 * 返回时已调用 glUseProgram
 	 * @param name
 	 * @return
 	 */
@@ -263,8 +308,11 @@ public class GLDrawer2D implements IDrawer2D {
 	}
 
 	/**
-	 * ユニフォーム変数のロケーションを取得
-	 * glUseProgramが呼ばれた状態で返る
+	 * Get the location of a uniform variable
+	 * Returns with glUseProgram having been called
+	 *
+	 * 获取 uniform 变量的位置
+	 * 返回时已调用 glUseProgram
 	 * @param name
 	 * @return
 	 */
@@ -275,7 +323,9 @@ public class GLDrawer2D implements IDrawer2D {
 	}
 
 	/**
-	 * glUseProgramが呼ばれた状態で返る
+	 * Returns with glUseProgram having been called
+	 *
+	 * 返回时已调用 glUseProgram
 	 */
 	@Override
 	public void glUseProgram() {
@@ -283,8 +333,11 @@ public class GLDrawer2D implements IDrawer2D {
 	}
 
 	/**
-	 * シェーダープログラム変更時の初期化処理
-	 * glUseProgramが呼ばれた状態で返る
+	 * Initialization performed when the shader program is changed
+	 * Returns with glUseProgram having been called
+	 *
+	 * 更改着色器程序时的初始化处理
+	 * 返回时已调用 glUseProgram
 	 */
 	private void init() {
 		GLES20.glUseProgram(hProgram);

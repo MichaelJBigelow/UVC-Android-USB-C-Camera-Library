@@ -29,10 +29,14 @@ public class CameraPreviewConfig implements Cloneable {
      * orientation of the camera. This affects the pictures returned from
      * ImageCapture and mp4 returned from VideoCapture.
      *
+     * 设置相对于相机方向的顺时针旋转角度（单位：度）。
+     * 这会影响 ImageCapture 返回的图片以及 VideoCapture 返回的 mp4。
+     *
      * @param rotation The rotation angle in degrees relative to the
      *                 orientation of the camera. Rotation can only be 0,
-     *                 90, 180 or 270.
-     * @throws IllegalArgumentException if rotation value is invalid.
+     *                 90, 180 or 270. /
+     *                 相对于相机方向的旋转角度（单位：度），只能是 0、90、180 或 270。
+     * @throws IllegalArgumentException if rotation value is invalid. / 旋转值无效时抛出。
      */
     public CameraPreviewConfig setRotation(int rotation) {
         if (rotation == 0 || rotation == 90 || rotation == 180
@@ -53,8 +57,11 @@ public class CameraPreviewConfig implements Cloneable {
      * Sets the mirror mode of the camera. This affects the pictures returned from
      * ImageCapture and mp4 returned from VideoCapture.
      *
+     * 设置相机的镜像模式。
+     * 这会影响 ImageCapture 返回的图片以及 VideoCapture 返回的 mp4。
+     *
      * @param mirror
-     * @throws IllegalArgumentException if rotation value is invalid.
+     * @throws IllegalArgumentException if rotation value is invalid. / 旋转值无效时抛出。
      */
     public CameraPreviewConfig setMirror(@MirrorMode int mirror) {
         getMutableConfig().putInt(OPTION_MIRROR, mirror);

@@ -40,13 +40,20 @@ import com.serenegiant.uvccamera.BuildConfig;
  * If you use this directly with IFrameCallback, you should know UVCCamera and it backend native libraries
  * never execute color space conversion. This means that color tone of resulted movie will be different
  * from that you expected/can see on screen.
+ *
+ * 此类接收 ByteBuffer(强烈建议使用 direct ByteBuffer)形式的 NV21(YUV420SP) 视频图像,
+ * 并将其编码为 h.264。
+ * 如果直接将其与 IFrameCallback 配合使用,您应当了解 UVCCamera 及其后端原生库
+ * 从不执行色彩空间转换。这意味着生成的视频的色调将与
+ * 您预期的/在屏幕上看到的不同。
  */
 public class MediaVideoBufferEncoder extends MediaEncoder implements IVideoEncoder {
-    private static final boolean DEBUG = BuildConfig.DEBUG;    // TODO set false on release
+    private static final boolean DEBUG = BuildConfig.DEBUG;    // TODO set false on release / 发布时设为 false
     private static final String TAG = "MediaVideoBufferEncoder";
 
     private static final String MIME_TYPE = "video/avc";
     // parameters for recording
+    // 录制参数
     private static final int FRAME_RATE = 25;
     private static final int I_FRAME_INTERVAL = 10;
     private static final float BPP = 0.25f;
@@ -109,22 +116,26 @@ public class MediaVideoBufferEncoder extends MediaEncoder implements IVideoEncod
     /**
      * select the first codec that match a specific MIME type
      *
+     * 选择第一个与指定 MIME 类型匹配的编解码器
+     *
      * @param mimeType
-     * @return null if no codec matched
+     * @return null if no codec matched / 没有匹配的编解码器时返回 null
      */
     @SuppressWarnings("deprecation")
     protected final MediaCodecInfo selectVideoCodec(final String mimeType) {
         if (DEBUG) Log.v(TAG, "selectVideoCodec:");
 
         // get the list of available codecs
+        // 获取可用编解码器的列表
         final int numCodecs = MediaCodecList.getCodecCount();
         for (int i = 0; i < numCodecs; i++) {
             final MediaCodecInfo codecInfo = MediaCodecList.getCodecInfoAt(i);
 
-            if (!codecInfo.isEncoder()) {    // skipp decoder
+            if (!codecInfo.isEncoder()) {    // skipp decoder / 跳过解码器
                 continue;
             }
             // select first codec that match a specific MIME type and color format
+            // 选择第一个与指定 MIME 类型和颜色格式匹配的编解码器
             final String[] types = codecInfo.getSupportedTypes();
             for (String type : types) {
                 if (type.equalsIgnoreCase(mimeType)) {
@@ -143,7 +154,9 @@ public class MediaVideoBufferEncoder extends MediaEncoder implements IVideoEncod
     /**
      * select color format available on specific codec and we can use.
      *
-     * @return 0 if no colorFormat is matched
+     * 选择指定编解码器上可用且我们可以使用的颜色格式。
+     *
+     * @return 0 if no colorFormat is matched / 没有匹配的 colorFormat 时返回 0
      */
     protected static int selectColorFormat(final MediaCodecInfo codecInfo, final String mimeType) {
         if (DEBUG) Log.i(TAG, "selectColorFormat: ");
@@ -171,6 +184,8 @@ public class MediaVideoBufferEncoder extends MediaEncoder implements IVideoEncod
 
     /**
      * color formats that we can use in this class
+     *
+     * 此类中可以使用的颜色格式
      */
     protected static int[] recognizedFormats;
 

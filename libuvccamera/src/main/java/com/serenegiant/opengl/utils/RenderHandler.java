@@ -33,6 +33,9 @@ import com.serenegiant.opengl.GLDrawer2D;
 /**
  * Draw shared texture on specific whole Surface using OpenGL|ES
  * this will deprecate soon because I don't use this now
+ *
+ * 使用 OpenGL|ES 将共享纹理绘制到指定的整个 Surface 上
+ * 由于目前不再使用,此类很快将被弃用
  */
 public final class RenderHandler extends Handler {
     //	private static final boolean DEBUG = BuildConfig.DEBUG;	// FIXME set false on release
@@ -147,6 +150,9 @@ public final class RenderHandler extends Handler {
     /**
      * Thread to execute render methods
      * You can also use HandlerThread insted of this and create Handler from its Looper.
+     *
+     * 执行渲染方法的线程
+     * 也可以用 HandlerThread 代替它,并通过其 Looper 创建 Handler。
      */
     private static final class RenderThread extends Thread {
         private static final String TAG_THREAD = "RenderThread";
@@ -164,6 +170,7 @@ public final class RenderHandler extends Handler {
         public final RenderHandler getHandler() {
             synchronized (mSync) {
                 // create rendering thread
+                // 创建渲染线程
                 try {
                     mSync.wait();
                 } catch (final InterruptedException e) {
@@ -174,6 +181,8 @@ public final class RenderHandler extends Handler {
 
         /**
          * Set shared context and Surface
+         *
+         * 设置共享上下文和 Surface
          *
          * @param shardContext
          * @param surface
@@ -206,6 +215,8 @@ public final class RenderHandler extends Handler {
 
         /**
          * drawing
+         *
+         * 绘制
          *
          * @param tex_id
          * @param tex_matrix
@@ -258,6 +269,8 @@ public final class RenderHandler extends Handler {
 
         /**
          * Fill black on specific Surface
+         *
+         * 在指定的 Surface 上填充黑色
          */
         private final void clear() {
 //    		if (DEBUG) Log.v(TAG_THREAD, "clear:");

@@ -13,13 +13,16 @@ import static org.junit.Assert.*;
 /**
  * Instrumented test, which will execute on an Android device.
  *
- * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
+ * 仪器化测试，将在 Android 设备上执行。
+ *
+ * @see <a href="http://d.android.com/tools/testing">Testing documentation</a> / 测试文档
  */
 @RunWith(AndroidJUnit4.class)
 public class ExampleInstrumentedTest {
     @Test
     public void useAppContext() {
         // Context of the app under test.
+        // 被测应用的 Context。
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
         assertEquals("com.herohan.uvcapp", appContext.getPackageName());
     }

@@ -7,53 +7,55 @@ public class UVCControl {
     private static final String TAG = UVCControl.class.getSimpleName();
 
     //--------------------------------------------------------------------------------
-    public static final int CT_SCANNING_MODE_CONTROL = 0x00000001;    // D0:  Scanning Mode
-    public static final int CT_AE_MODE_CONTROL = 0x00000002;    // D1:  Auto-Exposure Mode
-    public static final int CT_AE_PRIORITY_CONTROL = 0x00000004;    // D2:  Auto-Exposure Priority
-    public static final int CT_EXPOSURE_TIME_ABSOLUTE_CONTROL = 0x00000008;    // D3:  Exposure Time (Absolute)
-    public static final int CT_EXPOSURE_TIME_RELATIVE_CONTROL = 0x00000010;    // D4:  Exposure Time (Relative)
-    public static final int CT_FOCUS_ABSOLUTE_CONTROL = 0x00000020;    // D5:  Focus (Absolute)
-    public static final int CT_FOCUS_RELATIVE_CONTROL = 0x00000040;    // D6:  Focus (Relative)
-    public static final int CT_IRIS_ABSOLUTE_CONTROL = 0x00000080;    // D7:  Iris (Absolute)
-    public static final int CT_IRIS_RELATIVE_CONTROL = 0x00000100;    // D8:  Iris (Relative)
-    public static final int CT_ZOOM_ABSOLUTE_CONTROL = 0x00000200;    // D9:  Zoom (Absolute)
-    public static final int CT_ZOOM_RELATIVE_CONTROL = 0x00000400;    // D10: Zoom (Relative)
-    public static final int CT_PANTILT_ABSOLUTE_CONTROL = 0x00000800;    // D11: PanTilt (Absolute)
-    public static final int CT_PANTILT_RELATIVE_CONTROL = 0x00001000;    // D12: PanTilt (Relative)
-    public static final int CT_ROLL_ABSOLUTE_CONTROL = 0x00002000;    // D13: Roll (Absolute)
-    public static final int CT_ROLL_RELATIVE_CONTROL = 0x00004000;    // D14: Roll (Relative)
-    public static final int CT_FOCUS_AUTO_CONTROL = 0x00020000;    // D17: Focus, Auto
-    public static final int CT_PRIVACY_CONTROL = 0x00040000;    // D18: Privacy
-    public static final int CT_FOCUS_SIMPLE_CONTROL = 0x00080000;    // D19: Focus, Simple
-    public static final int CT_WINDOW_CONTROL = 0x00100000;    // D20: Window
+    public static final int CT_SCANNING_MODE_CONTROL = 0x00000001;    // D0:  Scanning Mode / 扫描模式
+    public static final int CT_AE_MODE_CONTROL = 0x00000002;    // D1:  Auto-Exposure Mode / 自动曝光模式
+    public static final int CT_AE_PRIORITY_CONTROL = 0x00000004;    // D2:  Auto-Exposure Priority / 自动曝光优先级
+    public static final int CT_EXPOSURE_TIME_ABSOLUTE_CONTROL = 0x00000008;    // D3:  Exposure Time (Absolute) / 曝光时间（绝对值）
+    public static final int CT_EXPOSURE_TIME_RELATIVE_CONTROL = 0x00000010;    // D4:  Exposure Time (Relative) / 曝光时间（相对值）
+    public static final int CT_FOCUS_ABSOLUTE_CONTROL = 0x00000020;    // D5:  Focus (Absolute) / 对焦（绝对值）
+    public static final int CT_FOCUS_RELATIVE_CONTROL = 0x00000040;    // D6:  Focus (Relative) / 对焦（相对值）
+    public static final int CT_IRIS_ABSOLUTE_CONTROL = 0x00000080;    // D7:  Iris (Absolute) / 光圈（绝对值）
+    public static final int CT_IRIS_RELATIVE_CONTROL = 0x00000100;    // D8:  Iris (Relative) / 光圈（相对值）
+    public static final int CT_ZOOM_ABSOLUTE_CONTROL = 0x00000200;    // D9:  Zoom (Absolute) / 变焦（绝对值）
+    public static final int CT_ZOOM_RELATIVE_CONTROL = 0x00000400;    // D10: Zoom (Relative) / 变焦（相对值）
+    public static final int CT_PANTILT_ABSOLUTE_CONTROL = 0x00000800;    // D11: PanTilt (Absolute) / 平移/倾斜（绝对值）
+    public static final int CT_PANTILT_RELATIVE_CONTROL = 0x00001000;    // D12: PanTilt (Relative) / 平移/倾斜（相对值）
+    public static final int CT_ROLL_ABSOLUTE_CONTROL = 0x00002000;    // D13: Roll (Absolute) / 翻滚（绝对值）
+    public static final int CT_ROLL_RELATIVE_CONTROL = 0x00004000;    // D14: Roll (Relative) / 翻滚（相对值）
+    public static final int CT_FOCUS_AUTO_CONTROL = 0x00020000;    // D17: Focus, Auto / 自动对焦
+    public static final int CT_PRIVACY_CONTROL = 0x00040000;    // D18: Privacy / 隐私
+    public static final int CT_FOCUS_SIMPLE_CONTROL = 0x00080000;    // D19: Focus, Simple / 简易对焦
+    public static final int CT_WINDOW_CONTROL = 0x00100000;    // D20: Window / 窗口
 
-    public static final int PU_BRIGHTNESS_CONTROL = 0x80000001;    // D0: Brightness
-    public static final int PU_CONTRAST_CONTROL = 0x80000002;    // D1: Contrast
-    public static final int PU_HUE_CONTROL = 0x80000004;    // D2: Hue
-    public static final int PU_SATURATION_CONTROL = 0x80000008;    // D3: Saturation
-    public static final int PU_SHARPNESS_CONTROL = 0x80000010;    // D4: Sharpness
-    public static final int PU_GAMMA_CONTROL = 0x80000020;    // D5: Gamma
-    public static final int PU_WHITE_BALANCE_TEMPERATURE_CONTROL = 0x80000040;    // D6: White Balance Temperature
-    public static final int PU_WHITE_BALANCE_COMPONENT_CONTROL = 0x80000080;    // D7: White Balance Component
-    public static final int PU_BACKLIGHT_COMPENSATION_CONTROL = 0x80000100;    // D8: Backlight Compensation
-    public static final int PU_GAIN_CONTROL = 0x80000200;    // D9: Gain
-    public static final int PU_POWER_LINE_FREQUENCY_CONTROL = 0x80000400;    // D10: Power Line Frequency
-    public static final int PU_HUE_AUTO_CONTROL = 0x80000800;    // D11: Hue, Auto
-    public static final int PU_WHITE_BALANCE_TEMPERATURE_AUTO_CONTROL = 0x80001000;    // D12: White Balance Temperature, Auto
-    public static final int PU_WHITE_BALANCE_COMPONENT_AUTO_CONTROL = 0x80002000;    // D13: White Balance Component, Auto
-    public static final int PU_DIGITAL_MULTIPLIER_CONTROL = 0x80004000;    // D14: Digital Multiplier
-    public static final int PU_DIGITAL_MULTIPLIER_LIMIT_CONTROL = 0x80008000;    // D15: Digital Multiplier Limit
-    public static final int PU_ANALOG_VIDEO_STANDARD_CONTROL = 0x80010000;    // D16: Analog Video Standard
-    public static final int PU_ANALOG_LOCK_STATUS_CONTROL = 0x80020000;    // D17: Analog Video Lock Status
-    public static final int PU_CONTRAST_AUTO_CONTROL = 0x80040000;    // D18: Contrast, Auto
+    public static final int PU_BRIGHTNESS_CONTROL = 0x80000001;    // D0: Brightness / 亮度
+    public static final int PU_CONTRAST_CONTROL = 0x80000002;    // D1: Contrast / 对比度
+    public static final int PU_HUE_CONTROL = 0x80000004;    // D2: Hue / 色调
+    public static final int PU_SATURATION_CONTROL = 0x80000008;    // D3: Saturation / 饱和度
+    public static final int PU_SHARPNESS_CONTROL = 0x80000010;    // D4: Sharpness / 锐度
+    public static final int PU_GAMMA_CONTROL = 0x80000020;    // D5: Gamma / 伽马
+    public static final int PU_WHITE_BALANCE_TEMPERATURE_CONTROL = 0x80000040;    // D6: White Balance Temperature / 白平衡色温
+    public static final int PU_WHITE_BALANCE_COMPONENT_CONTROL = 0x80000080;    // D7: White Balance Component / 白平衡分量
+    public static final int PU_BACKLIGHT_COMPENSATION_CONTROL = 0x80000100;    // D8: Backlight Compensation / 背光补偿
+    public static final int PU_GAIN_CONTROL = 0x80000200;    // D9: Gain / 增益
+    public static final int PU_POWER_LINE_FREQUENCY_CONTROL = 0x80000400;    // D10: Power Line Frequency / 电源线频率
+    public static final int PU_HUE_AUTO_CONTROL = 0x80000800;    // D11: Hue, Auto / 自动色调
+    public static final int PU_WHITE_BALANCE_TEMPERATURE_AUTO_CONTROL = 0x80001000;    // D12: White Balance Temperature, Auto / 自动白平衡色温
+    public static final int PU_WHITE_BALANCE_COMPONENT_AUTO_CONTROL = 0x80002000;    // D13: White Balance Component, Auto / 自动白平衡分量
+    public static final int PU_DIGITAL_MULTIPLIER_CONTROL = 0x80004000;    // D14: Digital Multiplier / 数字倍增器
+    public static final int PU_DIGITAL_MULTIPLIER_LIMIT_CONTROL = 0x80008000;    // D15: Digital Multiplier Limit / 数字倍增器限制
+    public static final int PU_ANALOG_VIDEO_STANDARD_CONTROL = 0x80010000;    // D16: Analog Video Standard / 模拟视频标准
+    public static final int PU_ANALOG_LOCK_STATUS_CONTROL = 0x80020000;    // D17: Analog Video Lock Status / 模拟视频锁定状态
+    public static final int PU_CONTRAST_AUTO_CONTROL = 0x80040000;    // D18: Contrast, Auto / 自动对比度
 
-    public static final int UVC_AUTO_EXPOSURE_MODE_MANUAL = 1; // manual exposure time, manual iris
-    public static final int UVC_AUTO_EXPOSURE_MODE_AUTO = 2; // auto exposure time, auto iris
-    public static final int UVC_AUTO_EXPOSURE_MODE_SHUTTER_PRIORITY = 4; // manual exposure time, auto iris
-    public static final int UVC_AUTO_EXPOSURE_MODE_APERTURE_PRIORITY = 8; // auto exposure time, manual iris
+    public static final int UVC_AUTO_EXPOSURE_MODE_MANUAL = 1; // manual exposure time, manual iris / 手动曝光时间，手动光圈
+    public static final int UVC_AUTO_EXPOSURE_MODE_AUTO = 2; // auto exposure time, auto iris / 自动曝光时间，自动光圈
+    public static final int UVC_AUTO_EXPOSURE_MODE_SHUTTER_PRIORITY = 4; // manual exposure time, auto iris / 手动曝光时间，自动光圈
+    public static final int UVC_AUTO_EXPOSURE_MODE_APERTURE_PRIORITY = 8; // auto exposure time, manual iris / 自动曝光时间，手动光圈
 
     /**
      * description array of camera terminal
+     *
+     * 摄像头终端（Camera Terminal）的描述数组
      */
     private static final String[] CAMERA_TERMINAL_DESCS = {
             "D0:  Scanning Mode",
@@ -84,6 +86,8 @@ public class UVCControl {
 
     /**
      * description array of processing unit
+     *
+     * 处理单元（Processing Unit）的描述数组
      */
     private static final String[] PROCESSING_UNIT_DESCS = {
             "D0: Brightness",
@@ -123,8 +127,12 @@ public class UVCControl {
 
     protected long mNativePtr;
 
-    protected long mCameraTerminalControls;            // bmControls ( a entry of bit set ) , indicating the availability of certain camera controls for the video stream.
-    protected long mProcessingUnitControls;              // bmControls ( a entry of bit set ) , indicating the availability of certain processing controls for the video stream.
+    // bmControls ( a entry of bit set ) , indicating the availability of certain camera controls for the video stream.
+    // bmControls（位集合的一个条目），表示视频流可用的特定摄像头控制项。
+    protected long mCameraTerminalControls;
+    // bmControls ( a entry of bit set ) , indicating the availability of certain processing controls for the video stream.
+    // bmControls（位集合的一个条目），表示视频流可用的特定处理控制项。
+    protected long mProcessingUnitControls;
 
     protected int mScanningModeMin, mScanningModeMax, mScanningModeDef;
     protected int mAutoExposureModeMin, mAutoExposureModeMax, mAutoExposureModeDef;
@@ -173,6 +181,8 @@ public class UVCControl {
 
     // wrong result may return when you call this just after camera open.
     // it is better to wait several hundreds milliseconds.
+    // 在摄像头刚打开后立即调用此方法可能会返回错误的结果。
+    // 最好等待几百毫秒。
     public boolean checkSupportFlag(final long flag) {
         updateCameraParams();
         if ((flag & 0x80000000) == 0x80000000) {
@@ -203,7 +213,9 @@ public class UVCControl {
     /**
      * Sets the SCANNING_MODE control.
      *
-     * @param mode 0: interlaced, 1: progressive
+     * 设置 SCANNING_MODE 控制。
+     *
+     * @param mode 0: interlaced, 1: progressive / 0：隔行扫描，1：逐行扫描
      */
     public synchronized void setScanningMode(final int mode) {
         nativeSetScanningMode(mNativePtr, mode);
@@ -244,8 +256,16 @@ public class UVCControl {
      * UVC_AUTO_EXPOSURE_MODE_AUTO (2) - auto exposure time, auto iris
      * UVC_AUTO_EXPOSURE_MODE_SHUTTER_PRIORITY (4) - manual exposure time, auto iris
      * UVC_AUTO_EXPOSURE_MODE_APERTURE_PRIORITY (8) - auto exposure time, manual iris
+     * <p>
+     * 设置摄像头的自动曝光模式。
+     * <p>
+     * 摄像头可能支持以下任一 AE 模式：
+     * UVC_AUTO_EXPOSURE_MODE_MANUAL (1) - 手动曝光时间，手动光圈
+     * UVC_AUTO_EXPOSURE_MODE_AUTO (2) - 自动曝光时间，自动光圈
+     * UVC_AUTO_EXPOSURE_MODE_SHUTTER_PRIORITY (4) - 手动曝光时间，自动光圈
+     * UVC_AUTO_EXPOSURE_MODE_APERTURE_PRIORITY (8) - 自动曝光时间，手动光圈
      *
-     * @param mode 1: manual mode; 2: auto mode; 4: shutter priority mode; 8: aperture priority mode
+     * @param mode 1: manual mode; 2: auto mode; 4: shutter priority mode; 8: aperture priority mode / 1：手动模式；2：自动模式；4：快门优先模式；8：光圈优先模式
      */
     public synchronized void setAutoExposureMode(final int mode) {
         nativeSetAutoExposureMode(mNativePtr, mode);
@@ -263,26 +283,32 @@ public class UVCControl {
     }
 
     /**
-     * @param auto Whether Exposure Time is auto adjust
+     * @param auto Whether Exposure Time is auto adjust / 曝光时间是否自动调整
      */
     public synchronized void setExposureTimeAuto(final boolean auto) {
         int mode = getAutoExposureMode();
         if (auto) {
             // manual exposure time, manual iris
+            // 手动曝光时间，手动光圈
             if (mode == UVC_AUTO_EXPOSURE_MODE_MANUAL) {
                 // auto exposure time, manual iris
+                // 自动曝光时间，手动光圈
                 mode = UVC_AUTO_EXPOSURE_MODE_APERTURE_PRIORITY;
-            } else if (mode == UVC_AUTO_EXPOSURE_MODE_SHUTTER_PRIORITY) { // manual exposure time, auto iris
+            } else if (mode == UVC_AUTO_EXPOSURE_MODE_SHUTTER_PRIORITY) { // manual exposure time, auto iris / 手动曝光时间，自动光圈
                 // auto exposure time, auto iris
+                // 自动曝光时间，自动光圈
                 mode = UVC_AUTO_EXPOSURE_MODE_AUTO;
             }
         } else {
             // auto exposure time, auto iris
+            // 自动曝光时间，自动光圈
             if (mode == UVC_AUTO_EXPOSURE_MODE_AUTO) {
                 // auto exposure time, auto iris
+                // 自动曝光时间，自动光圈
                 mode = UVC_AUTO_EXPOSURE_MODE_SHUTTER_PRIORITY;
-            } else if (mode == UVC_AUTO_EXPOSURE_MODE_APERTURE_PRIORITY) { // auto exposure time, manual iris
+            } else if (mode == UVC_AUTO_EXPOSURE_MODE_APERTURE_PRIORITY) { // auto exposure time, manual iris / 自动曝光时间，手动光圈
                 // manual exposure time, manual iris
+                // 手动曝光时间，手动光圈
                 mode = UVC_AUTO_EXPOSURE_MODE_MANUAL;
             }
         }
@@ -290,7 +316,7 @@ public class UVCControl {
     }
 
     /**
-     * @return Whether Exposure Time is auto adjust
+     * @return Whether Exposure Time is auto adjust / 曝光时间是否自动调整
      */
     public synchronized boolean isExposureTimeAuto() {
         int mode = getAutoExposureMode();
@@ -320,7 +346,12 @@ public class UVCControl {
      * means the frame rate is variable. This setting has no effect outside of the `auto` and
      * `shutter_priority` auto-exposure modes.
      *
-     * @param priority 0: frame rate must remain constant; 1: frame rate may be varied for AE purposes
+     * 选择摄像头是否可以出于曝光控制的原因改变帧率。
+     * `priority` 值为 0 表示摄像头不得改变其帧率；值为 1
+     * 表示帧率可变。此设置在 `auto` 和 `shutter_priority`
+     * 自动曝光模式之外不起作用。
+     *
+     * @param priority 0: frame rate must remain constant; 1: frame rate may be varied for AE purposes / 0：帧率必须保持恒定；1：为 AE 目的可改变帧率
      */
     public synchronized void setAutoExposurePriority(final int priority) {
         nativeSetAutoExposurePriority(mNativePtr, priority);
@@ -359,6 +390,12 @@ public class UVCControl {
      * The `time` parameter should be provided in units of 0.0001 seconds (e.g., use the value 100
      * for a 10ms exposure period). Auto exposure should be set to `manual` or `shutter_priority`
      * before attempting to change this setting.
+     * <p>
+     * 设置绝对曝光时间。
+     * <p>
+     * `time` 参数的单位应为 0.0001 秒（例如，使用值 100
+     * 表示 10ms 的曝光时长）。在尝试更改此设置之前，应先将自动曝光设置为
+     * `manual` 或 `shutter_priority`。
      *
      * @param time
      */
@@ -396,7 +433,9 @@ public class UVCControl {
     /**
      * Sets the exposure time relative to the current setting.
      *
-     * @param step number of steps by which to change the exposure time, or zero to set the default exposure time
+     * 设置相对于当前设置的曝光时间。
+     *
+     * @param step number of steps by which to change the exposure time, or zero to set the default exposure time / 曝光时间的更改步数，为零则设置为默认曝光时间
      */
     public synchronized void setExposureTimeRelative(final int step) {
         nativeSetExposureTimeRelative(mNativePtr, step);
@@ -432,6 +471,8 @@ public class UVCControl {
     /**
      * Sets the distance at which an object is optimally focused.
      *
+     * 设置物体处于最佳对焦状态时的距离。
+     *
      * @param focus
      */
     public synchronized void setFocusAbsolute(final int focus) {
@@ -452,12 +493,15 @@ public class UVCControl {
     /**
      * Sets the distance at which an object is optimally focused.
      *
+     * 设置物体处于最佳对焦状态时的距离。
+     *
      * @param percent
      */
     public synchronized void setFocusAbsolutePercent(final int percent) {
         final float range = Math.abs(mFocusAbsoluteMax - mFocusAbsoluteMin);
         if (range > 0) {
             // focus focal target distance in millimeters
+            // 对焦目标距离（单位：毫米）
             nativeSetFocusAbsolute(mNativePtr, (int) (percent / 100.f * range) + mFocusAbsoluteMin);
         }
     }
@@ -497,6 +541,9 @@ public class UVCControl {
      * Sets the FOCUS_RELATIVE control.
      * focus = (focus << 8) + speed
      *
+     * 设置 FOCUS_RELATIVE 控制。
+     * focus = (focus << 8) + speed
+     *
      * @param focus
      */
     public synchronized void setFocusRelative(final int focus) {
@@ -533,6 +580,8 @@ public class UVCControl {
     /**
      * Sets the IRIS_ABSOLUTE control.
      *
+     * 设置 IRIS_ABSOLUTE 控制。
+     *
      * @param iris
      */
     public synchronized void setIrisAbsolute(final int iris) {
@@ -568,6 +617,8 @@ public class UVCControl {
 
     /**
      * Sets the IRIS_RELATIVE control.
+     *
+     * 设置 IRIS_RELATIVE 控制。
      *
      * @param iris
      */
@@ -606,6 +657,9 @@ public class UVCControl {
      * Sets the ZOOM_ABSOLUTE control.
      * this may not work well with some combination of camera and device
      *
+     * 设置 ZOOM_ABSOLUTE 控制。
+     * 在某些摄像头与设备的组合下，此功能可能无法正常工作
+     *
      * @param zoom
      */
     public synchronized void setZoomAbsolute(final int zoom) {
@@ -626,6 +680,9 @@ public class UVCControl {
     /**
      * Sets the ZOOM_ABSOLUTE control.
      * this may not work well with some combination of camera and device
+     *
+     * 设置 ZOOM_ABSOLUTE 控制。
+     * 在某些摄像头与设备的组合下，此功能可能无法正常工作
      *
      * @param percent
      */
@@ -671,6 +728,9 @@ public class UVCControl {
      * Sets the ZOOM_RELATIVE control.
      * zoom = (zoom_rel << 16) + (digital_zoom << 8) + speed
      *
+     * 设置 ZOOM_RELATIVE 控制。
+     * zoom = (zoom_rel << 16) + (digital_zoom << 8) + speed
+     *
      * @param zoom
      */
     public synchronized void setZoomRelative(final int zoom) {
@@ -707,6 +767,8 @@ public class UVCControl {
     /**
      * Sets pan of the PANTILT_ABSOLUTE control.
      *
+     * 设置 PANTILT_ABSOLUTE 控制的 pan（平移）。
+     *
      * @param pan
      */
     public synchronized void setPanAbsolute(final int pan) {
@@ -739,6 +801,8 @@ public class UVCControl {
 
     /**
      * Sets tilt of the PANTILT_ABSOLUTE control.
+     *
+     * 设置 PANTILT_ABSOLUTE 控制的 tilt（倾斜）。
      *
      * @param pan
      */
@@ -773,6 +837,8 @@ public class UVCControl {
     /**
      * Sets pan of the PANTILT_RELATIVE control.
      *
+     * 设置 PANTILT_RELATIVE 控制的 pan（平移）。
+     *
      * @param PanRelative
      */
     public synchronized void setPanRelative(final int PanRelative) {
@@ -805,6 +871,8 @@ public class UVCControl {
 
     /**
      * Sets tilt of the PANTILT_RELATIVE control.
+     *
+     * 设置 PANTILT_RELATIVE 控制的 tilt（倾斜）。
      *
      * @param TiltRelative
      */
@@ -839,6 +907,8 @@ public class UVCControl {
     /**
      * Sets the ROLL_ABSOLUTE control.
      *
+     * 设置 ROLL_ABSOLUTE 控制。
+     *
      * @param roll
      */
     public synchronized void setRollAbsolute(final int roll) {
@@ -871,6 +941,8 @@ public class UVCControl {
 
     /**
      * Sets the ROLL_ABSOLUTE control.
+     *
+     * 设置 ROLL_ABSOLUTE 控制。
      *
      * @param roll
      */
@@ -905,6 +977,8 @@ public class UVCControl {
     /**
      * Sets the FOCUS_AUTO control.
      *
+     * 设置 FOCUS_AUTO 控制。
+     *
      * @param state
      */
     public synchronized void setFocusAuto(final boolean state) {
@@ -937,6 +1011,8 @@ public class UVCControl {
 
     /**
      * Sets the PRIVACY control.
+     *
+     * 设置 PRIVACY 控制。
      *
      * @param state
      */
@@ -1319,6 +1395,8 @@ public class UVCControl {
     /**
      * Sets the WHITE_BALANCE_TEMPERATURE control.
      *
+     * 设置 WHITE_BALANCE_TEMPERATURE 控制。
+     *
      * @param whiteBalance
      */
     public synchronized void setWhiteBalance(final int whiteBalance) {
@@ -1338,6 +1416,8 @@ public class UVCControl {
 
     /**
      * Sets the WHITE_BALANCE_TEMPERATURE control.
+     *
+     * 设置 WHITE_BALANCE_TEMPERATURE 控制。
      *
      * @param percent
      */
@@ -1381,6 +1461,9 @@ public class UVCControl {
      * Sets the WHITE_BALANCE_COMPONENT control.
      * zoom = (red << 16) + blue
      *
+     * 设置 WHITE_BALANCE_COMPONENT 控制。
+     * zoom = (red << 16) + blue
+     *
      * @param component
      */
     public synchronized void setWhiteBalanceCompo(final int component) {
@@ -1417,14 +1500,16 @@ public class UVCControl {
     /**
      * Sets the BACKLIGHT_COMPENSATION control.
      *
-     * @param backlight_compensation device-dependent backlight compensation mode; zero means backlight compensation is disabled
+     * 设置 BACKLIGHT_COMPENSATION 控制。
+     *
+     * @param backlight_compensation device-dependent backlight compensation mode; zero means backlight compensation is disabled / 与设备相关的背光补偿模式；为零表示禁用背光补偿
      */
     public synchronized void setBacklightComp(final int backlight_compensation) {
         nativeSetBacklightComp(mNativePtr, backlight_compensation);
     }
 
     /**
-     * @return backlight_compensation device-dependent backlight compensation mode; zero means backlight compensation is disabled
+     * @return backlight_compensation device-dependent backlight compensation mode; zero means backlight compensation is disabled / 与设备相关的背光补偿模式；为零表示禁用背光补偿
      */
     public synchronized int getBacklightComp() {
         return nativeGetBacklightComp(mNativePtr);
@@ -1510,6 +1595,8 @@ public class UVCControl {
     /**
      * Sets the POWER_LINE_FREQUENCY control.
      *
+     * 设置 POWER_LINE_FREQUENCY 控制。
+     *
      * @param frequency
      */
     public void setPowerlineFrequency(final int frequency) {
@@ -1542,6 +1629,8 @@ public class UVCControl {
 
     /**
      * Sets the FOCUS_AUTO control.
+     *
+     * 设置 FOCUS_AUTO 控制。
      *
      * @param state
      */
@@ -1632,6 +1721,8 @@ public class UVCControl {
     /**
      * Sets the DIGITAL_MULTIPLIER control.
      *
+     * 设置 DIGITAL_MULTIPLIER 控制。
+     *
      * @param digitalMultiplier
      */
     public void setDigitalMultiplier(final int digitalMultiplier) {
@@ -1664,6 +1755,8 @@ public class UVCControl {
 
     /**
      * Sets the DIGITAL_MULTIPLIER_LIMIT control.
+     *
+     * 设置 DIGITAL_MULTIPLIER_LIMIT 控制。
      *
      * @param digitalMultiplierLimit
      */
@@ -1698,6 +1791,8 @@ public class UVCControl {
     /**
      * Sets the ANALOG_VIDEO_STANDARD control.
      *
+     * 设置 ANALOG_VIDEO_STANDARD 控制。
+     *
      * @param analogVideoStandard
      */
     public void setAnalogVideoStandard(final int analogVideoStandard) {
@@ -1730,6 +1825,8 @@ public class UVCControl {
 
     /**
      * Sets the ANALOG_LOCK_STATUS control.
+     *
+     * 设置 ANALOG_LOCK_STATUS 控制。
      *
      * @param analogVideoLockState
      */
@@ -1764,6 +1861,8 @@ public class UVCControl {
     /**
      * Sets the FOCUS_AUTO control.
      *
+     * 设置 FOCUS_AUTO 控制。
+     *
      * @param state
      */
     public synchronized void setContrastAuto(final boolean state) {
@@ -1783,15 +1882,19 @@ public class UVCControl {
         if (mNativePtr != 0) {
             if ((mCameraTerminalControls == 0) || (mProcessingUnitControls == 0)) {
                 // Get supported feature flag
+                // 获取支持的功能标志
                 if (mCameraTerminalControls == 0) {
                     // Get the bmControls ( a entry of bit set )  of Camera Terminal (CT) that is supported  by the camera
+                    // 获取摄像头支持的 Camera Terminal (CT) 的 bmControls（位集合的一个条目）
                     mCameraTerminalControls = nativeGetCameraTerminalControls(mNativePtr);
                 }
                 if (mProcessingUnitControls == 0) {
                     // Get the bmControls ( a entry of bit set )  of Processing Unit (PU) that is supported  by the camera
+                    // 获取摄像头支持的 Processing Unit (PU) 的 bmControls（位集合的一个条目）
                     mProcessingUnitControls = nativeGetProcessingUnitControls(mNativePtr);
                 }
                 // Update supported feature parameters
+                // 更新支持的功能参数
                 if ((mCameraTerminalControls != 0) && (mProcessingUnitControls != 0)) {
                     updateScanningModeLimit();
                     updateAutoExposureModeLimit();

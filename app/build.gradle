@@ -54,6 +54,7 @@ dependencies {
     implementation 'androidx.recyclerview:recyclerview:1.3.0'
 
     // debugImplementation because LeakCanary should only run in debug builds.
+    // 使用 debugImplementation，因为 LeakCanary 只应在 debug 构建中运行。
 //    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.8.1'
 
     testImplementation 'junit:junit:4.13.2'

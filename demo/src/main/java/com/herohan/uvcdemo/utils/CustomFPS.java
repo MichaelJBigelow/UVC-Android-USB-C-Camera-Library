@@ -42,6 +42,7 @@ public class CustomFPS {
 
             if (frameStartTime > 0) {
                 // take the span in milliseconds
+                // 获取以毫秒为单位的时间间隔
                 final long timeSpan = currentTimeMillis - frameStartTime;
                 framesRendered++;
 

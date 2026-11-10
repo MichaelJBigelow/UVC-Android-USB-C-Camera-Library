@@ -38,9 +38,12 @@ public class FileUtils {
      * generate output file
      * use media store to create media file directly, updating media store manually by MediaScannerConnection.scanFile is unnecessary.
      *
-     * @param type Environment.DIRECTORY_MOVIES / Environment.DIRECTORY_DCIM etc.
-     * @param ext  .mp4(.m4a for audio) or .png
-     * @return return null when this app has no writing permission to external storage.
+     * 生成输出文件。
+     * 直接使用 media store 创建媒体文件，无需再通过 MediaScannerConnection.scanFile 手动更新 media store。
+     *
+     * @param type Environment.DIRECTORY_MOVIES / Environment.DIRECTORY_DCIM etc. / Environment.DIRECTORY_MOVIES / Environment.DIRECTORY_DCIM 等
+     * @param ext  .mp4(.m4a for audio) or .png / .mp4（音频为 .m4a）或 .png
+     * @return return null when this app has no writing permission to external storage. / 当本应用没有外部存储的写入权限时返回 null
      */
     public static Uri getCaptureUri(Context context, final String type, final String ext) {
         return getCaptureUri(context, type, null, ext);
@@ -61,10 +64,12 @@ public class FileUtils {
         String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
 
         // Add a specific media item.
+        // 添加指定的媒体项。
         ContentResolver resolver = context.getContentResolver();
 
         Uri mediaTable = null;
         // Find all media files on the primary external storage device.
+        // 查找主外部存储设备上的所有媒体文件。
         String volumeName = MediaStore.VOLUME_EXTERNAL_PRIMARY;
         if (mimeType.startsWith(MIME_PREFIX_IMAGE)) {
             mediaTable = MediaStore.Images.Media.getContentUri(
@@ -92,9 +97,11 @@ public class FileUtils {
     /**
      * create file for saving movie / still image file
      *
+     * 创建用于保存视频/静态图片的文件。
+     *
      * @param type Environment.DIRECTORY_MOVIES / Environment.DIRECTORY_DCIM
-     * @param ext  .mp4 .png or .jpeg
-     * @return  return null when this app has no writing permission to external storage.
+     * @param ext  .mp4 .png or .jpeg / .mp4、.png 或 .jpeg
+     * @return  return null when this app has no writing permission to external storage. / 当本应用没有外部存储的写入权限时返回 null
      */
     public static File getCaptureFile(final Context context,
                                             final String type, final String ext) {
@@ -104,6 +111,8 @@ public class FileUtils {
 
     /**
      *  need WRITE_EXTERNAL_STORAGE permission
+     *
+     *  需要 WRITE_EXTERNAL_STORAGE 权限
      */
     public static File getCaptureFile(final Context context,
                                             final String type, final String prefix, final String ext) {
@@ -133,7 +142,7 @@ public class FileUtils {
     }
 
     /**
-     * @return formatted string of current time
+     * @return formatted string of current time / 当前时间的格式化字符串
      */
     public static String getDateTimeString() {
         final GregorianCalendar now = new GregorianCalendar();
@@ -155,7 +164,7 @@ public class FileUtils {
                 if (line.contains("secure")) continue;
                 if (line.contains("asec")) continue;
 
-                if (line.contains("fat")) {//external card
+                if (line.contains("fat")) {//external card / 外部存储卡
                     final String columns[] = line.split(" ");
                     if (columns != null && (columns.length > 1) && !TextUtils.isEmpty(columns[1])) {
                         externalpath = columns[1];
@@ -163,7 +172,7 @@ public class FileUtils {
                             externalpath = externalpath + "/";
                         }
                     }
-                } else if (line.contains("fuse")) {//internal storage
+                } else if (line.contains("fuse")) {//internal storage / 内部存储
                     final String columns[] = line.split(" ");
                     if (columns != null && columns.length > 1) {
                         internalpath = internalpath.concat("[" + columns[1] + "]");

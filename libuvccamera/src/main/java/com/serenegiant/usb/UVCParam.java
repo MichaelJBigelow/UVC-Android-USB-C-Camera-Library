@@ -6,10 +6,14 @@ public class UVCParam implements Cloneable {
 
     /**
      * Preview size
+     * <p>
+     * 预览尺寸
      */
     private Size previewSize;
     /**
      * Enable some quirks to resolve specific issues
+     * <p>
+     * 启用某些兼容性处理（quirks）以解决特定问题
      */
     private int quirks;
 

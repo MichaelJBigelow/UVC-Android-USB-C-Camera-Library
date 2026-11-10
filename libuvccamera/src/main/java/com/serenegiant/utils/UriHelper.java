@@ -22,6 +22,8 @@ import java.util.ArrayList;
 
 /**
  * Uri of external storage for Android10 or later may not work properly
+ *
+ * 在 Android10 及更高版本上，外部存储的 Uri 可能无法正常工作
  */
 public final class UriHelper {
     private static final boolean DEBUG = BuildConfig.DEBUG;
@@ -33,9 +35,11 @@ public final class UriHelper {
     /**
      *  convert uri to path
      *
+     *  将 uri 转换为路径
+     *
      * @param cr
      * @param uri
-     * @return String Null if the path is not found
+     * @return String Null if the path is not found / 如果未找到路径则为 Null
      */
     @Nullable
     public static String getAbsolutePath(@NonNull final ContentResolver cr, @Nullable final Uri uri) {
@@ -93,8 +97,10 @@ public final class UriHelper {
     /**
      * Return path if the Uri can be converted to a local path
      *
-     * @param context The context.
-     * @param uri     The Uri to query.
+     * 如果该 Uri 可以转换为本地路径，则返回该路径
+     *
+     * @param context The context. / 上下文
+     * @param uri     The Uri to query. / 要查询的 Uri
      */
     @Nullable
     public static String getPath(@NonNull final Context context, final Uri uri) {
@@ -131,6 +137,7 @@ public final class UriHelper {
                         return (split.length > 1) ? path + split[1] : path;
                     } else {
                         // search the path from beginning
+                        // 从头开始搜索路径
                         final String primary = Environment.getExternalStorageDirectory().getAbsolutePath();
                         if (DEBUG) Log.i(TAG, "getPath:primary=" + primary);
                         final File[] dirs = context.getExternalFilesDirs(null);
@@ -141,6 +148,7 @@ public final class UriHelper {
                             if (DEBUG) Log.i(TAG, "getPath:" + i + ")dir=" + dir);
                             if ((dir != null) && dir.getAbsolutePath().startsWith(primary)) {
                                 // skip primary storage
+                                // 跳过主存储
                                 continue;
                             }
                             final String dir_path = dir != null ? dir.getAbsolutePath() : null;
@@ -164,6 +172,7 @@ public final class UriHelper {
                                         final File path = new File(new File(sb.toString()), split[1]);
                                         if (DEBUG) Log.i(TAG, "getPath:path=" + path);
                                         // return path directly no matter has permission to access the path or not
+                                        // 无论是否有权限访问该路径，都直接返回路径
                                         return path.getAbsolutePath();
                                     }
                                 }
@@ -205,12 +214,14 @@ public final class UriHelper {
         } else if (uri != null) {
             if ("content".equalsIgnoreCase(uri.getScheme())) {
                 // MediaStore (and general)
+                // MediaStore（及通用情况）
                 if (isGooglePhotosUri(uri)) {
                     return uri.getLastPathSegment();
                 }
                 return getDataColumn(context, uri, null, null);
             } else if ("file".equalsIgnoreCase(uri.getScheme())) {
                 // File
+                // 文件
                 return uri.getPath();
             }
         }
@@ -223,11 +234,13 @@ public final class UriHelper {
      * Get the value of the data column for this Uri. This is useful for
      * MediaStore Uris, and other file-based ContentProviders.
      *
-     * @param context       The context.
-     * @param uri           The Uri to query.
-     * @param selection     (Optional) Filter used in the query.
-     * @param selectionArgs (Optional) Selection arguments used in the query.
-     * @return The value of the _data column, which is typically a file path.
+     * 获取该 Uri 的 data 列的值。这对 MediaStore Uri 以及其他基于文件的 ContentProvider 很有用。
+     *
+     * @param context       The context. / 上下文
+     * @param uri           The Uri to query. / 要查询的 Uri
+     * @param selection     (Optional) Filter used in the query. / （可选）查询时使用的过滤条件
+     * @param selectionArgs (Optional) Selection arguments used in the query. / （可选）查询时使用的选择参数
+     * @return The value of the _data column, which is typically a file path. / _data 列的值，通常是文件路径
      */
     @Nullable
     public static String getDataColumn(@NonNull final Context context,
@@ -252,24 +265,24 @@ public final class UriHelper {
     }
 
     /**
-     * @param uri The Uri to check.
-     * @return Whether the Uri authority is ExternalStorageProvider.
+     * @param uri The Uri to check. / 要检查的 Uri
+     * @return Whether the Uri authority is ExternalStorageProvider. / Uri 的 authority 是否为 ExternalStorageProvider
      */
     public static boolean isExternalStorageDocument(@NonNull final Uri uri) {
         return "com.android.externalstorage.documents".equals(uri.getAuthority());
     }
 
     /**
-     * @param uri The Uri to check.
-     * @return Whether the Uri authority is DownloadsProvider.
+     * @param uri The Uri to check. / 要检查的 Uri
+     * @return Whether the Uri authority is DownloadsProvider. / Uri 的 authority 是否为 DownloadsProvider
      */
     public static boolean isDownloadsDocument(@NonNull final Uri uri) {
         return "com.android.providers.downloads.documents".equals(uri.getAuthority());
     }
 
     /**
-     * @param uri The Uri to check.
-     * @return Whether the Uri authority is MediaProvider.
+     * @param uri The Uri to check. / 要检查的 Uri
+     * @return Whether the Uri authority is MediaProvider. / Uri 的 authority 是否为 MediaProvider
      */
     public static boolean isMediaDocument(@NonNull final Uri uri) {
         return "com.android.providers.media.documents".equals(uri.getAuthority());

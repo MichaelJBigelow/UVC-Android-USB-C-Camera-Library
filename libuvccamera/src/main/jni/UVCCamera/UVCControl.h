@@ -9,50 +9,52 @@
 #include <android/native_window.h>
 #include "libUVCCamera.h"
 
-#define    CT_SCANNING_MODE_CONTROL        0x000001    // D0:  Scanning Mode
-#define    CT_AE_MODE_CONTROL                0x000002    // D1:  Auto-Exposure Mode
-#define    CT_AE_PRIORITY_CONTROL    0x000004    // D2:  Auto-Exposure Priority
-#define    CT_EXPOSURE_TIME_ABSOLUTE_CONTROL            0x000008    // D3:  Exposure Time (Absolute)
-#define    CT_EXPOSURE_TIME_RELATIVE_CONTROL            0x000010    // D4:  Exposure Time (Relative)
-#define CT_FOCUS_ABSOLUTE_CONTROL        0x000020    // D5:  Focus (Absolute)
-#define CT_FOCUS_RELATIVE_CONTROL        0x000040    // D6:  Focus (Relative)
-#define CT_IRIS_ABSOLUTE_CONTROL        0x000080    // D7:  Iris (Absolute)
-#define    CT_IRIS_RELATIVE_CONTROL        0x000100    // D8:  Iris (Relative)
-#define    CT_ZOOM_ABSOLUTE_CONTROL        0x000200    // D9:  Zoom (Absolute)
-#define CT_ZOOM_RELATIVE_CONTROL        0x000400    // D10: Zoom (Relative)
-#define    CT_PANTILT_ABSOLUTE_CONTROL    0x000800    // D11: PanTilt (Absolute)
-#define CT_PANTILT_RELATIVE_CONTROL    0x001000    // D12: PanTilt (Relative)
-#define CT_ROLL_ABSOLUTE_CONTROL        0x002000    // D13: Roll (Absolute)
-#define CT_ROLL_RELATIVE_CONTROL        0x004000    // D14: Roll (Relative)
+#define    CT_SCANNING_MODE_CONTROL        0x000001    // D0:  Scanning Mode / D0：扫描模式
+#define    CT_AE_MODE_CONTROL                0x000002    // D1:  Auto-Exposure Mode / D1：自动曝光模式
+#define    CT_AE_PRIORITY_CONTROL    0x000004    // D2:  Auto-Exposure Priority / D2：自动曝光优先级
+#define    CT_EXPOSURE_TIME_ABSOLUTE_CONTROL            0x000008    // D3:  Exposure Time (Absolute) / D3：曝光时间（绝对）
+#define    CT_EXPOSURE_TIME_RELATIVE_CONTROL            0x000010    // D4:  Exposure Time (Relative) / D4：曝光时间（相对）
+#define CT_FOCUS_ABSOLUTE_CONTROL        0x000020    // D5:  Focus (Absolute) / D5：对焦（绝对）
+#define CT_FOCUS_RELATIVE_CONTROL        0x000040    // D6:  Focus (Relative) / D6：对焦（相对）
+#define CT_IRIS_ABSOLUTE_CONTROL        0x000080    // D7:  Iris (Absolute) / D7：光圈（绝对）
+#define    CT_IRIS_RELATIVE_CONTROL        0x000100    // D8:  Iris (Relative) / D8：光圈（相对）
+#define    CT_ZOOM_ABSOLUTE_CONTROL        0x000200    // D9:  Zoom (Absolute) / D9：变焦（绝对）
+#define CT_ZOOM_RELATIVE_CONTROL        0x000400    // D10: Zoom (Relative) / D10：变焦（相对）
+#define    CT_PANTILT_ABSOLUTE_CONTROL    0x000800    // D11: PanTilt (Absolute) / D11：云台水平/俯仰（绝对）
+#define CT_PANTILT_RELATIVE_CONTROL    0x001000    // D12: PanTilt (Relative) / D12：云台水平/俯仰（相对）
+#define CT_ROLL_ABSOLUTE_CONTROL        0x002000    // D13: Roll (Absolute) / D13：滚转（绝对）
+#define CT_ROLL_RELATIVE_CONTROL        0x004000    // D14: Roll (Relative) / D14：滚转（相对）
 // D15: Reserved
 // D16: Reserved
-#define CT_FOCUS_AUTO_CONTROL        0x020000    // D17: Focus, Auto
-#define CT_PRIVACY_CONTROL        0x040000    // D18: Privacy
-#define CT_FOCUS_SIMPLE_CONTROL    0x080000    // D19: Focus, Simple
-#define CT_WINDOW_CONTROL            0x100000    // D20: Window
+// D15：保留
+// D16：保留
+#define CT_FOCUS_AUTO_CONTROL        0x020000    // D17: Focus, Auto / D17：自动对焦
+#define CT_PRIVACY_CONTROL        0x040000    // D18: Privacy / D18：隐私
+#define CT_FOCUS_SIMPLE_CONTROL    0x080000    // D19: Focus, Simple / D19：简易对焦
+#define CT_WINDOW_CONTROL            0x100000    // D20: Window / D20：窗口
 
-#define PU_BRIGHTNESS_CONTROL        0x000001    // D0: Brightness
-#define PU_CONTRAST_CONTROL            0x000002    // D1: Contrast
-#define PU_HUE_CONTROL                0x000004    // D2: Hue
-#define    PU_SATURATION_CONTROL        0x000008    // D3: Saturation
-#define PU_SHARPNESS_CONTROL        0x000010    // D4: Sharpness
-#define PU_GAMMA_CONTROL            0x000020    // D5: Gamma
-#define    PU_WHITE_BALANCE_TEMPERATURE_CONTROL            0x000040    // D6: White Balance Temperature
-#define    PU_WHITE_BALANCE_COMPONENT_CONTROL            0x000080    // D7: White Balance Component
-#define    PU_BACKLIGHT_COMPENSATION_CONTROL        0x000100    // D8: Backlight Compensation
-#define PU_GAIN_CONTROL                0x000200    // D9: Gain
-#define PU_POWER_LINE_FREQUENCY_CONTROL            0x000400    // D10: Power Line Frequency
-#define PU_HUE_AUTO_CONTROL            0x000800    // D11: Hue, Auto
-#define PU_WHITE_BALANCE_TEMPERATURE_AUTO_CONTROL        0x001000    // D12: White Balance Temperature, Auto
-#define PU_WHITE_BALANCE_COMPONENT_AUTO_CONTROL    0x002000    // D13: White Balance Component, Auto
-#define PU_DIGITAL_MULTIPLIER_CONTROL        0x004000    // D14: Digital Multiplier
-#define PU_DIGITAL_MULTIPLIER_LIMIT_CONTROL    0x008000    // D15: Digital Multiplier Limit
-#define PU_ANALOG_VIDEO_STANDARD_CONTROL        0x010000    // D16: Analog Video Standard
-#define PU_ANALOG_LOCK_STATUS_CONTROL        0x020000    // D17: Analog Video Lock Status
-#define PU_CONTRAST_AUTO_CONTROL    0x040000    // D18: Contrast, Auto
+#define PU_BRIGHTNESS_CONTROL        0x000001    // D0: Brightness / D0：亮度
+#define PU_CONTRAST_CONTROL            0x000002    // D1: Contrast / D1：对比度
+#define PU_HUE_CONTROL                0x000004    // D2: Hue / D2：色调
+#define    PU_SATURATION_CONTROL        0x000008    // D3: Saturation / D3：饱和度
+#define PU_SHARPNESS_CONTROL        0x000010    // D4: Sharpness / D4：锐度
+#define PU_GAMMA_CONTROL            0x000020    // D5: Gamma / D5：伽马
+#define    PU_WHITE_BALANCE_TEMPERATURE_CONTROL            0x000040    // D6: White Balance Temperature / D6：白平衡色温
+#define    PU_WHITE_BALANCE_COMPONENT_CONTROL            0x000080    // D7: White Balance Component / D7：白平衡分量
+#define    PU_BACKLIGHT_COMPENSATION_CONTROL        0x000100    // D8: Backlight Compensation / D8：背光补偿
+#define PU_GAIN_CONTROL                0x000200    // D9: Gain / D9：增益
+#define PU_POWER_LINE_FREQUENCY_CONTROL            0x000400    // D10: Power Line Frequency / D10：电源频率
+#define PU_HUE_AUTO_CONTROL            0x000800    // D11: Hue, Auto / D11：自动色调
+#define PU_WHITE_BALANCE_TEMPERATURE_AUTO_CONTROL        0x001000    // D12: White Balance Temperature, Auto / D12：自动白平衡色温
+#define PU_WHITE_BALANCE_COMPONENT_AUTO_CONTROL    0x002000    // D13: White Balance Component, Auto / D13：自动白平衡分量
+#define PU_DIGITAL_MULTIPLIER_CONTROL        0x004000    // D14: Digital Multiplier / D14：数字倍率
+#define PU_DIGITAL_MULTIPLIER_LIMIT_CONTROL    0x008000    // D15: Digital Multiplier Limit / D15：数字倍率上限
+#define PU_ANALOG_VIDEO_STANDARD_CONTROL        0x010000    // D16: Analog Video Standard / D16：模拟视频标准
+#define PU_ANALOG_LOCK_STATUS_CONTROL        0x020000    // D17: Analog Video Lock Status / D17：模拟视频锁定状态
+#define PU_CONTRAST_AUTO_CONTROL    0x040000    // D18: Contrast, Auto / D18：自动对比度
 
 typedef struct control_value {
-    int res;    // unused
+    int res;    // unused / 未使用
     int min;
     int max;
     int def;
@@ -117,8 +119,10 @@ class UVCControl {
 private:
     uvc_device_handle_t *mDeviceHandle;
     // indicating the availability of certain camera controls
+    // 表示某些相机控制项是否可用
     uint64_t mCTControls;
     // indicating the availability of certain processing Controls
+    // 表示某些处理单元控制项是否可用
     uint64_t mPUControls;
     pthread_mutex_t mRequestMutex;
     control_value_t mScanningMode;

@@ -60,10 +60,14 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Camera preview width
+     *
+     * 相机预览宽度
      */
     private int mPreviewWidth = DEFAULT_WIDTH;
     /**
      * Camera preview height
+     *
+     * 相机预览高度
      */
     private int mPreviewHeight = DEFAULT_HEIGHT;
 
@@ -135,6 +139,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
+        // 加载菜单；如果存在 action bar，则向其添加菜单项。
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
@@ -144,6 +149,9 @@ public class MainActivity extends AppCompatActivity {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
+        // 在此处理 action bar 菜单项的点击事件。只要在 AndroidManifest.xml
+        // 中指定了父 Activity，action bar 就会自动处理
+        // Home/Up 按钮的点击事件。
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
@@ -215,6 +223,7 @@ public class MainActivity extends AppCompatActivity {
             mControlsDialog = new CameraControlsDialogFragment(mCameraHelper);
         }
         // When DialogFragment is not showing
+        // 当 DialogFragment 未显示时
         if (!mControlsDialog.isAdded()) {
             mControlsDialog.show(getSupportFragmentManager(), "camera_controls");
         }
@@ -250,6 +259,7 @@ public class MainActivity extends AppCompatActivity {
                 mCameraHelper.startPreview();
                 resizePreviewView(size);
                 // save selected preview size
+                // 保存所选的预览尺寸
                 setSavedPreviewSize(size);
             }
         });
@@ -368,6 +378,8 @@ public class MainActivity extends AppCompatActivity {
     /**
      * In Android9+, connected to the UVC CAMERA, CAMERA permission is required
      *
+     * 在 Android 9+ 上，连接 UVC 相机需要 CAMERA 权限
+     *
      * @param device
      */
     protected void selectDevice(UsbDevice device) {
@@ -380,6 +392,7 @@ public class MainActivity extends AppCompatActivity {
                     updateUIControls();
 
                     if (mCameraHelper != null) {
+                        // Try to obtain device permission through the UsbDevice object
                         // 通过UsbDevice对象，尝试获取设备权限
                         mCameraHelper.selectDevice(device);
                     }
@@ -396,6 +409,8 @@ public class MainActivity extends AppCompatActivity {
 
         /**
          * After obtaining USB device permissions, connect the USB camera
+         *
+         * 获取 USB 设备权限后，连接 USB 相机
          */
         @Override
         public void onDeviceOpen(UsbDevice device, boolean isFirstOpen) {
@@ -418,6 +433,7 @@ public class MainActivity extends AppCompatActivity {
             mCameraHelper.startPreview();
 
             // After connecting to the camera, you can get preview size of the camera
+            // 连接相机后，即可获取相机的预览尺寸
             Size size = mCameraHelper.getPreviewSize();
             if (size != null) {
                 resizePreviewView(size);
@@ -475,9 +491,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void resizePreviewView(Size size) {
         // Update the preview size
+        // 更新预览尺寸
         mPreviewWidth = size.width;
         mPreviewHeight = size.height;
         // Set the aspect ratio of TextureView to match the aspect ratio of the camera
+        // 设置 TextureView 的宽高比，使其与相机的宽高比一致
         mBinding.viewMainPreview.setAspectRatio(mPreviewWidth, mPreviewHeight);
     }
 
@@ -491,6 +509,7 @@ public class MainActivity extends AppCompatActivity {
                 mBinding.fabVideo.setVisibility(View.VISIBLE);
 
                 // Update record button
+                // 更新录制按钮
                 int colorId = R.color.WHITE;
                 if (mIsRecording) {
                     colorId = R.color.RED;
@@ -634,12 +653,15 @@ public class MainActivity extends AppCompatActivity {
         runOnUiThread(() -> mBinding.tvVideoRecordTime.setVisibility(View.VISIBLE));
 
         // Set “00:00:00” to record time TextView
+        // 将录制时间 TextView 设置为“00:00:00”
         setVideoRecordTimeText(formatTime(0));
 
         // Start Record Timer
+        // 启动录制计时器
         mRecordStartTime = SystemClock.elapsedRealtime();
         mRecordTimer = new Timer();
         //The timer is refreshed every quarter second
+        //计时器每四分之一秒刷新一次
         mRecordTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
@@ -655,12 +677,14 @@ public class MainActivity extends AppCompatActivity {
         runOnUiThread(() -> mBinding.tvVideoRecordTime.setVisibility(View.GONE));
 
         // Stop Record Timer
+        // 停止录制计时器
         mRecordStartTime = 0;
         if (mRecordTimer != null) {
             mRecordTimer.cancel();
             mRecordTimer = null;
         }
         // Set “00:00:00” to record time TextView
+        // 将录制时间 TextView 设置为“00:00:00”
         setVideoRecordTimeText(formatTime(0));
     }
 
@@ -671,9 +695,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * Convert seconds to HH:mm:ss format
+     *
      * 将秒转化为 HH:mm:ss 的格式
      *
-     * @param time 秒
+     * @param time seconds / 秒
      * @return
      */
     private String formatTime(long time) {

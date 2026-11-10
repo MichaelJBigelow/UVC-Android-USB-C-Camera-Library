@@ -60,11 +60,13 @@ public class CameraDialog extends DialogFragment {
     /**
      * Helper method
      *
+     * 辅助方法
+     *
      * @param parent FragmentActivity
      * @return
      */
-    public static CameraDialog showDialog(final Activity parent/* add parameters here if you need */) {
-        CameraDialog dialog = newInstance(/* add parameters here if you need */);
+    public static CameraDialog showDialog(final Activity parent/* add parameters here if you need / 如有需要，请在此处添加参数 */) {
+        CameraDialog dialog = newInstance(/* add parameters here if you need / 如有需要，请在此处添加参数 */);
         try {
             dialog.show(parent.getFragmentManager(), TAG);
         } catch (final IllegalStateException e) {
@@ -73,10 +75,11 @@ public class CameraDialog extends DialogFragment {
         return dialog;
     }
 
-    public static CameraDialog newInstance(/* add parameters here if you need */) {
+    public static CameraDialog newInstance(/* add parameters here if you need / 如有需要，请在此处添加参数 */) {
         final CameraDialog dialog = new CameraDialog();
         final Bundle args = new Bundle();
         // add parameters here if you need
+        // 如有需要，请在此处添加参数
         dialog.setArguments(args);
         return dialog;
     }
@@ -85,8 +88,9 @@ public class CameraDialog extends DialogFragment {
     private Spinner mSpinner;
     private DeviceListAdapter mDeviceListAdapter;
 
-    public CameraDialog(/* no arguments */) {
+    public CameraDialog(/* no arguments / 无参数 */) {
         // Fragment need default constructor
+        // Fragment 需要默认构造函数
     }
 
     @SuppressWarnings("deprecation")
@@ -135,6 +139,8 @@ public class CameraDialog extends DialogFragment {
 
     /**
      * create view that this fragment shows
+     *
+     * 创建此 fragment 所显示的视图
      *
      * @return
      */

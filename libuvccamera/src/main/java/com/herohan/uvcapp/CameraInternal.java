@@ -44,6 +44,8 @@ final class CameraInternal implements ICameraInternal {
 
     /**
      * for accessing UVC camera
+     *
+     * 用于访问 UVC 相机
      */
     private volatile UVCCamera mUVCCamera;
 
@@ -61,6 +63,7 @@ final class CameraInternal implements ICameraInternal {
             @Override
             public void onPrimarySurfaceCreate(Surface surface) {
                 // After primary surface has been created during previewing, invoking startPreview method again.
+                // 预览过程中主 surface 创建完成后，再次调用 startPreview 方法。
                 if (mIsPreviewing) {
                     startPreview();
                 }
@@ -129,10 +132,12 @@ final class CameraInternal implements ICameraInternal {
             }
 
             // Preview size may changed, so set the resolution and reinitialize video encoder and audio encoder of VideoCapture
+            // 预览尺寸可能已改变，因此设置分辨率并重新初始化 VideoCapture 的视频编码器和音频编码器
             mVideoCapture.setResolution(getPreviewSize());
         } catch (final Exception e) {
             Log.e(TAG, "setPreviewSize:", e);
             // unexpectedly #setPreviewSize failed
+            // #setPreviewSize 意外失败
             synchronized (CameraInternal.class) {
                 if (mUVCCamera != null) {
                     mUVCCamera.destroy();
@@ -349,8 +354,10 @@ final class CameraInternal implements ICameraInternal {
      *
      * <p> The callback will be called only once for every invocation of this method.
      *
-     * @param options  Options to store the newly captured image.
-     * @param callback Callback to be called for the newly captured image.
+     * <p> 拍摄一张新的静态图片并保存到文件。每次调用此方法，回调只会被调用一次。
+     *
+     * @param options  Options to store the newly captured image. / 用于保存新拍摄图片的选项。
+     * @param callback Callback to be called for the newly captured image. / 新拍摄图片时调用的回调。
      */
     @Override
     public void takePicture(ImageCapture.OutputFileOptions options, ImageCapture.OnImageCaptureCallback callback) {

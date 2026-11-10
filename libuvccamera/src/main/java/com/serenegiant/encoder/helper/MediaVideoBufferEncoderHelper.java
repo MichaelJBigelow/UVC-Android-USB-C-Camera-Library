@@ -29,6 +29,8 @@ public class MediaVideoBufferEncoderHelper {
 
     /**
      * muxer for audio/video recording
+     *
+     * 用于音视频录制的 muxer
      */
     private MediaMuxerWrapper mMuxer;
     private MediaVideoBufferEncoder mVideoEncoder;
@@ -72,10 +74,13 @@ public class MediaVideoBufferEncoderHelper {
         mAsyncHandler.post(() -> {
             try {
                 if (mMuxer != null) return;
-                final MediaMuxerWrapper muxer = new MediaMuxerWrapper(uri);    // if you record audio only, ".m4a" is also OK.
+                // if you record audio only, ".m4a" is also OK.
+                // 如果只录制音频,".m4a" 也可以。
+                final MediaMuxerWrapper muxer = new MediaMuxerWrapper(uri);
                 MediaVideoBufferEncoder videoEncoder = new MediaVideoBufferEncoder(muxer, mSize.width, mSize.height, mVideoEncoderListener);
 
                 // for audio capturing
+                // 用于音频采集
                 new MediaAudioEncoder(muxer, mAudioEncoderListener);
 
                 muxer.prepare();
@@ -144,6 +149,7 @@ public class MediaVideoBufferEncoderHelper {
                         try {
                             if (DEBUG) Log.i(TAG, "MediaScannerConnection#scanFile");
                             // invoke scanFile to update size of media file in MediaStore
+                            // 调用 scanFile 以更新 MediaStore 中媒体文件的大小
                             MediaScannerConnection.scanFile(context, new String[]{path}, null, null);
                         } catch (final Exception e) {
                             Log.e(TAG, "MediaScannerConnection:", e);

@@ -22,7 +22,9 @@ import android.opengl.GLES20;
 
 /**
  * Created by saki on 16/08/26.
- * フラグメントシェーダーとかの文字列定数達を集める
+ * Collects string constants such as fragment shaders
+ *
+ * 汇集片段着色器等字符串常量
  */
 public class ShaderConst {
 	public static final int GL_TEXTURE_EXTERNAL_OES	= 0x8D65;
@@ -60,10 +62,13 @@ public class ShaderConst {
 		GLES20.GL_TEXTURE30, GLES20.GL_TEXTURE31,
 	};
 
-// 関数文字列定義
+// Function string definitions
+// 函数字符串定义
 	/**
-	 * RGBをHSVに変換
+	 * Converts RGB to HSV
 	 * {R[0.0-1.0], G[0.0-1.0], B([0.0-1.0]} => {H[0.0-1.0], S[0.0-1.0], V[0.0-1.0]}
+	 *
+	 * 将 RGB 转换为 HSV
 	 */
 	public static final String FUNC_RGB2HSV
 		= "vec3 rgb2hsv(vec3 c) {\n" +
@@ -75,8 +80,10 @@ public class ShaderConst {
 			"return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);\n" +
 		"}\n";
 	/**
-	 * HSVをRGBに変換
+	 * Converts HSV to RGB
 	 * {H[0.0-1.0], S[0.0-1.0], V[0.0-1.0]} => {R[0.0-1.0], G[0.0-1.0], B([0.0-1.0]}
+	 *
+	 * 将 HSV 转换为 RGB
 	 */
 	public static final String FUNC_HSV2RGB
 		= "vec3 hsv2rgb(vec3 c) {\n" +
@@ -86,9 +93,13 @@ public class ShaderConst {
 		"}\n";
 
 	/**
-	 * RGBの輝度を取得
-	 * 変換係数との内積を計算するだけ
-	 * 係数は(0.2125, 0.7154, 0.0721)
+	 * Gets the luminance of RGB
+	 * Simply computes the dot product with the conversion coefficients
+	 * The coefficients are (0.2125, 0.7154, 0.0721)
+	 *
+	 * 获取 RGB 的亮度
+	 * 仅计算与转换系数的点积
+	 * 系数为 (0.2125, 0.7154, 0.0721)
 	 */
 	public static final String FUNC_GET_INTENSITY
 		= "const highp vec3 luminanceWeighting = vec3(0.2125, 0.7154, 0.0721);\n" +
@@ -96,22 +107,26 @@ public class ShaderConst {
 			"return dot(c.rgb, luminanceWeighting);\n" +
 		"}\n";
 
-// 頂点シェーダー
+// Vertex shader
+// 顶点着色器
 	/**
-	 * モデルビュー変換行列とテクスチャ変換行列適用するだけの頂点シェーダー
+	 * A vertex shader that simply applies the model-view transform matrix and the texture transform matrix
+	 *
+	 * 仅应用模型视图变换矩阵和纹理变换矩阵的顶点着色器
 	 */
 	public static final String VERTEX_SHADER = SHADER_VERSION +
-		"uniform mat4 uMVPMatrix;\n" +				// モデルビュー変換行列
-		"uniform mat4 uTexMatrix;\n" +				// テクスチャ変換行列
-		"attribute highp vec4 aPosition;\n" +		// 頂点座標
-		"attribute highp vec4 aTextureCoord;\n" +	// テクスチャ情報
-		"varying highp vec2 vTextureCoord;\n" +		// フラグメントシェーダーへ引き渡すテクスチャ座標
+		"uniform mat4 uMVPMatrix;\n" +				// Model-view transform matrix / 模型视图变换矩阵
+		"uniform mat4 uTexMatrix;\n" +				// Texture transform matrix / 纹理变换矩阵
+		"attribute highp vec4 aPosition;\n" +		// Vertex coordinates / 顶点坐标
+		"attribute highp vec4 aTextureCoord;\n" +	// Texture information / 纹理信息
+		"varying highp vec2 vTextureCoord;\n" +		// Texture coordinates passed to the fragment shader / 传递给片段着色器的纹理坐标
 		"void main() {\n" +
 		"    gl_Position = uMVPMatrix * aPosition;\n" +
 		"    vTextureCoord = (uTexMatrix * aTextureCoord).xy;\n" +
 		"}\n";
 
-// フラグメントシェーダー
+// Fragment shader
+// 片段着色器
 	public static final String FRAGMENT_SHADER_SIMPLE_OES
 		= SHADER_VERSION
 		+ HEADER_OES
@@ -134,6 +149,7 @@ public class ShaderConst {
 
 //
 	// Simple fragment shader for use with "normal" 2D textures.
+	// 用于“普通”2D 纹理的简单片段着色器。
 	private static final String FRAGMENT_SHADER_BASE = SHADER_VERSION +
 		"%s" +
 		"precision mediump float;\n" +
@@ -148,6 +164,7 @@ public class ShaderConst {
 		= String.format(FRAGMENT_SHADER_BASE, HEADER_OES, SAMPLER_OES);
 
 	// Fragment shader that converts color to black & white with a simple transformation.
+	// 通过简单变换将颜色转换为黑白的片段着色器。
 	private static final String FRAGMENT_SHADER_BW_BASE = SHADER_VERSION +
 		"%s" +
 		"precision mediump float;\n" +
@@ -164,6 +181,7 @@ public class ShaderConst {
 		= String.format(FRAGMENT_SHADER_BW_BASE, HEADER_OES, SAMPLER_OES);
 
 	// Fragment shader that attempts to produce a high contrast image
+	// 尝试生成高对比度图像的片段着色器
 	private static final String FRAGMENT_SHADER_NIGHT_BASE = SHADER_VERSION +
 		"%s" +
 		"precision mediump float;\n" +
@@ -180,6 +198,7 @@ public class ShaderConst {
 		= String.format(FRAGMENT_SHADER_NIGHT_BASE, HEADER_OES, SAMPLER_OES);
 
 	// Fragment shader that applies a Chroma Key effect, making green pixels transparent
+	// 应用色键（Chroma Key）效果、使绿色像素透明的片段着色器
 	private static final String FRAGMENT_SHADER_CHROMA_KEY_BASE = SHADER_VERSION +
 		"%s" +
 		"precision mediump float;\n" +
@@ -210,7 +229,7 @@ public class ShaderConst {
 		"    vec2 normCoord = 2.0 * texCoord - 1.0;\n"+
 		"    float r = length(normCoord); // to polar coords \n" +
 		"    float phi = atan(normCoord.y + uPosition.y, normCoord.x + uPosition.x); // to polar coords \n"+
-		"    r = pow(r, 1.0/1.8) * 0.8;\n"+  // Squeeze it
+		"    r = pow(r, 1.0/1.8) * 0.8;\n"+  // Squeeze it / 挤压效果
 		"    normCoord.x = r * cos(phi); \n" +
 		"    normCoord.y = r * sin(phi); \n" +
 		"    texCoord = normCoord / 2.0 + 0.5;\n"+
@@ -233,7 +252,7 @@ public class ShaderConst {
 		"    vec2 normCoord = 2.0 * texCoord - 1.0;\n"+
 		"    float r = length(normCoord); // to polar coords \n" +
 		"    float phi = atan(normCoord.y + uPosition.y, normCoord.x + uPosition.x); // to polar coords \n"+
-		"    phi = phi + (1.0 - smoothstep(-0.5, 0.5, r)) * 4.0;\n"+ // Twirl it
+		"    phi = phi + (1.0 - smoothstep(-0.5, 0.5, r)) * 4.0;\n"+ // Twirl it / 旋转效果
 		"    normCoord.x = r * cos(phi); \n" +
 		"    normCoord.y = r * sin(phi); \n" +
 		"    texCoord = normCoord / 2.0 + 0.5;\n"+
@@ -251,7 +270,7 @@ public class ShaderConst {
 		"    vec2 normCoord = 2.0 * texCoord - 1.0;\n"+
 		"    float r = length(normCoord); // to polar coords \n" +
 		"    float phi = atan(normCoord.y + uPosition.y, normCoord.x + uPosition.x); // to polar coords \n"+
-		"    if (r > 0.5) r = 0.5;\n"+ // Tunnel
+		"    if (r > 0.5) r = 0.5;\n"+ // Tunnel / 隧道效果
 		"    normCoord.x = r * cos(phi); \n" +
 		"    normCoord.y = r * sin(phi); \n" +
 		"    texCoord = normCoord / 2.0 + 0.5;\n"+
@@ -269,7 +288,7 @@ public class ShaderConst {
 		"    vec2 normCoord = 2.0 * texCoord - 1.0;\n"+
 		"    float r = length(normCoord); // to polar coords \n" +
 		"    float phi = atan(normCoord.y + uPosition.y, normCoord.x + uPosition.x); // to polar coords \n"+
-		"    r = r * smoothstep(-0.1, 0.5, r);\n"+ // Bulge
+		"    r = r * smoothstep(-0.1, 0.5, r);\n"+ // Bulge / 凸起效果
 		"    normCoord.x = r * cos(phi); \n" +
 		"    normCoord.y = r * sin(phi); \n" +
 		"    texCoord = normCoord / 2.0 + 0.5;\n"+
@@ -287,7 +306,7 @@ public class ShaderConst {
 		"    vec2 normCoord = 2.0 * texCoord - 1.0;\n"+
 		"    float r = length(normCoord); // to polar coords \n" +
 		"    float phi = atan(normCoord.y + uPosition.y, normCoord.x + uPosition.x); // to polar coords \n"+
-		"    r = 2.0 * r - r * smoothstep(0.0, 0.7, r);\n"+ // Dent
+		"    r = 2.0 * r - r * smoothstep(0.0, 0.7, r);\n"+ // Dent / 凹陷效果
 		"    normCoord.x = r * cos(phi); \n" +
 		"    normCoord.y = r * sin(phi); \n" +
 		"    texCoord = normCoord / 2.0 + 0.5;\n"+
@@ -305,7 +324,7 @@ public class ShaderConst {
 		"    vec2 normCoord = 2.0 * texCoord - 1.0;\n"+
 		"    float r = length(normCoord); // to polar coords \n" +
 		"    float phi = atan(normCoord.y + uPosition.y, normCoord.x + uPosition.x); // to polar coords \n"+
-		"    r = r * r / sqrt(2.0);\n"+ // Fisheye
+		"    r = r * r / sqrt(2.0);\n"+ // Fisheye / 鱼眼效果
 		"    normCoord.x = r * cos(phi); \n" +
 		"    normCoord.y = r * sin(phi); \n" +
 		"    texCoord = normCoord / 2.0 + 0.5;\n"+
@@ -379,17 +398,17 @@ public class ShaderConst {
 		= String.format(FRAGMENT_SHADER_SOBEL_BASE, HEADER_OES, SAMPLER_OES);
 
 	public static final float[] KERNEL_NULL = { 0f, 0f, 0f,  0f, 1f, 0f,  0f, 0f, 0f};
-	public static final float[] KERNEL_SOBEL_H = { 1f, 0f, -1f, 2f, 0f, -2f, 1f, 0f, -1f, };	// ソーベル(1次微分)
+	public static final float[] KERNEL_SOBEL_H = { 1f, 0f, -1f, 2f, 0f, -2f, 1f, 0f, -1f, };	// Sobel (first derivative) / 索贝尔（一阶微分）
 	public static final float[] KERNEL_SOBEL_V = { 1f, 2f, 1f, 0f, 0f, 0f, -1f, -2f, -1f, };
 	public static final float[] KERNEL_SOBEL2_H = { 3f, 0f, -3f, 10f, 0f, -10f, 3f, 0f, -3f, };
 	public static final float[] KERNEL_SOBEL2_V = { 3f, 10f, 3f, 0f, 0f, 0f, -3f, -10f, -3f, };
-	public static final float[] KERNEL_SHARPNESS = { 0f, -1f, 0f, -1f, 5f, -1f, 0f, -1f, 0f,};	// シャープネス
-	public static final float[] KERNEL_EDGE_DETECT = { -1f, -1f, -1f, -1f, 8f, -1f, -1f, -1f, -1f, }; // エッジ検出
-	public static final float[] KERNEL_EMBOSS = { 2f, 0f, 0f, 0f, -1f, 0f, 0f, 0f, -1f };	// エンボス, オフセット0.5f
-	public static final float[] KERNEL_SMOOTH = { 1/9f, 1/9f, 1/9f, 1/9f, 1/9f, 1/9f, 1/9f, 1/9f, 1/9f, };	// 移動平均
-	public static final float[] KERNEL_GAUSSIAN = { 1/16f, 2/16f, 1/16f, 2/16f, 4/16f, 2/16f, 1/16f, 2/16f, 1/16f, };	// ガウシアン(ノイズ除去/)
+	public static final float[] KERNEL_SHARPNESS = { 0f, -1f, 0f, -1f, 5f, -1f, 0f, -1f, 0f,};	// Sharpness / 锐化
+	public static final float[] KERNEL_EDGE_DETECT = { -1f, -1f, -1f, -1f, 8f, -1f, -1f, -1f, -1f, }; // Edge detection / 边缘检测
+	public static final float[] KERNEL_EMBOSS = { 2f, 0f, 0f, 0f, -1f, 0f, 0f, 0f, -1f };	// Emboss, offset 0.5f / 浮雕，偏移 0.5f
+	public static final float[] KERNEL_SMOOTH = { 1/9f, 1/9f, 1/9f, 1/9f, 1/9f, 1/9f, 1/9f, 1/9f, 1/9f, };	// Moving average / 移动平均
+	public static final float[] KERNEL_GAUSSIAN = { 1/16f, 2/16f, 1/16f, 2/16f, 4/16f, 2/16f, 1/16f, 2/16f, 1/16f, };	// Gaussian (noise removal) / 高斯（去噪）
 	public static final float[] KERNEL_BRIGHTEN = { 1f, 1f, 1f, 1f, 2f, 1f, 1f, 1f, 1f, };
-	public static final float[] KERNEL_LAPLACIAN = { 1f, 1f, 1f, 1f, -8f, 1f, 1f, 1f, 1f, };	// ラプラシアン(2次微分)
+	public static final float[] KERNEL_LAPLACIAN = { 1f, 1f, 1f, 1f, -8f, 1f, 1f, 1f, 1f, };	// Laplacian (second derivative) / 拉普拉斯（二阶微分）
 
 	private static final String FRAGMENT_SHADER_FILT3x3_BASE = SHADER_VERSION +
 		"%s" +

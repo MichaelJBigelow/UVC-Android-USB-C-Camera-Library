@@ -37,12 +37,17 @@ import com.serenegiant.uvccamera.BuildConfig;
  * you can show this view in the center of screen and keep the aspect ratio of content
  * XXX it is better that can set the aspect ratio as xml property
  *
+ * 保持指定的宽高比来改变视图大小。
+ * 如果将此视图放在 FrameLayout 中并设置属性 "android:layout_gravity="center",
+ * 即可使此视图在屏幕中居中显示并保持内容的宽高比
+ * XXX 最好能通过 xml 属性设置宽高比
+ *
  * @author admin
  */
 public class AspectRatioTextureView extends TextureView    // API >= 14
         implements IAspectRatioView {
 
-    private static final boolean DEBUG = BuildConfig.DEBUG;    // TODO set false on release
+    private static final boolean DEBUG = BuildConfig.DEBUG;    // TODO set false on release / 发布时请设为 false
     private static final String TAG = AspectRatioTextureView.class.getSimpleName();
 
     private double mRequestedAspect = -1.0;
@@ -66,6 +71,7 @@ public class AspectRatioTextureView extends TextureView    // API >= 14
             throw new IllegalArgumentException();
         }
         // Use a range as a standard for comparing whether floating point numbers are equal
+        // 以一个范围作为比较浮点数是否相等的标准
         float diff = 1e-6f;
         if (Math.abs(mRequestedAspect - aspectRatio) > diff) {
             mRequestedAspect = aspectRatio;
@@ -103,9 +109,11 @@ public class AspectRatioTextureView extends TextureView    // API >= 14
             if (Math.abs(aspectDiff) > 0.01) {
                 if (aspectDiff > 0) {
                     // width priority decision
+                    // 宽度优先判断
                     initialHeight = (int) (initialWidth / mRequestedAspect);
                 } else {
                     // height priority decision
+                    // 高度优先判断
                     initialWidth = (int) (initialHeight * mRequestedAspect);
                 }
                 initialWidth += horizPadding;

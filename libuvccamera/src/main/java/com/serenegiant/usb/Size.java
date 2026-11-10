@@ -12,6 +12,8 @@ import androidx.annotation.NonNull;
 public class Size implements Parcelable, Cloneable {
     /**
      * frame type: mjpeg, uncompressed etc.
+     *
+     * 帧类型：mjpeg、未压缩等
      */
     public int type;
     public int width;
@@ -21,6 +23,8 @@ public class Size implements Parcelable, Cloneable {
 
     /**
      * constructor
+     *
+     * 构造函数
      */
     public Size(final int _type, final int _width, final int _height, final int _fps, final List<Integer> _fpsList) {
         type = _type;

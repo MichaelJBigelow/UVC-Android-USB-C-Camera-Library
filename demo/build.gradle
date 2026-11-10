@@ -39,6 +39,7 @@ dependencies {
     implementation 'com.github.warkiz:IndicatorSeekBar:v2.1.1'
 
     // debugImplementation because LeakCanary should only run in debug builds.
+    // 使用 debugImplementation,因为 LeakCanary 只应在 debug 构建中运行。
 //    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.8.1'
 
     implementation project(':libuvccamera')

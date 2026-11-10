@@ -34,10 +34,13 @@
 #define LIBUVC_HAS_JPEG
 
 // write back array that got by getXXXArrayElements into original Java object and release its array
+// 将通过 getXXXArrayElements 获取的数组写回原始 Java 对象并释放该数组
 #define	ARRAYELEMENTS_COPYBACK_AND_RELEASE 0
 // write back array that got by getXXXArrayElements into origianl Java object but do not release its array
+// 将通过 getXXXArrayElements 获取的数组写回原始 Java 对象，但不释放该数组
 #define	ARRAYELEMENTS_COPYBACK_ONLY JNI_COMMIT
 // never write back array that got by getXXXArrayElements but release its array
+// 不将通过 getXXXArrayElements 获取的数组写回，仅释放该数组
 #define ARRAYELEMENTS_ABORT_AND_RELEASE JNI_ABORT
 
 #define THREAD_PRIORITY_DEFAULT			0
@@ -49,7 +52,7 @@
 #define THREAD_PRIORITY_AUDIO			-16
 #define THREAD_PRIORITY_URGENT_AUDIO	-19
 
-#define USE_LOGALL	// If you don't need to all LOG, comment out this line and select follows
+#define USE_LOGALL	// If you don't need to all LOG, comment out this line and select follows / 如果不需要全部日志，请注释掉此行并选择以下选项
 //#define USE_LOGV
 //#define USE_LOGD
 #define USE_LOGI
@@ -67,6 +70,8 @@
 
 // Absolute class name of Java object
 // if you change the package name of UVCCamera library, you must fix these
+// Java 对象的绝对类名
+// 如果更改了 UVCCamera 库的包名，必须同步修改这些定义
 #define		JTYPE_SYSTEM				"Ljava/lang/System;"
 #define		JTYPE_UVCCAMERA				"Lcom/serenegiant/usb/UVCCamera;"
 //

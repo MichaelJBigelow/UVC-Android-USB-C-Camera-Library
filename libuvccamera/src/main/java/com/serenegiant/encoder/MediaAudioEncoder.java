@@ -39,14 +39,16 @@ import android.util.Log;
 import com.serenegiant.uvccamera.BuildConfig;
 
 public class MediaAudioEncoder extends MediaEncoder implements IAudioEncoder {
-    private static final boolean DEBUG = BuildConfig.DEBUG;    // TODO set false on release
+    private static final boolean DEBUG = BuildConfig.DEBUG;    // TODO set false on release / 发布时请设为 false
     private static final String TAG = "MediaAudioEncoder";
 
     private static final String MIME_TYPE = "audio/mp4a-latm";
-    private static final int SAMPLE_RATE = 44100;    // 44.1[KHz] is only setting guaranteed to be available on all devices.
+    // 44.1[KHz] is only setting guaranteed to be available on all devices.
+    // 44.1[KHz] 是唯一保证在所有设备上都可用的设置。
+    private static final int SAMPLE_RATE = 44100;
     private static final int BIT_RATE = 64000;
-    public static final int SAMPLES_PER_FRAME = 1024;    // AAC, bytes/frame/channel
-    public static final int FRAMES_PER_BUFFER = 25;    // AAC, frame/buffer/sec
+    public static final int SAMPLES_PER_FRAME = 1024;    // AAC, bytes/frame/channel / AAC,每个声道每帧的字节数
+    public static final int FRAMES_PER_BUFFER = 25;    // AAC, frame/buffer/sec / AAC,帧/缓冲区/秒
 
     private AudioThread mAudioThread = null;
 
@@ -60,6 +62,7 @@ public class MediaAudioEncoder extends MediaEncoder implements IAudioEncoder {
         mTrackIndex = -1;
         mMuxerStarted = false;
         // prepare MediaCodec for AAC encoding of audio data from inernal mic.
+        // 准备 MediaCodec,用于对来自内置麦克风的音频数据进行 AAC 编码。
         final MediaCodecInfo audioCodecInfo = selectAudioCodec(MIME_TYPE);
         if (audioCodecInfo == null) {
             Log.e(TAG, "Unable to find an appropriate codec for " + MIME_TYPE);
@@ -92,6 +95,7 @@ public class MediaAudioEncoder extends MediaEncoder implements IAudioEncoder {
     protected void startRecording() {
         super.startRecording();
         // create and execute audio capturing thread using internal mic
+        // 创建并运行使用内置麦克风的音频采集线程
         if (mAudioThread == null) {
             mAudioThread = new AudioThread();
             mAudioThread.start();
@@ -113,6 +117,9 @@ public class MediaAudioEncoder extends MediaEncoder implements IAudioEncoder {
     /**
      * Thread to capture audio data from internal mic as uncompressed 16bit PCM data
      * and write them to the MediaCodec encoder
+     *
+     * 从内置麦克风以未压缩的 16 位 PCM 数据采集音频数据
+     * 并将其写入 MediaCodec 编码器的线程
      */
     private class AudioThread extends Thread {
         @Override
@@ -153,6 +160,7 @@ public class MediaAudioEncoder extends MediaEncoder implements IAudioEncoder {
                         try {
                             for (; mIsCapturing; ) {
                                 // read audio data from internal mic
+                                // 从内置麦克风读取音频数据
                                 buf.clear();
                                 try {
                                     readBytes = audioRecord.read(buf, SAMPLES_PER_FRAME);
@@ -161,6 +169,7 @@ public class MediaAudioEncoder extends MediaEncoder implements IAudioEncoder {
                                 }
                                 if (readBytes > 0) {
                                     // set audio data to encoder
+                                    // 将音频数据设置给编码器
                                     buf.position(readBytes);
                                     buf.flip();
                                     encode(buf, readBytes, getPTSUs());
@@ -206,6 +215,8 @@ public class MediaAudioEncoder extends MediaEncoder implements IAudioEncoder {
     /**
      * select the first codec that match a specific MIME type
      *
+     * 选择第一个与指定 MIME 类型匹配的编解码器
+     *
      * @param mimeType
      * @return
      */
@@ -214,11 +225,12 @@ public class MediaAudioEncoder extends MediaEncoder implements IAudioEncoder {
 
         MediaCodecInfo result = null;
         // get the list of available codecs
+        // 获取可用编解码器列表
         final int numCodecs = MediaCodecList.getCodecCount();
         LOOP:
         for (int i = 0; i < numCodecs; i++) {
             final MediaCodecInfo codecInfo = MediaCodecList.getCodecInfoAt(i);
-            if (!codecInfo.isEncoder()) {    // skipp decoder
+            if (!codecInfo.isEncoder()) {    // skipp decoder / 跳过解码器
                 continue;
             }
             final String[] types = codecInfo.getSupportedTypes();

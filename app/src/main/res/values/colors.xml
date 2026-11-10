@@ -12,7 +12,8 @@
     <color name="gray_400">#FFBDBDBD</color>
     <color name="gray_600">#FF757575</color>
 
-    <!-- Web colors -->
+    <!-- Web colors
+         网页颜色 -->
     <color name="CLEAR">#00000000</color>
     <color name="HALF_CLEAR_WHITE">#7fffffff</color>
     <color name="QUATER_CLEAR_WHITE">#3fffffff</color>

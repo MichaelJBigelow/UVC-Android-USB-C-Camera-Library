@@ -26,6 +26,9 @@ public class CommonTest {
     /**
      * Use {@link ActivityScenario} to create and launch the activity under test. This is a
      * replacement for {@link ActivityTestRule}.
+     *
+     * 使用 {@link ActivityScenario} 创建并启动被测 Activity。这是
+     * {@link ActivityTestRule} 的替代方案。
      */
     @Rule
     public ActivityTestRule<EntryActivity> activityTestRule =
@@ -39,15 +42,19 @@ public class CommonTest {
             onView(withId(R.id.btnRecordVideo)).perform(scrollTo(), click());
 
             // Waiting for USB camera to finish loading (4s)
+            // 等待 USB 摄像头加载完成(4 秒)
             Thread.sleep(4000 + Math.round(Math.random() * 500));
 
             // Click the "Start Recording" button
+            // 点击“开始录制”按钮
             onView(withId(R.id.bthCaptureVideo)).perform(click());
 
             // Record video (4s)
+            // 录制视频(4 秒)
             Thread.sleep(4000);
 
             // Return to entry activity
+            // 返回入口 Activity
             Espresso.pressBack();
         }
     }

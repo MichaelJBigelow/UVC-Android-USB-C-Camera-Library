@@ -37,9 +37,11 @@ import android.view.SurfaceView;
 
 /**
  * Helper class for creating and using EGL rendering context
+ *
+ * 用于创建和使用 EGL 渲染上下文的辅助类
  */
 /*package*/ class EGLBase14 extends EGLBase {
-    private static final boolean DEBUG = false;    // TODO set false on release
+    private static final boolean DEBUG = false;    // TODO set false on release / 发布时请设为 false
     private static final String TAG = EGLBase14.class.getSimpleName();
 
     private static final Context EGL_NO_CONTEXT = new Context(EGL14.EGL_NO_CONTEXT);
@@ -54,6 +56,8 @@ import android.view.SurfaceView;
 
     /**
      * Holder class of the EGL rendering context
+     *
+     * EGL 渲染上下文的持有类
      */
     public static class Context extends IContext {
         public final EGLContext eglContext;
@@ -83,6 +87,8 @@ import android.view.SurfaceView;
 
     /**
      * Wrapper of EGLSurface that associated with EGL rendering context
+     *
+     * 与 EGL 渲染上下文关联的 EGLSurface 的封装类
      */
     public static class EglSurface implements IEglSurface {
         private final EGLBase14 mEglBase;
@@ -90,6 +96,8 @@ import android.view.SurfaceView;
 
         /**
          * Create EglSurface(PBuffer) with a Surface
+         *
+         * 使用 Surface 创建 EglSurface(PBuffer)
          *
          * @param eglBase
          * @param surface Surface/SurfaceTexture/SurfaceHolder/SurfaceView
@@ -111,6 +119,8 @@ import android.view.SurfaceView;
 
         /**
          * Create Off-screen EglSurface(PBuffer) with a specified size
+         *
+         * 按指定尺寸创建离屏 EglSurface(PBuffer)
          *
          * @param eglBase
          * @param width
@@ -135,6 +145,13 @@ import android.view.SurfaceView;
          * (as though glViewport(0,0,w,h) and glScissor(0,0,w,h) were called, where w and h are the width and height of the surface, respectively).
          * However, the viewport and scissor dimensions are not modified when context is subsequently made current.
          * The client is responsible for resetting the viewport and scissor in this case
+         * <p>
+         * 调用 EGL 的 eglMakeCurrent 方法
+         * <p>
+         * 首次将 EGL 上下文设为当前上下文时,视口和裁剪区域的尺寸会被设置为绘制 surface 的大小
+         * (相当于调用了 glViewport(0,0,w,h) 和 glScissor(0,0,w,h),其中 w 和 h 分别为 surface 的宽度和高度)。
+         * 但是,之后再次将该上下文设为当前上下文时,视口和裁剪区域的尺寸不会被修改。
+         * 在这种情况下,需要由调用方自行重置视口和裁剪区域
          */
         @Override
         public void makeCurrent() {
@@ -152,6 +169,8 @@ import android.view.SurfaceView;
 
         /**
          * Post EGL surface color buffer to native window
+         *
+         * 将 EGL surface 的颜色缓冲区提交到原生窗口
          */
         @Override
         public void swap() {
@@ -160,6 +179,8 @@ import android.view.SurfaceView;
 
         /**
          * Post EGL surface color buffer to native window
+         *
+         * 将 EGL surface 的颜色缓冲区提交到原生窗口
          */
         @Override
         public void swap(final long presentationTimeNs) {
@@ -173,6 +194,8 @@ import android.view.SurfaceView;
 
         /**
          * Check EGLSurface is valid
+         *
+         * 检查 EGLSurface 是否有效
          */
         @Override
         public boolean isValid() {
@@ -193,6 +216,7 @@ import android.view.SurfaceView;
 
     /**
      * Constructor
+     * 构造函数
      *
      * @param sharedContext
      * @param maxClientVersion
@@ -209,6 +233,8 @@ import android.view.SurfaceView;
 
     /**
      * Destroy related resources
+     *
+     * 销毁相关资源
      */
     @Override
     public void release() {
@@ -225,6 +251,8 @@ import android.view.SurfaceView;
     /**
      * Create EglSurface from the specified Surface
      *
+     * 从指定的 Surface 创建 EglSurface
+     *
      * @param nativeWindow Surface/SurfaceTexture/SurfaceHolder
      * @return
      */
@@ -239,8 +267,10 @@ import android.view.SurfaceView;
     /**
      * Create off-screen EglSurface from the specified size
      *
-     * @param width  size of PBuffer offscreen (no less than 0)
-     * @param height size of PBuffer offscreen (no less than 0)
+     * 按指定尺寸创建离屏 EglSurface
+     *
+     * @param width  size of PBuffer offscreen (no less than 0) / PBuffer 离屏缓冲区的宽度(不小于 0)
+     * @param height size of PBuffer offscreen (no less than 0) / PBuffer 离屏缓冲区的高度(不小于 0)
      */
     @Override
     public EglSurface createOffscreen(final int width, final int height) {
@@ -258,6 +288,8 @@ import android.view.SurfaceView;
     /**
      * Get GLES version
      *
+     * 获取 GLES 版本
+     *
      * @return 1, 2 or 3
      */
     @Override
@@ -267,6 +299,8 @@ import android.view.SurfaceView;
 
     /**
      * Get the EGL rendering context
+     *
+     * 获取 EGL 渲染上下文
      */
     @Override
     public Context getContext() {
@@ -275,6 +309,8 @@ import android.view.SurfaceView;
 
     /**
      * Get the EGL configuration
+     *
+     * 获取 EGL 配置
      */
     @Override
     public Config getConfig() {
@@ -283,6 +319,8 @@ import android.view.SurfaceView;
 
     /**
      * Release assignment between the EGL rendering context and thread
+     *
+     * 解除 EGL 渲染上下文与线程之间的绑定
      */
     @Override
     public void makeDefault() {
@@ -299,10 +337,15 @@ import android.view.SurfaceView;
      * <p>
      * eglWaitGL: Complete GL execution prior to subsequent native rendering calls. The same result can be achieved using glFinish.
      * eglWaitNative: Complete native execution prior to subsequent GL rendering calls
+     * <p>
+     * 调用 eglWaitGL 和 eglWaitNative
+     * <p>
+     * eglWaitGL:在后续的原生渲染调用之前完成 GL 的执行。使用 glFinish 也可以达到相同的效果。
+     * eglWaitNative:在后续的 GL 渲染调用之前完成原生执行
      */
     @Override
     public void sync() {
-        EGL14.eglWaitGL();    // same as GLES20.glFinish()
+        EGL14.eglWaitGL();    // same as GLES20.glFinish() / 等同于 GLES20.glFinish()
         EGL14.eglWaitNative(EGL14.EGL_CORE_NATIVE_ENGINE);
     }
 
@@ -316,6 +359,7 @@ import android.view.SurfaceView;
             throw new RuntimeException("eglGetDisplay failed");
         }
         // Get the EGL version
+        // 获取 EGL 版本
         final int[] version = new int[2];
         if (!EGL14.eglInitialize(mEglDisplay, version, 0, version, 1)) {
             throw new RuntimeException("eglInitialize failed");
@@ -326,6 +370,7 @@ import android.view.SurfaceView;
         EGLConfig config;
         if (maxClientVersion >= 3) {
             // try to get config of GLES3
+            // 尝试获取 GLES3 的配置
             config = getConfig(3, withDepthBuffer, stencilBits, isRecordable);
             if (config != null) {
                 final EGLContext context = createContext(sharedContext, config, 3);
@@ -337,6 +382,7 @@ import android.view.SurfaceView;
             }
         }
         // if fail to get GLES3, try to get GLES2
+        // 如果获取 GLES3 失败,则尝试获取 GLES2
         if ((maxClientVersion >= 2)
                 && ((mContext == null) || (mContext.eglContext == EGL14.EGL_NO_CONTEXT))) {
 
@@ -346,6 +392,7 @@ import android.view.SurfaceView;
             }
             try {
                 // create EGL rendering context
+                // 创建 EGL 渲染上下文
                 final EGLContext context = createContext(sharedContext, config, 2);
                 checkEglError("eglCreateContext");
                 mEglConfig = new Config(config);
@@ -358,6 +405,7 @@ import android.view.SurfaceView;
                         throw new RuntimeException("chooseConfig failed");
                     }
                     // create EGL rendering context
+                    // 创建 EGL 渲染上下文
                     final EGLContext context = createContext(sharedContext, config, 2);
                     checkEglError("eglCreateContext");
                     mEglConfig = new Config(config);
@@ -372,6 +420,7 @@ import android.view.SurfaceView;
                 throw new RuntimeException("chooseConfig failed");
             }
             // create EGL rendering context
+            // 创建 EGL 渲染上下文
             final EGLContext context = createContext(sharedContext, config, 1);
             checkEglError("eglCreateContext");
             mEglConfig = new Config(config);
@@ -379,6 +428,7 @@ import android.view.SurfaceView;
             mGlVersion = 1;
         }
         // confirm whether the EGL rendering context is successfully created
+        // 确认 EGL 渲染上下文是否创建成功
         final int[] values = new int[1];
         EGL14.eglQueryContext(mEglDisplay,
                 mContext.eglContext, EGL14.EGL_CONTEXT_CLIENT_VERSION, values, 0);
@@ -388,6 +438,8 @@ import android.view.SurfaceView;
 
     /**
      * Bind EGL context to the current rendering thread and to the draw and read surface
+     *
+     * 将 EGL 上下文绑定到当前渲染线程以及绘制和读取 surface
      *
      * @return
      */
@@ -401,6 +453,7 @@ import android.view.SurfaceView;
             return false;
         }
         // attach EGL rendering context to specific EGL window surface
+        // 将 EGL 渲染上下文附加到指定的 EGL 窗口 surface
         if (!EGL14.eglMakeCurrent(mEglDisplay, surface, surface, mContext.eglContext)) {
             Log.w("TAG", "eglMakeCurrent" + EGL14.eglGetError());
             return false;
@@ -482,6 +535,8 @@ import android.view.SurfaceView;
     /**
      * nativeWindow should be one of the Surface, SurfaceHolder and SurfaceTexture
      *
+     * nativeWindow 应为 Surface、SurfaceHolder 和 SurfaceTexture 之一
+     *
      * @param nativeWindow
      * @return
      */
@@ -503,7 +558,8 @@ import android.view.SurfaceView;
                 throw new RuntimeException("createWindowSurface failed error=" + error);
             }
             makeCurrent(result);
-            // 画面サイズ・フォーマットの取得
+            // Get the screen size and format
+            // 获取屏幕尺寸和格式
         } catch (final Exception e) {
             Log.e(TAG, "eglCreateWindowSurface", e);
             throw new IllegalArgumentException(e);
@@ -513,6 +569,8 @@ import android.view.SurfaceView;
 
     /**
      * Creates an EGL surface associated with an offscreen buffer.
+     *
+     * 创建与离屏缓冲区关联的 EGL surface。
      */
     private EGLSurface createOffscreenSurface(final int width, final int height) {
         if (DEBUG) Log.v(TAG, "createOffscreenSurface:");
@@ -572,22 +630,25 @@ import android.view.SurfaceView;
                 EGL14.EGL_NONE, EGL14.EGL_NONE,    //EGL14.EGL_STENCIL_SIZE, 8,
                 EGL14.EGL_NONE, EGL14.EGL_NONE,    //	with_depth_buffer ? EGL14.EGL_DEPTH_SIZE : EGL14.EGL_NONE,
                 // this flag need to recording of MediaCodec
+                // 使用 MediaCodec 录制时需要此标志
                 EGL14.EGL_NONE, EGL14.EGL_NONE,    //EGL_RECORDABLE_ANDROID, 1,
                 // with_depth_buffer ? 16 : 0,
                 EGL14.EGL_NONE
         };
         int offset = 10;
         // size of stencil buffer(Always unused)
+        // 模板缓冲区的大小(始终未使用)
         if (stencilBits > 0) {
             attribList[offset++] = EGL14.EGL_STENCIL_SIZE;
             attribList[offset++] = stencilBits;
         }
         // size of depth buffer
+        // 深度缓冲区的大小
         if (hasDepthBuffer) {
             attribList[offset++] = EGL14.EGL_DEPTH_SIZE;
             attribList[offset++] = 16;
         }
-        if (isRecordable) {// MediaCodecの入力用Surfaceの場合
+        if (isRecordable) {// For MediaCodec's input Surface / 用于 MediaCodec 的输入 Surface
             attribList[offset++] = EGL_RECORDABLE_ANDROID;
             attribList[offset++] = 1;
         }
@@ -597,7 +658,8 @@ import android.view.SurfaceView;
         EGLConfig config = internalGetConfig(attribList);
         if ((config == null) && (version == 2)) {
             if (isRecordable) {
-                // EGL_RECORDABLE_ANDROIDをつけると失敗する機種もあるので取り除く
+                // Remove EGL_RECORDABLE_ANDROID, since some devices fail when it is specified
+                // 部分机型指定 EGL_RECORDABLE_ANDROID 会失败,因此将其移除
                 final int n = attribList.length;
                 for (int i = 10; i < n - 1; i += 2) {
                     if (attribList[i] == EGL_RECORDABLE_ANDROID) {

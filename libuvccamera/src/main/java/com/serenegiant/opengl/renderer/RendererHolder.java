@@ -33,6 +33,8 @@ import static com.serenegiant.opengl.ShaderConst.GL_TEXTURE_EXTERNAL_OES;
 
 /**
  * Hold shared texture that receive camera frame and draw them to registered surface if needs
+ *
+ * 保存共享纹理，用于接收相机帧，并在需要时将其绘制到已注册的 surface 上
  */
 public class RendererHolder extends EGLTask implements IRendererHolder {
     private static final boolean DEBUG = BuildConfig.DEBUG;
@@ -108,6 +110,8 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
 
     /**
      * release all used resource
+     *
+     * 释放所有已使用的资源
      */
     @Override
     public void release() {
@@ -118,7 +122,9 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
     /**
      * Get Surface that receive camera frame.
      *
-     * @return The Surface must be used in UVCCamera.setPreviewDisplay() method
+     * 获取接收相机帧的 Surface。
+     *
+     * @return The Surface must be used in UVCCamera.setPreviewDisplay() method / 必须在 UVCCamera.setPreviewDisplay() 方法中使用该 Surface
      */
     @Override
     public Surface getPrimarySurface() {
@@ -129,7 +135,9 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
     /**
      * Get SurfaceTexture that receive camera frame.
      *
-     * @return The SurfaceTexture must be used in UVCCamera.setPreviewDisplay() method
+     * 获取接收相机帧的 SurfaceTexture。
+     *
+     * @return The SurfaceTexture must be used in UVCCamera.setPreviewDisplay() method / 必须在 UVCCamera.setPreviewDisplay() 方法中使用该 SurfaceTexture
      */
     @Override
     public SurfaceTexture getPrimarySurfaceTexture() {
@@ -139,6 +147,8 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
 
     /**
      * Check whether Primary Surface is valid, if invalid recreate Primary Surface
+     *
+     * 检查 Primary Surface 是否有效，若无效则重新创建 Primary Surface
      */
     @Override
     public void checkPrimarySurface() {
@@ -160,6 +170,8 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
 
     /**
      * Change size of Primary Surface
+     *
+     * 更改 Primary Surface 的尺寸
      *
      * @param width
      * @param height
@@ -187,8 +199,10 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
     /**
      * Add slave surface that is a mirror of primary surface
      *
-     * @param id           often use #hashCode.
-     * @param surface,     should be one of Surface, SurfaceTexture or SurfaceHolder
+     * 添加 slave surface，它是 primary surface 的镜像
+     *
+     * @param id           often use #hashCode. / 通常使用 #hashCode
+     * @param surface,     should be one of Surface, SurfaceTexture or SurfaceHolder / 应为 Surface、SurfaceTexture 或 SurfaceHolder 之一
      * @param isRecordable
      */
     @Override
@@ -202,10 +216,12 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
     /**
      * Add slave surface that is a mirror of primary surface
      *
-     * @param id           often use #hashCode.
-     * @param surface,     should be one of Surface, SurfaceTexture or SurfaceHolder
+     * 添加 slave surface，它是 primary surface 的镜像
+     *
+     * @param id           often use #hashCode. / 通常使用 #hashCode
+     * @param surface,     should be one of Surface, SurfaceTexture or SurfaceHolder / 应为 Surface、SurfaceTexture 或 SurfaceHolder 之一
      * @param isRecordable
-     * @param maxFps       no limit if it is less than zero
+     * @param maxFps       no limit if it is less than zero / 小于零时表示不限制
      */
     @Override
     public void addSlaveSurface(final int id,
@@ -235,6 +251,8 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
     /**
      * Remove slave surface
      *
+     * 移除 slave surface
+     *
      * @param id
      */
     @Override
@@ -254,6 +272,8 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
 
     /**
      * Remove all slave surface
+     *
+     * 移除所有 slave surface
      */
     @Override
     public void removeSlaveSurfaceAll() {
@@ -271,6 +291,8 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
     /**
      * Fill specific slave Surface with specific color
      *
+     * 用指定颜色填充指定的 slave Surface
+     *
      * @param id
      * @param color
      */
@@ -281,6 +303,8 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
 
     /**
      * Fill all slave Surface with specific color
+     *
+     * 用指定颜色填充所有 slave Surface
      *
      * @param color
      */
@@ -308,7 +332,9 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
     /**
      * Set slave surface's MirrorMode that flip image horizontally, or flip image vertically.
      *
-     * @param mode 0:normal, 1:flip horizontally, 2:flip vertically, 3:flip horizontal direction and vertical direction
+     * 设置 slave surface 的 MirrorMode，即水平翻转或垂直翻转图像。
+     *
+     * @param mode 0:normal, 1:flip horizontally, 2:flip vertically, 3:flip horizontal direction and vertical direction / 0：正常，1：水平翻转，2：垂直翻转，3：水平和垂直方向同时翻转
      */
     @Override
     public void setMirrorMode(@MirrorMode final int mode) {
@@ -324,7 +350,9 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
     /**
      * Get slave surface's Mirror Mode that flip image horizontally, or flip image vertically.
      *
-     * @return 0:normal, 1:flip horizontally, 2:flip vertically, 3:flip horizontal direction and vertical direction
+     * 获取 slave surface 的 Mirror Mode，即水平翻转或垂直翻转图像。
+     *
+     * @return 0:normal, 1:flip horizontally, 2:flip vertically, 3:flip horizontal direction and vertical direction / 0：正常，1：水平翻转，2：垂直翻转，3：水平和垂直方向同时翻转
      */
     @Override
     @MirrorMode
@@ -334,6 +362,8 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
 
     /**
      * Get state of slave surface
+     *
+     * 获取 slave surface 的状态
      *
      * @param id
      * @return
@@ -348,6 +378,8 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
 
     /**
      * Set state of slave surface
+     *
+     * 设置 slave surface 的状态
      *
      * @param id
      * @param enable
@@ -364,6 +396,8 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
 
     /**
      * Update all slave surface based on master surface immediately
+     *
+     * 立即根据 master surface 更新所有 slave surface
      */
     @Override
     public void requestFrame() {
@@ -375,6 +409,8 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
 
     /**
      * Drawing content on every surface
+     *
+     * 在每个 surface 上绘制内容
      *
      * @param surface
      * @param texId
@@ -490,6 +526,8 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
 
         /**
          * handle drawing process
+         *
+         * 处理绘制过程
          */
         protected void handleDraw() {
             if ((mPrimarySurface == null) || (!mPrimarySurface.isValid())) {
@@ -517,6 +555,8 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
 
         /**
          * handle drawing each slave surface
+         *
+         * 处理每个 slave surface 的绘制
          */
         protected void handleDrawSlaveSurfaces() {
             synchronized (mSlaveSurfaces) {
@@ -566,7 +606,7 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
                 if (slaveSurface != null) {
                     mSlaveSurfaces.remove(id);
                     if (slaveSurface.isValid()) {
-                        slaveSurface.clear(0);    // XXX 黒で塗りつぶし, 色指定できるようにする?
+                        slaveSurface.clear(0);    // XXX fill with black; make the color specifiable? / XXX 用黑色填充，是否让颜色可指定？
                     }
                     slaveSurface.release();
                 }
@@ -585,7 +625,7 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
                     slaveSurface = mSlaveSurfaces.valueAt(i);
                     if (slaveSurface != null) {
                         if (slaveSurface.isValid()) {
-                            slaveSurface.clear(0);    // XXX 黒で塗りつぶし, 色指定できるようにする?
+                            slaveSurface.clear(0);    // XXX fill with black; make the color specifiable? / XXX 用黑色填充，是否让颜色可指定？
                         }
                         slaveSurface.release();
                     }
@@ -598,6 +638,8 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
 
         /**
          * Check whether the drawing Surface is valid, and delete invalid ones
+         *
+         * 检查用于绘制的 Surface 是否有效，并删除无效的 Surface
          */
         protected void checkSurface() {
             if (DEBUG) Log.v(TAG, "checkSurface");
@@ -621,6 +663,8 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
         /**
          * Fill the drawing Surface with the specified color by specified id
          *
+         * 按指定 id，用指定颜色填充用于绘制的 Surface
+         *
          * @param id
          * @param color
          */
@@ -635,6 +679,8 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
 
         /**
          * Fill all drawing Surface with the specified color
+         *
+         * 用指定颜色填充所有用于绘制的 Surface
          *
          * @param color
          */
@@ -652,6 +698,8 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
 
         /**
          * Recreate Primary Surface
+         *
+         * 重新创建 Primary Surface
          */
         protected void handleReCreatePrimarySurface() {
             mLock.lock();
@@ -677,6 +725,8 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
 
         /**
          * Release Primary Surface
+         *
+         * 释放 Primary Surface
          */
         protected void handleReleasePrimarySurface() {
             makeCurrent();
@@ -709,6 +759,8 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
         /**
          * Change size of Primary Surface
          *
+         * 更改 Primary Surface 的尺寸
+         *
          * @param width
          * @param height
          */
@@ -721,6 +773,8 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
 
         /**
          * The callback listener when receiving video data on SurfaceTexture
+         *
+         * 在 SurfaceTexture 上接收到视频数据时的回调监听器
          */
         protected final SurfaceTexture.OnFrameAvailableListener
                 mOnFrameAvailableListener = new SurfaceTexture.OnFrameAvailableListener() {
@@ -745,16 +799,16 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
                 mvp[5] = Math.abs(mvp[5]);
                 break;
             case MirrorMode.MIRROR_HORIZONTAL:
-                mvp[0] = -Math.abs(mvp[0]);    // flip left-right
+                mvp[0] = -Math.abs(mvp[0]);    // flip left-right / 左右翻转
                 mvp[5] = Math.abs(mvp[5]);
                 break;
             case MirrorMode.MIRROR_VERTICAL:
                 mvp[0] = Math.abs(mvp[0]);
-                mvp[5] = -Math.abs(mvp[5]);    // flip up-side down
+                mvp[5] = -Math.abs(mvp[5]);    // flip up-side down / 上下翻转
                 break;
             case MirrorMode.MIRROR_BOTH:
-                mvp[0] = -Math.abs(mvp[0]);    // flip left-right
-                mvp[5] = -Math.abs(mvp[5]);    // flip up-side down
+                mvp[0] = -Math.abs(mvp[0]);    // flip left-right / 左右翻转
+                mvp[5] = -Math.abs(mvp[5]);    // flip up-side down / 上下翻转
                 break;
             default:
                 break;

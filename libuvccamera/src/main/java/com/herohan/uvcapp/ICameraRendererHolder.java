@@ -7,6 +7,9 @@ interface ICameraRendererHolder extends IRendererHolder {
     /**
      * capture still picture
      * blocking for capture to complete
+     *
+     * 拍摄静态图片
+     * 阻塞直到拍摄完成
      */
     void captureImage(OnImageCapturedCallback callback);
 

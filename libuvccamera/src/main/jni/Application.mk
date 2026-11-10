@@ -24,6 +24,8 @@
 
 # This is just for mips, if you really needs MSA, un-comment and build with GCC.
 # Note: Supporting GCC on NDK is already deprecated and GCC will be removed from NDK soon.
+# 这仅适用于 mips，如果确实需要 MSA，请取消注释并使用 GCC 构建。
+# 注意：NDK 对 GCC 的支持已被弃用，GCC 很快将从 NDK 中移除。
 #NDK_TOOLCHAIN_VERSION := 4.9
 
 APP_PLATFORM := android-29

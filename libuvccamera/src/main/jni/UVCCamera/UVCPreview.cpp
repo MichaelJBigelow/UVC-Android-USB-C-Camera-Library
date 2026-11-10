@@ -101,6 +101,11 @@ UVCPreview::~UVCPreview() {
  * if pool is empty, create new frame
  * this function does not confirm the frame size
  * and you may need to confirm the size
+ *
+ * 从帧池中获取 uvc_frame_t
+ * 如果池为空，则创建新帧
+ * 此函数不会确认帧的大小
+ * 您可能需要自行确认大小
  */
 uvc_frame_t *UVCPreview::get_frame(size_t data_bytes) {
     uvc_frame_t *frame = NULL;
@@ -238,7 +243,7 @@ int UVCPreview::setFrameCallback(JNIEnv *env, jobject frame_callback_obj, int pi
             mIsCapturing = false;
             if (mFrameCallbackObj) {
                 pthread_cond_signal(&capture_sync);
-                pthread_cond_wait(&capture_sync, &capture_mutex);    // wait finishing capturing
+                pthread_cond_wait(&capture_sync, &capture_mutex);    // wait finishing capturing / 等待捕获完成
             }
         }
         if (!env->IsSameObject(mFrameCallbackObj, frame_callback_obj)) {
@@ -249,6 +254,7 @@ int UVCPreview::setFrameCallback(JNIEnv *env, jobject frame_callback_obj, int pi
             mFrameCallbackObj = frame_callback_obj;
             if (frame_callback_obj) {
                 // get method IDs of Java object for callback
+                // 获取用于回调的 Java 对象的方法 ID
                 jclass clazz = env->GetObjectClass(frame_callback_obj);
                 if (LIKELY(clazz)) {
                     iframecallback_fields.onFrame = env->GetMethodID(clazz,
@@ -572,6 +578,7 @@ void UVCPreview::do_preview(uvc_stream_ctrl_t *ctrl) {
 #endif
         if (frameFormatType == UVC_VS_FRAME_MJPEG) {
             // MJPEG mode
+            // MJPEG 模式
             for (; LIKELY(isRunning());) {
                 frame_mjpeg = waitPreviewFrame();
                 if (LIKELY(frame_mjpeg)) {
@@ -595,6 +602,7 @@ void UVCPreview::do_preview(uvc_stream_ctrl_t *ctrl) {
             }
         } else {
             // yuvyv mode
+            // YUYV 模式
             for (; LIKELY(isRunning());) {
                 frame_yuv = waitPreviewFrame();
                 if (LIKELY(frame_yuv)) {
@@ -632,6 +640,7 @@ void UVCPreview::do_preview(uvc_stream_ctrl_t *ctrl) {
 }
 
 // transfer specific frame data to the Surface(ANativeWindow)
+// 将指定的帧数据传输到 Surface（ANativeWindow）
 int copyToSurface(uvc_frame_t *frame, ANativeWindow **window) {
     // ENTER();
     int result = 0;
@@ -687,11 +696,12 @@ int UVCPreview::setCaptureDisplay(ANativeWindow *capture_window) {
             mIsCapturing = false;
             if (mCaptureWindow) {
                 pthread_cond_signal(&capture_sync);
-                pthread_cond_wait(&capture_sync, &capture_mutex);    // wait finishing capturing
+                pthread_cond_wait(&capture_sync, &capture_mutex);    // wait finishing capturing / 等待捕获完成
             }
         }
         if (mCaptureWindow != capture_window) {
             // release current Surface if already assigned.
+            // 如果已分配当前 Surface，则将其释放。
             if (UNLIKELY(mCaptureWindow))
                 ANativeWindow_release(mCaptureWindow);
             mCaptureWindow = capture_window;
@@ -700,6 +710,10 @@ int UVCPreview::setCaptureDisplay(ANativeWindow *capture_window) {
             // ANativeWindow_lock / ANativeWindow_unlockAndPost
             // to write frame data to the Surface...
             // So we need check here.
+            // 如果您使用的 Surface 来自 MediaCodec#createInputSurface，
+            // 那么至少在使用 ANativeWindow_lock / ANativeWindow_unlockAndPost
+            // 向该 Surface 写入帧数据时，您无法更改窗口格式……
+            // 所以我们需要在这里进行检查。
             if (mCaptureWindow) {
                 int32_t window_format = ANativeWindow_getFormat(mCaptureWindow);
                 if ((window_format != WINDOW_FORMAT_RGB_565)
@@ -720,6 +734,7 @@ bool UVCPreview::addCaptureFrame(uvc_frame_t *frame) {
     pthread_mutex_lock(&capture_mutex);
     if (LIKELY(isRunning())) {
         // keep only latest one
+        // 仅保留最新的一帧
         if (captureQueu) {
             recycle_frame(captureQueu);
         }
@@ -733,6 +748,8 @@ bool UVCPreview::addCaptureFrame(uvc_frame_t *frame) {
 
 /**
  * get frame data for capturing, if not exist, block and wait
+ *
+ * 获取用于捕获的帧数据，如果不存在，则阻塞并等待
  */
 uvc_frame_t *UVCPreview::waitCaptureFrame() {
     uvc_frame_t *frame = NULL;
@@ -752,6 +769,8 @@ uvc_frame_t *UVCPreview::waitCaptureFrame() {
 
 /**
  * clear drame data for capturing
+ *
+ * 清除用于捕获的帧数据
  */
 void UVCPreview::clearCaptureFrame() {
     pthread_mutex_lock(&capture_mutex);
@@ -766,7 +785,9 @@ void UVCPreview::clearCaptureFrame() {
 //======================================================================
 /*
  * thread function
- * @param vptr_args pointer to UVCPreview instance
+ *
+ * 线程函数
+ * @param vptr_args pointer to UVCPreview instance / 指向 UVCPreview 实例的指针
  */
 // static
 void *UVCPreview::capture_thread_func(void *vptr_args) {
@@ -778,9 +799,11 @@ void *UVCPreview::capture_thread_func(void *vptr_args) {
         JavaVM *vm = getVM();
         JNIEnv *env;
         // attach to JavaVM
+        // 附加到 JavaVM
         vm->AttachCurrentThread(&env, NULL);
-        preview->do_capture(env);    // never return until finish previewing
+        preview->do_capture(env);    // never return until finish previewing / 在预览结束前不会返回
         // detach from JavaVM
+        // 从 JavaVM 分离
         vm->DetachCurrentThread();
         MARK("DetachCurrentThread");
     }
@@ -790,6 +813,8 @@ void *UVCPreview::capture_thread_func(void *vptr_args) {
 
 /**
  * the actual function for capturing
+ *
+ * 实际执行捕获的函数
  */
 void UVCPreview::do_capture(JNIEnv *env) {
 
@@ -805,7 +830,7 @@ void UVCPreview::do_capture(JNIEnv *env) {
             do_capture_idle_loop(env);
         }
         pthread_cond_broadcast(&capture_sync);
-    }    // end of for (; isRunning() ;)
+    }    // end of for (; isRunning() ;) / for (; isRunning() ;) 循环结束
     EXIT();
 }
 
@@ -821,6 +846,8 @@ void UVCPreview::do_capture_idle_loop(JNIEnv *env) {
 
 /**
  * write frame data to Surface for capturing
+ *
+ * 将帧数据写入 Surface 以进行捕获
  */
 void UVCPreview::do_capture_surface(JNIEnv *env) {
     ENTER();
@@ -832,6 +859,7 @@ void UVCPreview::do_capture_surface(JNIEnv *env) {
         frame = waitCaptureFrame();
         if (LIKELY(frame)) {
             // frame data is always YUYV format.
+            // 帧数据始终为 YUYV 格式。
             if LIKELY(isCapturing()) {
                 if (LIKELY(mCaptureWindow)) {
                     copyToSurface(frame, &mCaptureWindow);
@@ -851,6 +879,8 @@ void UVCPreview::do_capture_surface(JNIEnv *env) {
 
 /**
 * call IFrameCallback#onFrame if needs
+ *
+ * 如有需要，调用 IFrameCallback#onFrame
  */
 void UVCPreview::do_capture_callback(JNIEnv *env, uvc_frame_t *frame) {
 //    ENTER();

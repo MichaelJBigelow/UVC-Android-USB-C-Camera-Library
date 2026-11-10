@@ -39,11 +39,11 @@ import com.serenegiant.uvccamera.BuildConfig;
 
 
 public class MediaMuxerWrapper {
-    private static final boolean DEBUG = BuildConfig.DEBUG;    // TODO set false on release
+    private static final boolean DEBUG = BuildConfig.DEBUG;    // TODO set false on release / 发布时设为 false
     private static final String TAG = MediaMuxerWrapper.class.getSimpleName();
 
     private Uri mOutputUri;
-    private final MediaMuxer mMediaMuxer;    // API >= 18
+    private final MediaMuxer mMediaMuxer;    // API >= 18 / API 级别 >= 18
     private int mEncoderCount, mStartedCount;
     private boolean mIsStarted;
     private MediaEncoder mVideoEncoder, mAudioEncoder;
@@ -51,7 +51,9 @@ public class MediaMuxerWrapper {
     /**
      * Constructor
      *
-     * @param uri uri of output file
+     * 构造函数
+     *
+     * @param uri uri of output file / 输出文件的 uri
      * @throws IOException
      */
     public MediaMuxerWrapper(Uri uri) throws IOException {
@@ -115,7 +117,9 @@ public class MediaMuxerWrapper {
     /**
      * assign encoder to this class. this is called from encoder.
      *
-     * @param encoder instance of MediaVideoEncoder or MediaAudioEncoder
+     * 将编码器分配给此类。此方法由编码器调用。
+     *
+     * @param encoder instance of MediaVideoEncoder or MediaAudioEncoder / MediaVideoEncoder 或 MediaAudioEncoder 的实例
      */
     /*package*/ void addEncoder(final MediaEncoder encoder) {
         if (encoder instanceof MediaSurfaceEncoder
@@ -139,7 +143,9 @@ public class MediaMuxerWrapper {
     /**
      * request start recording from encoder
      *
-     * @return true when muxer is ready to write
+     * 由编码器请求开始录制
+     *
+     * @return true when muxer is ready to write / muxer 已准备好写入时返回 true
      */
     /*package*/
     synchronized boolean start() {
@@ -156,6 +162,8 @@ public class MediaMuxerWrapper {
 
     /**
      * request stop recording from encoder when encoder received EOS
+     *
+     * 编码器收到 EOS 时,由编码器请求停止录制
      */
     /*package*/
     synchronized void stop() {
@@ -177,8 +185,10 @@ public class MediaMuxerWrapper {
     /**
      * assign encoder to muxer
      *
+     * 将编码器分配给 muxer
+     *
      * @param format
-     * @return minus value indicate error
+     * @return minus value indicate error / 负值表示出错
      */
     /*package*/
     synchronized int addTrack(final MediaFormat format) {
@@ -193,6 +203,8 @@ public class MediaMuxerWrapper {
 
     /**
      * write encoded data to muxer
+     *
+     * 将编码后的数据写入 muxer
      *
      * @param trackIndex
      * @param byteBuf

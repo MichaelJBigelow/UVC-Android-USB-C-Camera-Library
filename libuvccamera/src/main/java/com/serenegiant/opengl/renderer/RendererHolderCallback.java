@@ -22,6 +22,8 @@ import android.view.Surface;
 
 /**
  *  Listener callback of RenderHolder
+ *
+ *  RenderHolder 的监听回调
  */
 public interface RendererHolderCallback {
     void onPrimarySurfaceCreate(Surface surface);

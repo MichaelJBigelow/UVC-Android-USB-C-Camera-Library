@@ -74,6 +74,8 @@ public:
 	}
 	/**
 	 * remove T which posisioned on index
+	 *
+	 * 移除位于指定索引处的 T
 	 */
 	T remove(int index) {
 		T obj = m_elements[index];
@@ -85,6 +87,8 @@ public:
 	}
 	/**
 	 * search the T object and remove if exist
+	 *
+	 * 查找 T 对象，如果存在则将其移除
 	 */
 	void removeObject(T object) {
 		for (int i = 0; i < size(); i++) {
@@ -97,6 +101,9 @@ public:
 	/**
 	 * get last T and remove from this array ¥
 	 * this is faster than remove(size()-1)
+	 *
+	 * 获取最后一个 T 并将其从该数组中移除
+	 * 这比 remove(size()-1) 更快
 	 */
 	inline T last() {
 		if LIKELY(m_size > 0)
@@ -107,6 +114,9 @@ public:
 	/**
 	 * search the T object and return it's index
 	 * if the T is not in this array, return -1
+	 *
+	 * 查找 T 对象并返回其索引
+	 * 如果该 T 不在此数组中，则返回 -1
 	 */
 	int getIndex(const T object) {
 		int result = -1;
@@ -121,6 +131,8 @@ public:
 
 	/**
 	 * clear the T array but never delete actual T instance
+	 *
+	 * 清空 T 数组，但不会删除实际的 T 实例
 	 */
 	inline void clear() {
 		size(min_size);

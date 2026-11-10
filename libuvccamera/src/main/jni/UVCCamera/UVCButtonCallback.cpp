@@ -40,6 +40,7 @@ int UVCButtonCallback::setCallback(JNIEnv *env, jobject button_callback_obj) {
 			mButtonCallbackObj = button_callback_obj;
 			if (button_callback_obj) {
 				// get method IDs of Java object for callback
+				// 获取用于回调的 Java 对象的方法 ID
 				jclass clazz = env->GetObjectClass(button_callback_obj);
 				if (LIKELY(clazz)) {
 					ibuttoncallback_fields.onButton = env->GetMethodID(clazz,
@@ -81,6 +82,7 @@ void UVCButtonCallback::uvc_button_callback(int button, int state, void *user_pt
 	bool  isAttached = false;
 	if(env == NULL){
 		// attach current thread to JavaVM
+		// 将当前线程附加到 JavaVM
 		vm->AttachCurrentThread(&env, NULL);
 		isAttached = true;
 	}

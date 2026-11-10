@@ -126,6 +126,7 @@ public class BasicPreviewActivity extends AppCompatActivity implements View.OnCl
                 int width = size.width;
                 int height = size.height;
                 //auto aspect ratio
+                //自动宽高比
                 mCameraViewMain.setAspectRatio(width, height);
             }
 
@@ -162,6 +163,7 @@ public class BasicPreviewActivity extends AppCompatActivity implements View.OnCl
     public void onClick(View v) {
         if (v.getId() == R.id.btnOpenCamera) {
             // select a uvc device
+            // 选择一个 uvc 设备
             if (mCameraHelper != null) {
                 final List<UsbDevice> list = mCameraHelper.getDeviceList();
                 if (list != null && list.size() > 0) {
@@ -170,6 +172,7 @@ public class BasicPreviewActivity extends AppCompatActivity implements View.OnCl
             }
         } else if (v.getId() == R.id.btnCloseCamera) {
             // close camera
+            // 关闭相机
             if (mCameraHelper != null) {
                 mCameraHelper.closeCamera();
             }

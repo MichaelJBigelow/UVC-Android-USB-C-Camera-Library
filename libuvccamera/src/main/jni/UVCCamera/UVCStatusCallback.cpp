@@ -38,6 +38,7 @@ int UVCStatusCallback::setCallback(JNIEnv *env, jobject status_callback_obj) {
 			mStatusCallbackObj = status_callback_obj;
 			if (status_callback_obj) {
 				// get method IDs of Java object for callback
+				// 获取用于回调的 Java 对象的方法 ID
 				jclass clazz = env->GetObjectClass(status_callback_obj);
 				if (LIKELY(clazz)) {
 					istatuscallback_fields.onStatus = env->GetMethodID(clazz,
@@ -81,6 +82,7 @@ void UVCStatusCallback::uvc_status_callback(uvc_status_class status_class, int e
 	bool  isAttached = false;
 	if(env == NULL){
 		// attach current thread to JavaVM
+		// 将当前线程附加到 JavaVM
 		vm->AttachCurrentThread(&env, NULL);
 		isAttached = true;
 	}

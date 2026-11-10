@@ -22,8 +22,8 @@
  */
 
 plugins {
-    id 'com.android.library'
-    id "com.vanniktech.maven.publish" version "0.37.0"
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.maven.publish)
 }
 
 android {
@@ -67,10 +67,10 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation 'androidx.core:core:1.13.1'
-    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'androidx.annotation:annotation:1.8.0'
+    implementation libs.androidx.core
+    implementation libs.androidx.legacy.support.v4
+    implementation libs.androidx.appcompat
+    implementation libs.androidx.annotation
 }
 
 ext {

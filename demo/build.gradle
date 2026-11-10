@@ -1,5 +1,5 @@
 plugins {
-    id 'com.android.application'
+    alias(libs.plugins.android.application)
 }
 
 android {
@@ -30,13 +30,13 @@ android {
 
 dependencies {
 
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    implementation 'com.google.android.material:material:1.10.0'
+    implementation libs.androidx.appcompat
+    implementation libs.androidx.constraintlayout
+    implementation libs.material
 
-    implementation 'com.github.getActivity:XXPermissions:13.5'
+    implementation libs.xxPermissions
 //    implementation 'com.github.warkiz.widget:indicatorseekbar:2.1.2'
-    implementation 'com.github.warkiz:IndicatorSeekBar:v2.1.1'
+    implementation libs.indicatorSeekBar
 
     // debugImplementation because LeakCanary should only run in debug builds.
     // 使用 debugImplementation,因为 LeakCanary 只应在 debug 构建中运行。
@@ -45,10 +45,10 @@ dependencies {
     implementation project(':libuvccamera')
 //    implementation 'com.herohan:UVCAndroid:1.0.13'
 
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-intents:3.6.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.6.1'
-    androidTestImplementation "androidx.test.uiautomator:uiautomator:2.3.0"
+    testImplementation libs.junit
+    androidTestImplementation libs.androidx.test.junit
+    androidTestImplementation libs.androidx.test.espresso.core
+    androidTestImplementation libs.androidx.test.espresso.intents
+    androidTestImplementation libs.androidx.test.espresso.contrib
+    androidTestImplementation libs.androidx.test.uiautomator
 }

@@ -32,7 +32,6 @@ import java.nio.ByteBuffer;
 import android.media.MediaCodec;
 import android.media.MediaFormat;
 import android.net.Uri;
-import android.os.Build;
 import android.util.Log;
 import android.view.Surface;
 
@@ -295,8 +294,7 @@ public abstract class MediaEncoder extends Thread {
                 while (mIsCapturing && current < length) {
                     final int inputBufferId = mMediaCodec.dequeueInputBuffer(TIMEOUT_US);
                     if (inputBufferId >= 0) {
-                        final ByteBuffer inputBuffer = Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP ?
-                                mMediaCodec.getInputBuffers()[inputBufferId] : mMediaCodec.getInputBuffer(inputBufferId);
+                        final ByteBuffer inputBuffer = mMediaCodec.getInputBuffer(inputBufferId);
                         inputBuffer.clear();
                         int inputSize = inputBuffer.capacity();
                         inputSize = (current + inputSize < length) ? inputSize : length - current;
@@ -377,8 +375,7 @@ public abstract class MediaEncoder extends Thread {
                     if (DEBUG)
                         Log.w(TAG, "drain:unexpected result from encoder#dequeueOutputBuffer: " + outputBufferId);
                 } else {
-                    final ByteBuffer encodedData = Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP ?
-                            mMediaCodec.getOutputBuffers()[outputBufferId] : mMediaCodec.getOutputBuffer(outputBufferId);
+                    final ByteBuffer encodedData = mMediaCodec.getOutputBuffer(outputBufferId);
                     if (encodedData == null) {
                         // this never should come...may be a MediaCodec internal error
                         throw new RuntimeException("encoderOutputBuffer " + outputBufferId + " was null");

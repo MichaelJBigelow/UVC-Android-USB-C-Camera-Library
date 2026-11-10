@@ -8,7 +8,6 @@ import android.opengl.Matrix;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -662,9 +661,7 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
                 mTexId = GLHelper.initTex(GL_TEXTURE_EXTERNAL_OES, GLES20.GL_NEAREST);
                 mPrimaryTexture = new SurfaceTexture(mTexId);
                 mPrimarySurface = new Surface(mPrimaryTexture);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
-                    mPrimaryTexture.setDefaultBufferSize(mVideoWidth, mVideoHeight);
-                }
+                mPrimaryTexture.setDefaultBufferSize(mVideoWidth, mVideoHeight);
                 mIsFirstFrameRendered = false;
                 mPrimaryTexture.setOnFrameAvailableListener(mOnFrameAvailableListener);
 
@@ -718,9 +715,7 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
         protected void handleUpdateSize(final int width, final int height) {
             mVideoWidth = width;
             mVideoHeight = height;
-//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
-//                    mPrimaryTexture.setDefaultBufferSize(mVideoWidth, mVideoHeight);
-//                }
+//                mPrimaryTexture.setDefaultBufferSize(mVideoWidth, mVideoHeight);
             makeCurrent();
         }
 

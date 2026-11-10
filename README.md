@@ -38,4 +38,4 @@ ProGuard users must manually add the below options.
 
 Requirements
 --------------
-Android 5.0+
+Android 10 (API level 29)+

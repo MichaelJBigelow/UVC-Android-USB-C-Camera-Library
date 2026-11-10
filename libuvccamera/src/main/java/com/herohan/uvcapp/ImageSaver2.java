@@ -3,7 +3,6 @@ package com.herohan.uvcapp;
 import android.content.ContentValues;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.Build;
 import android.provider.MediaStore;
 import android.util.Log;
 
@@ -137,20 +136,16 @@ public class ImageSaver2 implements Runnable {
      * Set IS_PENDING flag to {@link ContentValues}.
      */
     private void setContentValuePending(@NonNull ContentValues values, int isPending) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            values.put(MediaStore.Images.Media.IS_PENDING, isPending);
-        }
+        values.put(MediaStore.Images.Media.IS_PENDING, isPending);
     }
 
     /**
      * Removes IS_PENDING flag during the writing to {@link Uri}.
      */
     private void setUriNotPending(@NonNull Uri outputUri) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            ContentValues values = new ContentValues();
-            setContentValuePending(values, NOT_PENDING);
-            mOutputFileOptions.getContentResolver().update(outputUri, values, null, null);
-        }
+        ContentValues values = new ContentValues();
+        setContentValuePending(values, NOT_PENDING);
+        mOutputFileOptions.getContentResolver().update(outputUri, values, null, null);
     }
 
     /**

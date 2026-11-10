@@ -27,7 +27,6 @@ import android.opengl.GLES20;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import android.os.Build;
 import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
@@ -173,15 +172,7 @@ import javax.microedition.khronos.egl.EGLSurface;
 
 //			if (DEBUG) Log.v(TAG, "EglSurface:");
             mEglBase = eglBase;
-            if ((surface instanceof Surface) && Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                // Android4.1.2だとSurfaceを使えない。
-                // SurfaceTexture/SurfaceHolderの場合は内部で
-                // Surfaceを生成して使っているにもかかわらず。
-                // SurfaceHolderはインターフェースなのでSurfaceHolderを
-                // 継承したダミークラスを生成して食わす
-                mEglSurface = mEglBase.createWindowSurface(
-                        new MySurfaceHolder((Surface) surface));
-            } else if ((surface instanceof Surface)
+            if ((surface instanceof Surface)
                     || (surface instanceof SurfaceHolder)
                     || (surface instanceof SurfaceTexture)
                     || (surface instanceof SurfaceView)) {
@@ -683,9 +674,8 @@ import javax.microedition.khronos.egl.EGLSurface;
             attribList[offset++] = EGL10.EGL_DEPTH_SIZE;
             attribList[offset++] = 16;
         }
-        if (isRecordable && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+        if (isRecordable) {
             // MediaCodecの入力用Surfaceの場合
-            // A-1000F(Android4.1.2)はこのフラグをつけるとうまく動かない
             attribList[offset++] = EGL_RECORDABLE_ANDROID;
             attribList[offset++] = 1;
         }

@@ -18,8 +18,6 @@ package com.serenegiant.utils;
  *  limitations under the License.
  */
 
-import android.annotation.SuppressLint;
-import android.os.Build;
 import android.os.SystemClock;
 
 public class Time {
@@ -37,7 +35,7 @@ public class Time {
     }
 
     public static void reset() {
-        if (!prohibitElapsedRealtimeNanos && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+        if (!prohibitElapsedRealtimeNanos) {
             sTime = new TimeJellyBeanMr1();
         } else {
             sTime = new Time();

@@ -743,27 +743,13 @@ public final class USBMonitor {
         sb.append("#");    // API >= 12
         sb.append(device.getDeviceProtocol());                        // API >= 12
 
-        // API >= 21
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            sb.append("#");
-            // API >= 21
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-                sb.append(device.getSerialNumber());
-                sb.append("#");
-            }
-            // API >= 21
-            sb.append(device.getManufacturerName());
-            sb.append("#");
-            // API >= 21
-            sb.append(device.getConfigurationCount());
-            sb.append("#");
-
-            // API >= 23
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                sb.append(device.getVersion());
-                sb.append("#");
-            }
-        }
+        sb.append("#");
+        sb.append(device.getManufacturerName());
+        sb.append("#");
+        sb.append(device.getConfigurationCount());
+        sb.append("#");
+        sb.append(device.getVersion());
+        sb.append("#");
         return sb.toString();
     }
 
@@ -780,27 +766,13 @@ public final class USBMonitor {
         sb.append("#");    // API >= 12
         sb.append(device.getDeviceProtocol());                        // API >= 12
 
-        // API >= 21
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            sb.append("#");
-            // API >= 21
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-                sb.append(device.getSerialNumber());
-                sb.append("#");
-            }
-            // API >= 21
-            sb.append(device.getManufacturerName());
-            sb.append("#");
-            // API >= 21
-            sb.append(device.getConfigurationCount());
-            sb.append("#");
-
-            // API >= 23
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                sb.append(device.getVersion());
-                sb.append("#");
-            }
-        }
+        sb.append("#");
+        sb.append(device.getManufacturerName());
+        sb.append("#");
+        sb.append(device.getConfigurationCount());
+        sb.append("#");
+        sb.append(device.getVersion());
+        sb.append("#");
         return sb.toString();
     }
 
@@ -986,18 +958,13 @@ public final class USBMonitor {
         info.clear();
 
         if (device != null) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                info.manufacturer = device.getManufacturerName();
-                info.product = device.getProductName();
-                // api < 29 or has permission to access the device
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q ||
-                        (manager != null && manager.hasPermission(device))) {
-                    info.serial = device.getSerialNumber();
-                }
+            info.manufacturer = device.getManufacturerName();
+            info.product = device.getProductName();
+            // reading the serial number requires permission to access the device
+            if (manager != null && manager.hasPermission(device)) {
+                info.serial = device.getSerialNumber();
             }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                info.usb_version = device.getVersion();
-            }
+            info.usb_version = device.getVersion();
             if ((manager != null) && manager.hasPermission(device)) {
                 UsbDeviceConnection connection = null;
                 try {

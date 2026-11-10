@@ -1,5 +1,8 @@
+// Kotlin is compiled by AGP's built-in Kotlin support; the Compose plugin adds the Compose compiler.
+// Kotlin 由 AGP 内置的 Kotlin 支持编译；Compose 插件负责添加 Compose 编译器。
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.compose)
 }
 
 android {
@@ -26,17 +29,21 @@ android {
         sourceCompatibility = rootProject.ext.javaSourceCompatibility
         targetCompatibility = rootProject.ext.javaTargetCompatibility
     }
+    buildFeatures {
+        compose = true
+    }
 }
 
 dependencies {
 
-    implementation libs.androidx.appcompat
-    implementation libs.androidx.constraintlayout
-    implementation libs.material
+    implementation platform(libs.androidx.compose.bom)
+    implementation libs.androidx.activity.compose
+    implementation libs.androidx.compose.material3
+    implementation libs.androidx.compose.ui
+    implementation libs.androidx.compose.ui.tooling.preview
+    debugImplementation libs.androidx.compose.ui.tooling
 
     implementation libs.xxPermissions
-//    implementation 'com.github.warkiz.widget:indicatorseekbar:2.1.2'
-    implementation libs.indicatorSeekBar
 
     // debugImplementation because LeakCanary should only run in debug builds.
     // 使用 debugImplementation,因为 LeakCanary 只应在 debug 构建中运行。
@@ -47,6 +54,9 @@ dependencies {
 
     testImplementation libs.junit
     androidTestImplementation libs.androidx.test.junit
+    androidTestImplementation platform(libs.androidx.compose.bom)
+    androidTestImplementation libs.androidx.compose.ui.test.junit4
+    debugImplementation libs.androidx.compose.ui.test.manifest
     androidTestImplementation libs.androidx.test.espresso.core
     androidTestImplementation libs.androidx.test.espresso.intents
     androidTestImplementation libs.androidx.test.espresso.contrib

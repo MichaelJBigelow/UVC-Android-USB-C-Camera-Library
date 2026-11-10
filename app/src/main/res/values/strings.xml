@@ -3,7 +3,6 @@
     <string name="action_control">Controls</string>
     <string name="action_usb">USB</string>
     <string name="action_safely_eject">Safely Eject</string>
-    <string name="action_settings">Settings</string>
     <string name="action_video_format">Video Format</string>
     <string name="action_rotate_90_CW">Rotate 90 CW</string>
     <string name="action_rotate_90_CCW">Rotate 90 CCW</string>

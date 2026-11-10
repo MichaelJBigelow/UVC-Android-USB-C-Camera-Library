@@ -47,7 +47,7 @@ public class MediaAudioEncoder extends MediaEncoder implements IAudioEncoder {
     // 44.1[KHz] 是唯一保证在所有设备上都可用的设置。
     private static final int SAMPLE_RATE = 44100;
     private static final int BIT_RATE = 64000;
-    public static final int SAMPLES_PER_FRAME = 1024;    // AAC, bytes/frame/channel / AAC,每个声道每帧的字节数
+    public static final int SAMPLES_PER_FRAME = 1024;    // AAC, samples/frame/channel / AAC，每个声道每帧的采样数
     public static final int FRAMES_PER_BUFFER = 25;    // AAC, frame/buffer/sec / AAC,帧/缓冲区/秒
 
     private AudioThread mAudioThread = null;

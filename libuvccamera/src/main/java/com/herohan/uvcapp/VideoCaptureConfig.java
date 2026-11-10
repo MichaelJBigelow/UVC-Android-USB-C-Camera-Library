@@ -80,7 +80,7 @@ public class VideoCaptureConfig implements Cloneable {
      *
      * 设置录制的每秒帧数。
      *
-     * @param videoFrameRate The requested interval in seconds. / 请求的间隔,单位为秒
+     * @param videoFrameRate The requested frame rate in frames per second. / 请求的帧率，单位为帧/秒
      * @return The current Config. / 当前的 Config
      */
     @NonNull
@@ -204,7 +204,7 @@ public class VideoCaptureConfig implements Cloneable {
      *
      * 设置音频流的采样率。
      *
-     * @param sampleRate The requested sample rate in bits/s. / 请求的采样率,单位为 bit/s
+     * @param sampleRate The requested sample rate in Hz. / 请求的采样率，单位为 Hz
      * @return The current Config. / 当前的 Config
      */
     @NonNull

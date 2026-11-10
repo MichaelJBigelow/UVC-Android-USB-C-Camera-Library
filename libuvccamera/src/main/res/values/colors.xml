@@ -20,8 +20,10 @@
 */
 -->
 <resources>
-    <!-- ARGBで指定　 -->
-    <!-- transparent colors -->
+    <!-- Specified as ARGB
+         以 ARGB 指定 -->
+    <!-- transparent colors
+         透明色 -->
     <color name="CLEAR">#00000000</color>
     <color name="HALF_CLEAR_WHITE">#7fffffff</color>
     <color name="QUARTER_CLEAR_WHITE">#3fffffff</color>
@@ -30,7 +32,8 @@
 	<color name="HALF_CLEAR_GRAY">#7f808080</color>
 	<color name="QUARTER_CLEAR_GRAY">#3f808080</color>
     <color name="TRANSPARENT">#00000000</color>
-    <!-- Web colors -->
+    <!-- Web colors
+         网页颜色 -->
     <color name="BLACK">#ff000000</color>
     <color name="ALICEBLUE">#fff0f8ff</color>
     <color name="HALF_CLEAR_ALICEBLUE">#7ff0f8ff</color>

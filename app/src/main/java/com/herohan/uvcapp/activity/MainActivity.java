@@ -1,6 +1,5 @@
 package com.herohan.uvcapp.activity;
 
-import android.Manifest;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.SurfaceTexture;
@@ -16,6 +15,7 @@ import com.google.gson.Gson;
 import com.herohan.uvcapp.ImageCapture;
 import com.herohan.uvcapp.VideoCapture;
 import com.hjq.permissions.XXPermissions;
+import com.hjq.permissions.permission.PermissionLists;
 import com.serenegiant.opengl.renderer.MirrorMode;
 import com.herohan.uvcapp.CameraHelper;
 import com.herohan.uvcapp.ICameraHelper;
@@ -200,19 +200,29 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setListeners() {
+        // XXPermissions reports every result, granted or denied. Act only when at least one
+        // permission was granted, as the XXPermissions 13.5 callback did.
+        // XXPermissions 会回调每次请求结果(无论授予与否)。仅在至少授予一项权限时执行操作,
+        // 与 XXPermissions 13.5 的回调行为一致。
         mBinding.fabPicture.setOnClickListener(v -> {
             XXPermissions.with(this)
-                    .permission(Manifest.permission.MANAGE_EXTERNAL_STORAGE)
-                    .request((permissions, all) -> {
+                    .permission(PermissionLists.getManageExternalStoragePermission())
+                    .request((grantedList, deniedList) -> {
+                        if (grantedList.isEmpty()) {
+                            return;
+                        }
                         takePicture();
                     });
         });
 
         mBinding.fabVideo.setOnClickListener(v -> {
             XXPermissions.with(this)
-                    .permission(Manifest.permission.MANAGE_EXTERNAL_STORAGE)
-                    .permission(Manifest.permission.RECORD_AUDIO)
-                    .request((permissions, all) -> {
+                    .permission(PermissionLists.getManageExternalStoragePermission())
+                    .permission(PermissionLists.getRecordAudioPermission())
+                    .request((grantedList, deniedList) -> {
+                        if (grantedList.isEmpty()) {
+                            return;
+                        }
                         toggleVideoRecord(!mIsRecording);
                     });
         });
@@ -386,8 +396,11 @@ public class MainActivity extends AppCompatActivity {
         if (DEBUG) Log.v(TAG, "selectDevice:device=" + device.getDeviceName());
 
         XXPermissions.with(this)
-                .permission(Manifest.permission.CAMERA)
-                .request((permissions, all) -> {
+                .permission(PermissionLists.getCameraPermission())
+                .request((grantedList, deniedList) -> {
+                    if (grantedList.isEmpty()) {
+                        return;
+                    }
                     mIsCameraConnected = false;
                     updateUIControls();
 

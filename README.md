@@ -40,7 +40,7 @@ Requirements
 --------------
 Android 10 (API level 29)+
 
-The library is compiled for Java 17, so apps that use it must build with JDK 17 or newer (Android Gradle Plugin 8.0+).
+The library is compiled for Java 17, so apps that use it must build with JDK 17 or newer. It depends on `androidx.core` 1.19.1, which requires apps that use the library to compile against Android API 37 (`compileSdk = 37`) with Android Gradle Plugin 9.1 or newer.
 
 Building this repository requires JDK 17 or newer. It is tested with JDK 25, the version bundled with Android Studio. Gradle must run on a full JDK, not a JRE, because it compiles the version catalog's accessors; from the command line, point `JAVA_HOME` at a JDK (for example Android Studio's bundled one).
 

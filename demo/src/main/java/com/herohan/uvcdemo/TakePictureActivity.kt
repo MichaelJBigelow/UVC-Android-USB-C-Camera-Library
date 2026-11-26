@@ -1,7 +1,6 @@
 package com.herohan.uvcdemo
 
 import android.os.Bundle
-import android.os.Environment
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -20,10 +19,10 @@ import com.herohan.uvcdemo.ui.CameraSurfacePreview
 import com.herohan.uvcdemo.ui.DemoScaffold
 import com.herohan.uvcdemo.ui.TestTags
 import com.herohan.uvcsample.CameraSession
+import com.herohan.uvcsample.media.MediaStoreOutput
 import com.herohan.uvcsample.ui.theme.UvcSampleTheme
 import com.herohan.uvcsample.ui.theme.enableEdgeToEdgeBelowAppBar
-import com.serenegiant.utils.FileUtils
-import com.serenegiant.utils.UriHelper
+import com.herohan.uvcsample.R as SampleR
 import com.serenegiant.uvccamera.R as UvcR
 
 class TakePictureActivity : ComponentActivity() {
@@ -65,27 +64,18 @@ class TakePictureActivity : ComponentActivity() {
     private fun takePicture() {
         val helper = camera.cameraHelper ?: return
 
-        val file = FileUtils.getCaptureFile(this, Environment.DIRECTORY_DCIM, ".jpg")
-        val options = IImageCapture.OutputFileOptions.Builder(file).build()
-
-//        val contentValues = ContentValues().apply {
-//            put(MediaStore.MediaColumns.DISPLAY_NAME, "NEW_IMAGE")
-//            put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
-//        }
-//        val options = IImageCapture.OutputFileOptions.Builder(
-//            contentResolver,
-//            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-//            contentValues,
-//        ).build()
-
-//        val outputStream = ByteArrayOutputStream()
-//        val options = IImageCapture.OutputFileOptions.Builder(outputStream).build()
+        // Saved to Pictures/<app name> through MediaStore. A File or an OutputStream also works:
+        // IImageCapture.OutputFileOptions.Builder(file) or .Builder(outputStream).
+        // 通过 MediaStore 保存到 Pictures/<应用名>。也可以使用 File 或 OutputStream：
+        // IImageCapture.OutputFileOptions.Builder(file) 或 .Builder(outputStream)。
+        val output = MediaStoreOutput.picture(this)
+        val options = output.imageOptions()
 
         helper.takePicture(options, object : IImageCapture.OnImageCaptureCallback {
             override fun onImageSaved(outputFileResults: IImageCapture.OutputFileResults) {
                 Toast.makeText(
                     this@TakePictureActivity,
-                    "save \"" + UriHelper.getPath(this@TakePictureActivity, outputFileResults.savedUri) + "\"",
+                    getString(SampleR.string.saved_to, output.description),
                     Toast.LENGTH_SHORT,
                 ).show()
             }

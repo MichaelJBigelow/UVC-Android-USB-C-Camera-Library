@@ -1,5 +1,6 @@
 package com.serenegiant.usb;
 
+import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -10,6 +11,8 @@ import android.os.Parcelable;
 import androidx.annotation.NonNull;
 
 public class Size implements Parcelable, Cloneable {
+    private static final String TAG = Size.class.getSimpleName();
+
     /**
      * frame type: mjpeg, uncompressed etc.
      *
@@ -77,7 +80,7 @@ public class Size implements Parcelable, Cloneable {
         try {
             size = (Size) super.clone();
         } catch (CloneNotSupportedException e) {
-            e.printStackTrace();
+            Log.w(TAG, e);
         }
         if (size == null) {
             size = new Size(type, width, height, fps, new ArrayList<>(fpsList));

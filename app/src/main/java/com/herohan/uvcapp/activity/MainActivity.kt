@@ -21,8 +21,8 @@ import com.herohan.uvcapp.R
 import com.herohan.uvcapp.VideoCapture
 import com.herohan.uvcapp.ui.MainMenuAction
 import com.herohan.uvcapp.ui.MainScreen
-import com.herohan.uvcapp.utils.SaveHelper
 import com.herohan.uvcsample.CameraSession
+import com.herohan.uvcsample.media.MediaStoreOutput
 import com.herohan.uvcsample.ui.dialog.CameraControlsDialog
 import com.herohan.uvcsample.ui.dialog.DeviceListDialog
 import com.herohan.uvcsample.ui.dialog.VideoFormatDialog
@@ -36,17 +36,17 @@ import com.serenegiant.usb.IButtonCallback
 import com.serenegiant.usb.Size
 import com.serenegiant.usb.USBMonitor
 import com.serenegiant.usb.UVCControl
-import com.serenegiant.utils.UriHelper
-import java.io.File
+import com.herohan.uvcsample.R as SampleR
 
 class MainActivity : ComponentActivity() {
 
     /**
-     * The camera, kept from onCreate to onDestroy so that a recording survives the activity going
-     * to the background until onStop stops it.
+     * The camera, kept from onCreate to onDestroy. The activity handles rotation itself
+     * (configChanges in the manifest), so rotating keeps the camera, its settings and any open
+     * dialog; in the background the camera stays open but stops streaming.
      *
-     * 相机，在 onCreate 到 onDestroy 期间保留，使录像在 Activity 进入后台后、
-     * 直到 onStop 将其停止之前得以继续。
+     * 相机，在 onCreate 到 onDestroy 期间保留。Activity 自行处理旋转(清单中的 configChanges)，
+     * 因此旋转时相机、其设置以及已打开的对话框都会保留；在后台时相机保持打开但停止推流。
      */
     private val camera = CameraSession(
         owner = this,
@@ -91,7 +91,11 @@ class MainActivity : ComponentActivity() {
                     previewHeight = camera.previewHeight,
                     recordStartTime = recordStartTime,
                     onSurfaceAvailable = camera::addPreviewSurface,
-                    onSurfaceDestroyed = camera::removePreviewSurface,
+                    onSurfaceDestroyed = { texture ->
+                        // Release the texture once the camera no longer draws on it.
+                        // 在相机不再向其绘制后释放该纹理。
+                        camera.removePreviewSurface(texture) { texture.release() }
+                    },
                     onMenuAction = ::onMenuAction,
                     onTakePicture = ::requestTakePicture,
                     onToggleRecord = ::requestToggleVideoRecord,
@@ -113,11 +117,17 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+        camera.resumePreview()
+    }
+
     override fun onStop() {
         super.onStop()
         if (isRecording) {
             toggleVideoRecord(false)
         }
+        camera.pausePreview()
     }
 
     @Composable
@@ -314,28 +324,20 @@ class MainActivity : ComponentActivity() {
     }
 
     /**
-     * Saving a picture needs storage permission. XXPermissions reports every result, granted or
-     * denied, so act only when no requested permission was denied.
+     * Pictures are saved through MediaStore, which needs no permission.
      *
-     * 保存照片需要存储权限。XXPermissions 会回调每次请求结果(无论授予与否)，
-     * 因此仅在没有任何请求的权限被拒绝时执行操作。
+     * 照片通过 MediaStore 保存，不需要任何权限。
      */
     private fun requestTakePicture() {
-        XXPermissions.with(this)
-            .permission(PermissionLists.getManageExternalStoragePermission())
-            .request { _, deniedList ->
-                if (deniedList.isEmpty()) {
-                    takePicture()
-                }
-            }
+        takePicture()
     }
 
     /**
-     * Recording needs both storage and microphone permissions; see [requestTakePicture].
-     * Stopping a recording needs no permission check.
+     * Recording needs the microphone permission. XXPermissions reports every result, granted or
+     * denied, so act only when it was not denied. Stopping a recording needs no permission check.
      *
-     * 录像需要存储和麦克风两项权限；参见 [requestTakePicture]。
-     * 停止录像不需要检查权限。
+     * 录像需要麦克风权限。XXPermissions 会回调每次请求结果(无论授予与否)，
+     * 因此仅在未被拒绝时执行操作。停止录像不需要检查权限。
      */
     private fun requestToggleVideoRecord() {
         if (isRecording) {
@@ -343,7 +345,6 @@ class MainActivity : ComponentActivity() {
             return
         }
         XXPermissions.with(this)
-            .permission(PermissionLists.getManageExternalStoragePermission())
             .permission(PermissionLists.getRecordAudioPermission())
             .request { _, deniedList ->
                 if (deniedList.isEmpty()) {
@@ -359,11 +360,10 @@ class MainActivity : ComponentActivity() {
         val helper = cameraHelper ?: return
 
         try {
-            val file = File(SaveHelper.getSavePhotoPath())
-            val options = IImageCapture.OutputFileOptions.Builder(file).build()
-            helper.takePicture(options, object : IImageCapture.OnImageCaptureCallback {
+            val output = MediaStoreOutput.picture(this)
+            helper.takePicture(output.imageOptions(), object : IImageCapture.OnImageCaptureCallback {
                 override fun onImageSaved(outputFileResults: IImageCapture.OutputFileResults) {
-                    showSavedToast(outputFileResults.savedUri)
+                    showSavedToast(output)
                 }
 
                 override fun onError(imageCaptureError: Int, message: String, cause: Throwable?) {
@@ -397,16 +397,15 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun startRecord(helper: ICameraHelper) {
-        val file = File(SaveHelper.getSaveVideoPath())
-        val options = VideoCapture.OutputFileOptions.Builder(file).build()
-        helper.startRecording(options, object : VideoCapture.OnVideoCaptureCallback {
+        val output = MediaStoreOutput.video(this)
+        helper.startRecording(output.videoOptions(), object : VideoCapture.OnVideoCaptureCallback {
             override fun onStart() {
                 recordStartTime = SystemClock.elapsedRealtime()
             }
 
             override fun onVideoSaved(outputFileResults: VideoCapture.OutputFileResults) {
                 toggleVideoRecord(false)
-                showSavedToast(outputFileResults.savedUri)
+                showSavedToast(output)
             }
 
             override fun onError(videoCaptureError: Int, message: String, cause: Throwable?) {
@@ -416,12 +415,8 @@ class MainActivity : ComponentActivity() {
         })
     }
 
-    private fun showSavedToast(savedUri: android.net.Uri?) {
-        Toast.makeText(
-            this,
-            "save \"" + UriHelper.getPath(this, savedUri) + "\"",
-            Toast.LENGTH_SHORT,
-        ).show()
+    private fun showSavedToast(output: MediaStoreOutput) {
+        Toast.makeText(this, getString(SampleR.string.saved_to, output.description), Toast.LENGTH_SHORT).show()
     }
 
     /**

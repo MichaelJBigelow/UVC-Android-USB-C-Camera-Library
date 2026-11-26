@@ -1,20 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.herohan.uvcapp">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <!-- Sound for recordings. Pictures and videos are saved through MediaStore, which needs no
+         storage permission. 录像的声音。照片和视频通过 MediaStore 保存，不需要存储权限。 -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Usbvideo">
+        <!-- configChanges: Compose relays out on rotation, so the camera and its settings stay as they are.
+             configChanges：旋转时由 Compose 重新布局，相机及其设置保持不变。 -->
         <activity
             android:name="com.herohan.uvcapp.activity.MainActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation"
             android:exported="true"
             android:label="@string/app_name"
             android:launchMode="singleTask">

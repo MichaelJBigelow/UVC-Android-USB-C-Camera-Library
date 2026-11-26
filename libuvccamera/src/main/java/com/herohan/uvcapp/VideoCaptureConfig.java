@@ -1,10 +1,13 @@
 package com.herohan.uvcapp;
 
+import android.util.Log;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 
 public class VideoCaptureConfig implements Cloneable {
+    private static final String TAG = VideoCaptureConfig.class.getSimpleName();
+
     private static final String OPTION_VIDEO_FRAME_RATE =
             "imageCapture.recordingFrameRate";
     private static final String OPTION_BIT_RATE =
@@ -275,7 +278,7 @@ public class VideoCaptureConfig implements Cloneable {
         try {
             obj = (VideoCaptureConfig) super.clone();
         } catch (CloneNotSupportedException e) {
-            e.printStackTrace();
+            Log.w(TAG, e);
         }
         if (obj == null) {
             obj = new VideoCaptureConfig();

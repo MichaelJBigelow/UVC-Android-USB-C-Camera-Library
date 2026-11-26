@@ -32,6 +32,16 @@ android {
     buildFeatures {
         compose = true
     }
+
+    // Lint runs on every module the same way; existing warnings are kept in lint-baseline.xml so only
+    // new ones are reported, and errors fail the build.
+    // 每个模块都以相同方式运行 lint；已有的警告记录在 lint-baseline.xml 中，只报告新的问题，错误会导致构建失败。
+    lint {
+        baseline = file('lint-baseline.xml')
+        abortOnError = true
+        warningsAsErrors = false
+        checkDependencies = false
+    }
 }
 
 dependencies {

@@ -1,5 +1,6 @@
 package com.serenegiant.utils;
 
+import android.util.Log;
 import android.annotation.SuppressLint;
 import android.app.Application;
 import android.content.Context;
@@ -10,6 +11,8 @@ import java.lang.reflect.InvocationTargetException;
  * @author admin
  */
 public final class UVCUtils {
+    private static final String TAG = UVCUtils.class.getSimpleName();
+
 
     @SuppressLint("StaticFieldLeak")
     private static Application sApplication;
@@ -77,14 +80,9 @@ public final class UVCUtils {
                 throw new NullPointerException("u should init first");
             }
             return (Application) app;
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException
+                 | ClassNotFoundException e) {
+            Log.w(TAG, "getApplicationByReflect:", e);
         }
         throw new NullPointerException("u should init first");
     }

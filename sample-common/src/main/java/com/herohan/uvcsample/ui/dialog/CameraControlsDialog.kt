@@ -25,6 +25,7 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,6 +46,10 @@ import com.herohan.uvcsample.R
 import com.herohan.uvcsample.ui.theme.DeepPink
 import com.herohan.uvcsample.ui.theme.Gray400
 import com.serenegiant.usb.UVCControl
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
 
 /**
@@ -53,21 +58,94 @@ import kotlin.math.roundToInt
  * Every change is sent to the camera straight away. The panel does not dim the preview behind it,
  * so the effect of each change can be seen while adjusting it.
  *
+ * Each read or change is a USB control transfer, so they all run one at a time on a background
+ * thread. While a transfer is in progress, further moves of the same slider are merged into the
+ * latest one, so dragging doesn't queue hundreds of transfers.
+ *
  * 相机 UVC 控制项(亮度、对焦、变焦、电源频率等)的半透明面板。
  *
  * 每次更改都会立即发送给相机。面板不会使其后方的预览变暗，
  * 因此调整时即可看到每项更改的效果。
+ *
+ * 每次读取或更改都是一次 USB 控制传输，因此它们都在后台线程上逐个执行。
+ * 在一次传输进行期间，同一滑块的后续移动会合并为最新的一次，因此拖动时不会排队上百次传输。
  *
  * @param control controls of the open camera / 已打开相机的控制接口
  * @param onDismiss called when the panel should close / 面板需要关闭时回调
  */
 @Composable
 fun CameraControlsDialog(control: UVCControl, onDismiss: () -> Unit) {
-    var sliders by remember(control) { mutableStateOf(SLIDER_CONTROLS.map { it.read(control) }) }
-    var powerLine by remember(control) { mutableStateOf(readPowerLineFrequency(control)) }
+    // Shown disabled until the camera's values have been read.
+    // 在读取到相机的值之前显示为禁用状态。
+    var sliders by remember(control) { mutableStateOf(SLIDER_CONTROLS.map { it.unknownState() }) }
+    var powerLine by remember(control) { mutableStateOf(PowerLineState(enabled = false, value = -1)) }
+
+    // Changes made in the panel, in order; run by the effect below.
+    // 在面板中所做的更改(按顺序)；由下面的 effect 执行。
+    val changes = remember(control) { Channel<ControlChange>(Channel.UNLIMITED) }
 
     fun updateSlider(index: Int, state: SliderState) {
         sliders = sliders.toMutableList().also { it[index] = state }
+    }
+
+    LaunchedEffect(control) {
+        // One background thread for this camera's transfers, so they never overlap.
+        // 该相机的传输使用同一个后台线程，因此它们不会重叠。
+        val usb: CoroutineDispatcher = Dispatchers.IO.limitedParallelism(1)
+
+        val (initialSliders, initialPowerLine) = withContext(usb) {
+            SLIDER_CONTROLS.map { it.read(control) } to readPowerLineFrequency(control)
+        }
+        sliders = initialSliders
+        powerLine = initialPowerLine
+
+        val batch = ArrayList<ControlChange>()
+        for (change in changes) {
+            batch.add(change)
+            // Take whatever else is waiting, merging repeated moves of the same slider.
+            // 取出其余所有等待中的更改，并合并同一滑块的重复移动。
+            while (true) {
+                batch.addMerging(changes.tryReceive().getOrNull() ?: break)
+            }
+            for (pending in batch) {
+                when (pending) {
+                    is ControlChange.SliderValue -> withContext(usb) {
+                        SLIDER_CONTROLS[pending.index].set(control, pending.value)
+                    }
+                    is ControlChange.Auto -> {
+                        val spec = SLIDER_CONTROLS[pending.index]
+                        val autoSpec = spec.auto ?: continue
+                        val newState = withContext(usb) {
+                            val state = if (pending.auto) {
+                                // Before turning auto on, the manual value must be reset.
+                                // 开启自动之前，必须先重置手动值。
+                                autoSpec.resetValue(control)
+                                spec.read(control).copy(autoChecked = true)
+                            } else {
+                                null
+                            }
+                            autoSpec.set(control, pending.auto)
+                            state
+                        }
+                        if (newState != null) {
+                            updateSlider(pending.index, newState)
+                        }
+                    }
+                    is ControlChange.PowerLineFrequency -> withContext(usb) {
+                        control.powerlineFrequency = pending.value
+                    }
+                    ControlChange.ResetAll -> {
+                        val (resetSliders, resetPowerLine) = withContext(usb) {
+                            resetAllControls(control)
+                            SLIDER_CONTROLS.map { it.read(control) } to readPowerLineFrequency(control)
+                        }
+                        sliders = resetSliders
+                        powerLine = resetPowerLine
+                    }
+                }
+            }
+            batch.clear()
+        }
     }
 
     Dialog(
@@ -99,20 +177,13 @@ fun CameraControlsDialog(control: UVCControl, onDismiss: () -> Unit) {
                         onValueChange = { value ->
                             if (value != state.value) {
                                 updateSlider(index, state.copy(value = value))
-                                spec.set(control, value)
+                                changes.trySend(ControlChange.SliderValue(index, value))
                             }
                         },
                         onAutoChange = { auto ->
-                            val autoSpec = spec.auto ?: return@SliderControlRow
-                            var newState = state.copy(autoChecked = auto)
-                            if (auto) {
-                                // Before turning auto on, the manual value must be reset.
-                                // 开启自动之前，必须先重置手动值。
-                                autoSpec.resetValue(control)
-                                newState = spec.read(control).copy(autoChecked = true)
-                            }
-                            updateSlider(index, newState)
-                            autoSpec.set(control, auto)
+                            if (spec.auto == null) return@SliderControlRow
+                            updateSlider(index, state.copy(autoChecked = auto))
+                            changes.trySend(ControlChange.Auto(index, auto))
                         },
                     )
                 }
@@ -120,7 +191,7 @@ fun CameraControlsDialog(control: UVCControl, onDismiss: () -> Unit) {
                     state = powerLine,
                     onSelected = { value ->
                         powerLine = powerLine.copy(value = value)
-                        control.powerlineFrequency = value
+                        changes.trySend(ControlChange.PowerLineFrequency(value))
                     },
                 )
             }
@@ -131,11 +202,7 @@ fun CameraControlsDialog(control: UVCControl, onDismiss: () -> Unit) {
                 TextButton(onClick = onDismiss) {
                     Text(stringResource(R.string.camera_controls_button_close), color = DeepPink)
                 }
-                TextButton(onClick = {
-                    resetAllControls(control)
-                    sliders = SLIDER_CONTROLS.map { it.read(control) }
-                    powerLine = readPowerLineFrequency(control)
-                }) {
+                TextButton(onClick = { changes.trySend(ControlChange.ResetAll) }) {
                     Text(stringResource(R.string.camera_controls_button_reset), color = DeepPink)
                 }
             }
@@ -263,6 +330,33 @@ private data class SliderState(
 private data class PowerLineState(val enabled: Boolean, val value: Int)
 
 /**
+ * A change made in the panel, sent to the camera on the background thread.
+ *
+ * 在面板中所做的更改，在后台线程上发送给相机。
+ */
+internal sealed interface ControlChange {
+    data class SliderValue(val index: Int, val value: Int) : ControlChange
+    data class Auto(val index: Int, val auto: Boolean) : ControlChange
+    data class PowerLineFrequency(val value: Int) : ControlChange
+    data object ResetAll : ControlChange
+}
+
+/**
+ * Adds [change], replacing the last change instead when both move the same slider, since only the
+ * latest position matters.
+ *
+ * 添加 [change]；当它与最后一项更改移动的是同一个滑块时，改为替换最后一项，因为只有最新位置才重要。
+ */
+internal fun MutableList<ControlChange>.addMerging(change: ControlChange) {
+    val last = lastOrNull()
+    if (change is ControlChange.SliderValue && last is ControlChange.SliderValue && last.index == change.index) {
+        this[lastIndex] = change
+    } else {
+        add(change)
+    }
+}
+
+/**
  * A control's "Auto" checkbox.
  *
  * 控制项的“自动”复选框。
@@ -289,6 +383,12 @@ private class SliderControl(
     val set: (UVCControl, Int) -> Unit,
     val auto: AutoControl? = null,
 ) {
+    /** Disabled state shown before the camera's values are read. / 读取相机的值之前显示的禁用状态。 */
+    fun unknownState() = SliderState(
+        enabled = false, min = 0, max = 0, value = 0,
+        hasAuto = auto != null, autoEnabled = false, autoChecked = false,
+    )
+
     fun read(control: UVCControl): SliderState {
         // limit is [min, max, default]. / limit 为 [最小值, 最大值, 默认值]。
         val range = (if (isEnabled(control)) limit(control) else null)?.takeIf { it.size >= 2 }

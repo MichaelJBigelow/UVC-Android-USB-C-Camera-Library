@@ -18,6 +18,7 @@ package com.serenegiant.opengl;
  *  limitations under the License.
  */
 
+import android.util.Log;
 import android.os.Looper;
 import android.os.Process;
 
@@ -71,7 +72,7 @@ public abstract class EGLTask extends Thread {
         try {
             mEglSurface.makeCurrent();
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.w(TAG, e);
         }
 
         mEglSurface.release();
@@ -132,7 +133,7 @@ public abstract class EGLTask extends Thread {
                 try {
                     wait();
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    Log.w(TAG, e);
                 }
             }
         }

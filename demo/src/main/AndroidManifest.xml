@@ -1,39 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.herohan.uvcdemo">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- Sound for the Record Video demo. Pictures and videos are saved through MediaStore, which
+         needs no storage permission. 录像演示的声音。照片和视频通过 MediaStore 保存，不需要存储权限。 -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <!-- The camera screens declare configChanges: Compose relays out on rotation, so the camera
+         stays open. 相机界面声明了 configChanges：旋转时由 Compose 重新布局，相机保持打开。 -->
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.UVCAndroid">
         <activity
             android:name=".MultiCameraNewActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation"
             android:exported="false">
         </activity>
         <activity
             android:name=".SetFrameCallbackActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation"
             android:exported="false" />
         <activity
             android:name=".RecordVideoActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation"
             android:exported="false" />
         <activity
             android:name=".TakePictureActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation"
             android:exported="false" />
         <activity
             android:name=".MultiCameraActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation"
             android:exported="false" />
         <activity
             android:name=".MultiPreviewActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation"
             android:exported="false" />
         <activity
             android:name=".CustomPreviewActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation"
             android:exported="false" />
         <activity
             android:name=".BasicPreviewActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation"
             android:exported="false" />
         <activity
             android:name=".EntryActivity"

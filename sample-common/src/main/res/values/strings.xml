@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Toast after a picture or video is saved; %1$s is where, e.g. Pictures/UVC Demo/2026-11-26_09-30-00.jpg -->
+    <string name="saved_to">Saved to %1$s</string>
+
     <string name="device_list_dialog_title">Device</string>
     <string name="device_list_empty_tip">Please connect a USB Camera</string>
     <string name="device_list_cancel_button">Cancel</string>

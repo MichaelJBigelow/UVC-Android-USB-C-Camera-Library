@@ -5,6 +5,8 @@ import android.os.Bundle
 import android.os.ConditionVariable
 import android.os.Handler
 import android.os.HandlerThread
+import android.os.SystemClock
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.getValue
@@ -86,9 +88,20 @@ class MultiCameraNewActivity : ComponentActivity() {
         }
     }
 
+    override fun onStop() {
+        super.onStop()
+        // The sessions release their cameras in onStop; forget the devices waiting for permission
+        // and wake a wait in progress, so both cameras are selected again in onStart.
+        // 会话在 onStop 中释放相机；清除正在等待权限的设备并唤醒进行中的等待，
+        // 使两台相机在 onStart 时重新被选择。
+        readyUsbDeviceList.clear()
+        readyDeviceConditionVariable.open()
+    }
+
     override fun onDestroy() {
         super.onDestroy()
 
+        readyDeviceConditionVariable.open()
         handlerThread.quitSafely()
         asyncHandler.removeCallbacksAndMessages(null)
     }
@@ -109,8 +122,16 @@ class MultiCameraNewActivity : ComponentActivity() {
      */
     private fun waitCanSelectDevice(device: UsbDevice) {
         readyUsbDeviceList.add(device)
-        while (readyUsbDeviceList.size > 1) {
-            readyDeviceConditionVariable.block()
+        // A permission request with no answer must not hold up the other camera forever.
+        // 未获答复的权限请求不能无限期地阻塞另一台相机。
+        val deadline = SystemClock.elapsedRealtime() + SELECT_WAIT_TIMEOUT_MS
+        while (readyUsbDeviceList.size > 1 && readyUsbDeviceList.peek() != device) {
+            val remaining = deadline - SystemClock.elapsedRealtime()
+            if (remaining <= 0) {
+                Log.w(TAG, "waitCanSelectDevice: timed out, selecting " + device.deviceName)
+                break
+            }
+            readyDeviceConditionVariable.block(remaining)
             readyDeviceConditionVariable.close()
         }
     }
@@ -196,5 +217,12 @@ class MultiCameraNewActivity : ComponentActivity() {
 
     private companion object {
         private val TAG = MultiCameraNewActivity::class.java.simpleName
+
+        /**
+         * Longest wait for the other camera's USB permission request to finish.
+         *
+         * 等待另一台相机的 USB 权限请求完成的最长时间。
+         */
+        private const val SELECT_WAIT_TIMEOUT_MS = 10_000L
     }
 }

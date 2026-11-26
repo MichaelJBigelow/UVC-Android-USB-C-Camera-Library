@@ -54,6 +54,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public final class USBMonitor {
 
@@ -110,7 +111,18 @@ public final class USBMonitor {
     private final UsbManager mUsbManager;
     private final OnDeviceConnectListener mOnDeviceConnectListener;
     private PendingIntent mPermissionIntent = null;
-    private List<DeviceFilter> mDeviceFilters = new ArrayList<DeviceFilter>();
+    /**
+     * Read by the device check thread while callers change it, so it is copy-on-write.
+     *
+     * 设备检查线程读取它的同时调用方可能会修改它，因此使用写时复制列表。
+     */
+    private final List<DeviceFilter> mDeviceFilters = new CopyOnWriteArrayList<>();
+    /**
+     * Serializes permission requests and results of this monitor (not of every monitor in the app).
+     *
+     * 串行化本监视器(而非应用中所有监视器)的权限请求与权限结果。
+     */
+    private final Object mPermissionSync = new Object();
 
     /**
      * Handler that is used for OnDeviceConnectListener
@@ -336,8 +348,10 @@ public final class USBMonitor {
             Log.e(TAG, "setDeviceFilter: already destroyed");
             return;
         }
-        mDeviceFilters.clear();
-        mDeviceFilters.add(filter);
+        synchronized (mDeviceFilters) {
+            mDeviceFilters.clear();
+            mDeviceFilters.add(filter);
+        }
     }
 
     /**
@@ -382,8 +396,10 @@ public final class USBMonitor {
             Log.e(TAG, "setDeviceFilter: already destroyed");
             return;
         }
-        mDeviceFilters.clear();
-        mDeviceFilters.addAll(filters);
+        synchronized (mDeviceFilters) {
+            mDeviceFilters.clear();
+            mDeviceFilters.addAll(filters);
+        }
     }
 
     /**
@@ -418,7 +434,7 @@ public final class USBMonitor {
         if (device == null) {
             return false;
         }
-        if ((mDeviceFilters == null) || mDeviceFilters.isEmpty()) {
+        if (mDeviceFilters.isEmpty()) {
             return true;
         } else {
             for (final DeviceFilter filter : mDeviceFilters) {
@@ -619,7 +635,7 @@ public final class USBMonitor {
      */
     public void requestPermission(final UsbDevice device) {
         if (DEBUG) Log.v(TAG, "requestPermission:device=" + device.getDeviceName());
-        synchronized (USBMonitor.class) {
+        synchronized (mPermissionSync) {
             if (isRegistered()) {
                 if (device != null) {
                     if (mUsbManager.hasPermission(device)) {
@@ -662,10 +678,13 @@ public final class USBMonitor {
                 if (ACTION_USB_PERMISSION.equals(action)) {
                     // when received the result of requesting USB permission
                     // 当收到请求 USB 权限的结果时
-                    synchronized (USBMonitor.this) {
+                    synchronized (mPermissionSync) {
                         final UsbDevice device = getExtraDevice(intent);
                         if (device != null) {
-                            if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+                            // Trust UsbManager, not the extra: a forged "granted" result can't give permission.
+                            // 以 UsbManager 为准，而不是 extra：伪造的“已授权”结果无法真正授予权限。
+                            if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)
+                                    && mUsbManager.hasPermission(device)) {
                                 // get permission, call onConnect
                                 // 获得权限，调用 onConnect
                                 processOpenDevice(device);
@@ -686,7 +705,9 @@ public final class USBMonitor {
                     // when device removed
                     // 当设备被移除时
                     final UsbDevice device = getExtraDevice(intent);
-                    if (device != null) {
+                    // Ignore a detach of a device that is still attached (a forged broadcast).
+                    // 忽略仍处于连接状态的设备的拔出广播(伪造的广播)。
+                    if (device != null && !isStillAttached(device)) {
                         final UsbControlBlock ctrlBlock;
                         synchronized (mOpenedCtrlBlocks) {
                             ctrlBlock = mOpenedCtrlBlocks.remove(device);
@@ -704,8 +725,30 @@ public final class USBMonitor {
     };
 
     private UsbDevice getExtraDevice(Intent intent) {
-        UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+        final UsbDevice device;
+        // The typed getParcelableExtra is reliable from Android 14 (it is broken on 13).
+        // 带类型的 getParcelableExtra 从 Android 14 起才可靠(在 13 上有缺陷)。
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE, UsbDevice.class);
+        } else {
+            device = getExtraDeviceLegacy(intent);
+        }
         return isAvailableDevice(device) ? device : null;
+    }
+
+    @SuppressWarnings("deprecation")
+    private static UsbDevice getExtraDeviceLegacy(Intent intent) {
+        return intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+    }
+
+    /**
+     * Whether UsbManager still lists [device], i.e. it has not really been detached.
+     *
+     * UsbManager 是否仍列出 [device]，即它并未真正被拔出。
+     */
+    private boolean isStillAttached(final UsbDevice device) {
+        final HashMap<String, UsbDevice> devices = mUsbManager.getDeviceList();
+        return devices != null && devices.containsKey(device.getDeviceName());
     }
 
     /**
@@ -1094,6 +1137,20 @@ public final class USBMonitor {
      * @return
      */
     public static UsbDeviceInfo updateDeviceInfo(final UsbManager manager, final UsbDevice device, final UsbDeviceInfo _info) {
+        return updateDeviceInfo(manager, device, null, _info);
+    }
+
+    /**
+     * Same as {@link #updateDeviceInfo(UsbManager, UsbDevice, UsbDeviceInfo)}, but reads the
+     * descriptors through {@code openConnection} when it is not null instead of opening (and
+     * closing) a second connection to the device.
+     *
+     * 与 {@link #updateDeviceInfo(UsbManager, UsbDevice, UsbDeviceInfo)} 相同，但当
+     * {@code openConnection} 不为 null 时，通过它读取描述符，而不是再打开(并关闭)一个到设备的连接。
+     */
+    private static UsbDeviceInfo updateDeviceInfo(final UsbManager manager, final UsbDevice device,
+                                                  final UsbDeviceConnection openConnection,
+                                                  final UsbDeviceInfo _info) {
         final UsbDeviceInfo info = _info != null ? _info : new UsbDeviceInfo();
         info.clear();
 
@@ -1109,7 +1166,7 @@ public final class USBMonitor {
             if ((manager != null) && manager.hasPermission(device)) {
                 UsbDeviceConnection connection = null;
                 try {
-                    connection = manager.openDevice(device);
+                    connection = openConnection != null ? openConnection : manager.openDevice(device);
                     if (connection != null) {
                         final byte[] desc = connection.getRawDescriptors();
 
@@ -1149,11 +1206,13 @@ public final class USBMonitor {
                 } catch (Exception e) {
                     Log.e(TAG, e.getLocalizedMessage(), e);
                 } finally {
-                    if (connection != null) {
+                    // Close only the connection opened here.
+                    // 只关闭在此处打开的连接。
+                    if (connection != null && connection != openConnection) {
                         try {
                             connection.close();
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            Log.w(TAG, "updateDeviceInfo:", e);
                         }
                     }
                 }
@@ -1213,27 +1272,43 @@ public final class USBMonitor {
 
             final USBMonitor monitor = mWeakMonitor.get();
             final UsbDevice device = mWeakDevice.get();
-            mConnection = monitor.mUsbManager.openDevice(device);
-            mInfo = updateDeviceInfo(monitor.mUsbManager, device, null);
-            final String name = device.getDeviceName();
-            final String[] v = !TextUtils.isEmpty(name) ? name.split("/") : null;
-            int busnum = 0;
-            int devnum = 0;
-            if (v != null) {
-                busnum = Integer.parseInt(v[v.length - 2]);
-                devnum = Integer.parseInt(v[v.length - 1]);
+            if (monitor == null || device == null) {
+                throw new USBException(USB_OPEN_ERROR_UNKNOWN,
+                        monitor == null ? "USBMonitor already released" : "usb device already released");
             }
-            mBusNum = busnum;
-            mDevNum = devnum;
-
             if (mConnection != null) {
-                if (DEBUG) {
-                    final int desc = mConnection.getFileDescriptor();
-                    Log.i(TAG, String.format(Locale.US, "name=%s,desc=%d,busnum=%d,devnum=%d", name, desc, busnum, devnum));
-                }
-            } else {
+                if (DEBUG) Log.w(TAG, "UsbControlBlock#open: already open");
+                return;
+            }
+            final String name = device.getDeviceName();
+            final UsbDeviceConnection connection = monitor.mUsbManager.openDevice(device);
+            if (connection == null) {
                 Log.e(TAG, "could not connect to device " + name);
                 throw new USBException(USB_OPEN_ERROR_UNKNOWN, "failed to open usb device");
+            }
+            try {
+                // Read the descriptors through this connection rather than a second one.
+                // 通过此连接读取描述符，而不是再打开第二个连接。
+                mInfo = updateDeviceInfo(monitor.mUsbManager, device, connection, null);
+                final String[] v = !TextUtils.isEmpty(name) ? name.split("/") : null;
+                int busnum = 0;
+                int devnum = 0;
+                if (v != null && v.length >= 2) {
+                    busnum = Integer.parseInt(v[v.length - 2]);
+                    devnum = Integer.parseInt(v[v.length - 1]);
+                }
+                mBusNum = busnum;
+                mDevNum = devnum;
+            } catch (final Exception e) {
+                // Don't leak the connection when anything after openDevice fails.
+                // openDevice 之后的任何步骤失败时，不要泄漏连接。
+                connection.close();
+                throw e;
+            }
+            mConnection = connection;
+            if (DEBUG) {
+                final int desc = mConnection.getFileDescriptor();
+                Log.i(TAG, String.format(Locale.US, "name=%s,desc=%d,busnum=%d,devnum=%d", name, desc, mBusNum, mDevNum));
             }
         }
 

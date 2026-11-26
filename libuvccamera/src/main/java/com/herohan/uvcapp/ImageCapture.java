@@ -44,8 +44,7 @@ public class ImageCapture extends BaseImageCapture {
         ICameraRendererHolder cameraRendererHolder = mRendererHolderWeak.get();
 
         if (cameraRendererHolder == null) {
-            imageSavedCallback.onError(ERROR_INVALID_CAMERA,
-                    "Not bound to a Camera", null);
+            postError(imageSavedCallback, ERROR_INVALID_CAMERA, "Not bound to a Camera", null);
         } else {
             int outputJpegQuality = getJpegQualityInternal();
             cameraRendererHolder.captureImage(new OnImageCapturedCallback() {
@@ -61,7 +60,9 @@ public class ImageCapture extends BaseImageCapture {
                     if (message == null) {
                         message = "captureImage failed with an unknown exception";
                     }
-                    imageSavedCallback.onError(ERROR_UNKNOWN, message, e);
+                    // Called on the render thread; report on the main thread.
+                    // 在渲染线程上调用；在主线程上报告。
+                    postError(imageSavedCallback, ERROR_UNKNOWN, message, e);
                 }
             });
         }

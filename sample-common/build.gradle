@@ -22,6 +22,16 @@ android {
     buildFeatures {
         compose = true
     }
+
+    // Lint runs on every module the same way; existing warnings are kept in lint-baseline.xml so only
+    // new ones are reported, and errors fail the build.
+    // 每个模块都以相同方式运行 lint；已有的警告记录在 lint-baseline.xml 中，只报告新的问题，错误会导致构建失败。
+    lint {
+        baseline = file('lint-baseline.xml')
+        abortOnError = true
+        warningsAsErrors = false
+        checkDependencies = false
+    }
 }
 
 dependencies {
@@ -33,6 +43,9 @@ dependencies {
     implementation libs.androidx.activity.compose
     implementation libs.androidx.compose.material3
     implementation libs.androidx.compose.ui
+    // The camera controls dialog runs its USB transfers on a background dispatcher.
+    // 相机控制对话框在后台调度器上执行 USB 传输。
+    implementation libs.kotlinx.coroutines.android
 
     testImplementation libs.junit
 }

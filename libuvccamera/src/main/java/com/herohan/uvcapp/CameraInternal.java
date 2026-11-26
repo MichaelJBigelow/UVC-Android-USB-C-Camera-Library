@@ -17,8 +17,8 @@ import com.serenegiant.utils.UVCUtils;
 import com.serenegiant.uvccamera.BuildConfig;
 import com.serenegiant.uvccamera.R;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 final class CameraInternal implements ICameraInternal {
     private static final boolean DEBUG = BuildConfig.DEBUG;
@@ -30,6 +30,11 @@ final class CameraInternal implements ICameraInternal {
     private int mFrameWidth = DEFAULT_WIDTH;
     private int mFrameHeight = DEFAULT_HEIGHT;
 
+    /**
+     * Guards the native camera of this instance only, so cameras don't wait for each other.
+     *
+     * 仅保护本实例的 native 相机，使不同相机之间无需互相等待。
+     */
     private final Object mSync = new Object();
 
     private final UsbControlBlock mCtrlBlock;
@@ -44,10 +49,11 @@ final class CameraInternal implements ICameraInternal {
      */
     private volatile UVCCamera mUVCCamera;
 
-    private final List<StateCallback> mCallbacks = new ArrayList<>();
+    // Registered and called on different threads / 在不同线程上注册和调用
+    private final List<StateCallback> mCallbacks = new CopyOnWriteArrayList<>();
 
-    private IImageCapture mImageCapture;
-    private VideoCapture mVideoCapture;
+    private volatile IImageCapture mImageCapture;
+    private volatile VideoCapture mVideoCapture;
 
     public CameraInternal(final UsbControlBlock ctrlBlock, final int vid, final int pid) {
         if (DEBUG) Log.d(TAG, "Constructor:");
@@ -117,27 +123,46 @@ final class CameraInternal implements ICameraInternal {
         return null;
     }
 
+    /**
+     * Changes the preview size. Refused while recording, since the encoders are sized to the
+     * stream; if the camera rejects the size, the camera is closed.
+     *
+     * 更改预览尺寸。录像期间拒绝更改，因为编码器的尺寸与视频流一致；
+     * 如果相机不接受该尺寸，则关闭相机。
+     *
+     * @throws IllegalStateException while recording / 录像期间
+     */
     @Override
     public void setPreviewSize(Size size) {
         if (DEBUG) Log.d(TAG, "setPreviewSize:" + size);
+        if (isRecording()) {
+            throw new IllegalStateException("Can't change the preview size while recording");
+        }
         try {
-            if (mUVCCamera != null) {
+            synchronized (mSync) {
+                if (mUVCCamera == null) {
+                    return;
+                }
                 mUVCCamera.setPreviewSize(size);
             }
 
-            // Preview size may changed, so set the resolution and reinitialize video encoder and audio encoder of VideoCapture
-            // 预览尺寸可能已改变，因此设置分辨率并重新初始化 VideoCapture 的视频编码器和音频编码器
-            mVideoCapture.setResolution(getPreviewSize());
+            // The preview size may have changed: resize the captures that depend on it.
+            // 预览尺寸可能已改变：调整依赖它的拍照和录像组件的尺寸。
+            final Size previewSize = getPreviewSize();
+            final VideoCapture videoCapture = mVideoCapture;
+            if (videoCapture != null) {
+                videoCapture.setResolution(previewSize);
+            }
+            final IImageCapture imageCapture = mImageCapture;
+            if (imageCapture instanceof ImageCapture2) {
+                ((ImageCapture2) imageCapture).setResolution(previewSize);
+            }
         } catch (final Exception e) {
             Log.e(TAG, "setPreviewSize:", e);
-            // unexpectedly #setPreviewSize failed
-            // #setPreviewSize 意外失败
-            synchronized (CameraInternal.class) {
-                if (mUVCCamera != null) {
-                    mUVCCamera.destroy();
-                    mUVCCamera = null;
-                }
-            }
+            // unexpectedly #setPreviewSize failed: close the camera the usual way, so the app hears
+            // about it and the captures are released
+            // #setPreviewSize 意外失败：按常规方式关闭相机，使应用收到通知，并释放拍照和录像组件
+            closeCamera();
         }
     }
 
@@ -208,7 +233,7 @@ final class CameraInternal implements ICameraInternal {
     private void resetUVCCamera() {
         if (DEBUG) Log.d(TAG, "resetUVCCamera: " + this);
         stopRecording();
-        synchronized (CameraInternal.class) {
+        synchronized (mSync) {
             if (mUVCCamera != null) {
                 mUVCCamera.stopPreview();
                 mUVCCamera.destroy(true);
@@ -226,7 +251,7 @@ final class CameraInternal implements ICameraInternal {
         if (DEBUG) Log.d(TAG, "openUVCCamera: " + this);
         try {
             int result = 0;
-            synchronized (CameraInternal.class) {
+            synchronized (mSync) {
                 mUVCCamera = new UVCCamera(param);
                 result = mUVCCamera.open(mCtrlBlock);
             }
@@ -263,7 +288,7 @@ final class CameraInternal implements ICameraInternal {
     }
 
     private void releaseAfterOpenFailure() {
-        synchronized (CameraInternal.class) {
+        synchronized (mSync) {
             if (mUVCCamera != null) {
                 try {
                     mUVCCamera.destroy(true);
@@ -304,17 +329,17 @@ final class CameraInternal implements ICameraInternal {
         if (DEBUG) Log.d(TAG, "closeCamera: " + this);
         stopRecording();
         boolean closed = false;
-        synchronized (CameraInternal.class) {
+        synchronized (mSync) {
             if (mUVCCamera != null) {
                 mUVCCamera.stopPreview();
                 mUVCCamera.destroy();
                 mUVCCamera = null;
                 closed = true;
             }
-
-            if (closed) {
-                processOnCameraClose();
-            }
+            mIsPreviewing = false;
+        }
+        if (closed) {
+            processOnCameraClose();
         }
 
         if (mImageCapture != null) {
@@ -330,7 +355,7 @@ final class CameraInternal implements ICameraInternal {
     @Override
     public void startPreview() {
         if (DEBUG) Log.d(TAG, "startPreview: " + this);
-        synchronized (CameraInternal.class) {
+        synchronized (mSync) {
             if (mUVCCamera == null) return;
 
 //				mUVCCamera.setFrameCallback(mIFrameCallback, UVCCamera.PIXEL_FORMAT_YUV);
@@ -350,7 +375,7 @@ final class CameraInternal implements ICameraInternal {
     @Override
     public void stopPreview() {
         if (DEBUG) Log.d(TAG, "stopPreview: " + this);
-        synchronized (CameraInternal.class) {
+        synchronized (mSync) {
             if (mUVCCamera != null) {
                 mUVCCamera.stopPreview();
             }
@@ -458,7 +483,7 @@ final class CameraInternal implements ICameraInternal {
 
     private void releaseResource() {
         if (DEBUG) Log.d(TAG, "releaseResource: " + this);
-        synchronized (CameraInternal.class) {
+        synchronized (mSync) {
             clearCallbacks();
 
             if (mRendererHolder != null) {
@@ -476,7 +501,7 @@ final class CameraInternal implements ICameraInternal {
                 try {
                     callback.onCameraOpen();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Log.w(TAG, "processOnCameraOpen:", e);
                 }
             }
         } catch (final Exception e) {
@@ -490,7 +515,7 @@ final class CameraInternal implements ICameraInternal {
             try {
                 callback.onCameraClose();
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.w(TAG, "processOnCameraClose:", e);
             }
         }
     }
@@ -501,7 +526,7 @@ final class CameraInternal implements ICameraInternal {
             try {
                 callback.onError(ex);
             } catch (Exception e) {
-                e.printStackTrace();
+                Log.w(TAG, "processOnError:", e);
             }
         }
     }

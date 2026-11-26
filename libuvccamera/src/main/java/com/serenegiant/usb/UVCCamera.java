@@ -119,6 +119,14 @@ public class UVCCamera {
     // these fields from here are accessed from native code and do not change name and remove
     // 从这里开始的这些字段会被原生代码访问,请勿更改名称或删除
     protected long mNativePtr;
+    /**
+     * The Surface that {@link #setPreviewTexture} created, released when it is replaced or the
+     * camera is destroyed (the native side keeps its own reference while it uses it).
+     *
+     * {@link #setPreviewTexture} 创建的 Surface，在被替换或相机销毁时释放
+     * (native 端在使用期间持有自己的引用)。
+     */
+    private Surface mPreviewTextureSurface;
     protected String mSupportedFormats;
     protected List<Format> mSupportedFormatList;
     protected List<Size> mSupportedSizeList;
@@ -369,7 +377,7 @@ public class UVCCamera {
                     }
                 }
             } catch (final JSONException e) {
-                e.printStackTrace();
+                Log.w(TAG, e);
             }
         }
         return formatList;
@@ -414,7 +422,7 @@ public class UVCCamera {
             try {
                 descriptorList.add(new Format.Descriptor(index, formatType, width, height, defaultFps, defaultFrameInterval, intervals));
             } catch (final Exception e) {
-                e.printStackTrace();
+                Log.w(TAG, e);
             }
         }
         return descriptorList;
@@ -549,6 +557,7 @@ public class UVCCamera {
      */
     public synchronized void setPreviewDisplay(final SurfaceHolder holder) {
         nativeSetPreviewDisplay(mNativePtr, holder.getSurface());
+        releasePreviewTextureSurface();
     }
 
     /**
@@ -563,6 +572,15 @@ public class UVCCamera {
     public synchronized void setPreviewTexture(final SurfaceTexture texture) {    // API >= 11 / API 级别 >= 11
         final Surface surface = new Surface(texture);    // XXX API >= 14 / XXX API 级别 >= 14
         nativeSetPreviewDisplay(mNativePtr, surface);
+        releasePreviewTextureSurface();
+        mPreviewTextureSurface = surface;
+    }
+
+    private void releasePreviewTextureSurface() {
+        if (mPreviewTextureSurface != null) {
+            mPreviewTextureSurface.release();
+            mPreviewTextureSurface = null;
+        }
     }
 
     /**
@@ -574,6 +592,9 @@ public class UVCCamera {
      */
     public synchronized void setPreviewDisplay(final Surface surface) {
         nativeSetPreviewDisplay(mNativePtr, surface);
+        if (surface != mPreviewTextureSurface) {
+            releasePreviewTextureSurface();
+        }
     }
 
     /**
@@ -660,6 +681,7 @@ public class UVCCamera {
             nativeDestroy(mNativePtr);
             mNativePtr = 0;
         }
+        releasePreviewTextureSurface();
     }
 
     /**

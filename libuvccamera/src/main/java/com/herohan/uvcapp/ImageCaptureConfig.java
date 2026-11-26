@@ -1,5 +1,6 @@
 package com.herohan.uvcapp;
 
+import android.util.Log;
 import static com.herohan.uvcapp.IImageCapture.CAPTURE_STRATEGY_OPENGL_ES;
 import static com.herohan.uvcapp.ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY;
 import static com.herohan.uvcapp.ImageCapture.JPEG_QUALITY_MINIMIZE_LATENCY_MODE;
@@ -13,6 +14,8 @@ import com.herohan.uvcapp.IImageCapture.CaptureStrategy;
 import com.herohan.uvcapp.IImageCapture.CaptureMode;
 
 public class ImageCaptureConfig implements Cloneable {
+    private static final String TAG = ImageCaptureConfig.class.getSimpleName();
+
     private static final String OPTION_CAPTURE_STRATEGY =
             "imageCapture.captureStrategy";
     private static final String OPTION_CAPTURE_MODE =
@@ -127,7 +130,7 @@ public class ImageCaptureConfig implements Cloneable {
         try {
             obj = (ImageCaptureConfig) super.clone();
         } catch (CloneNotSupportedException e) {
-            e.printStackTrace();
+            Log.w(TAG, e);
         }
         if (obj == null) {
             obj = new ImageCaptureConfig();

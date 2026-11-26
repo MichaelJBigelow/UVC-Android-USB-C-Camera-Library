@@ -109,6 +109,16 @@ abstract class BaseImageCapture implements IImageCapture {
         };
     }
 
+    /**
+     * Reports an error to the caller on the main thread, like every other capture result.
+     *
+     * 与其他拍照结果一样，在主线程上向调用方报告错误。
+     */
+    void postError(final @NonNull OnImageCaptureCallback callback, @ImageCaptureError final int error,
+                   final @NonNull String message, final @Nullable Throwable cause) {
+        mMainHandler.post(() -> callback.onError(error, message, cause));
+    }
+
     @Override
     public void release() {
         if (mExecutor != null) {

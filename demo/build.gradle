@@ -58,7 +58,4 @@ dependencies {
     androidTestImplementation libs.androidx.compose.ui.test.junit4
     debugImplementation libs.androidx.compose.ui.test.manifest
     androidTestImplementation libs.androidx.test.espresso.core
-    androidTestImplementation libs.androidx.test.espresso.intents
-    androidTestImplementation libs.androidx.test.espresso.contrib
-    androidTestImplementation libs.androidx.test.uiautomator
 }

@@ -16,7 +16,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.content.IntentCompat
-import com.google.gson.Gson
 import com.herohan.uvcapp.CameraHelper
 import com.herohan.uvcapp.ICameraHelper
 import com.herohan.uvcapp.IImageCapture
@@ -354,18 +353,39 @@ class MainActivity : ComponentActivity() {
     private fun savedPreviewSizeKey(): String =
         getString(R.string.saved_preview_size) + USBMonitor.getProductKey(usbDevice)
 
+    // The preview size is stored as plain preference values, one per Size field.
+    // 预览尺寸以普通的偏好设置值保存，Size 的每个字段对应一个值。
     private fun getSavedPreviewSize(): Size? {
-        val sizeStr = getPreferences(MODE_PRIVATE).getString(savedPreviewSizeKey(), null)
-        if (sizeStr.isNullOrEmpty()) {
+        val key = savedPreviewSizeKey()
+        val prefs = getPreferences(MODE_PRIVATE)
+        if (!prefs.contains("$key.width") || !prefs.contains("$key.height")) {
             return null
         }
-        return Gson().fromJson(sizeStr, Size::class.java)
+        val fpsList = prefs.getString("$key.fpsList", null)
+            .orEmpty()
+            .split(',')
+            .mapNotNull { it.toIntOrNull() }
+        return Size(
+            prefs.getInt("$key.type", 0),
+            prefs.getInt("$key.width", 0),
+            prefs.getInt("$key.height", 0),
+            prefs.getInt("$key.fps", 0),
+            fpsList,
+        )
     }
 
     private fun setSavedPreviewSize(size: Size) {
+        val key = savedPreviewSizeKey()
         getPreferences(MODE_PRIVATE)
             .edit()
-            .putString(savedPreviewSizeKey(), Gson().toJson(size))
+            // Drop the Gson JSON value that older versions stored under the bare key.
+            // 删除旧版本以裸键保存的 Gson JSON 值。
+            .remove(key)
+            .putInt("$key.type", size.type)
+            .putInt("$key.width", size.width)
+            .putInt("$key.height", size.height)
+            .putInt("$key.fps", size.fps)
+            .putString("$key.fpsList", size.fpsList.orEmpty().joinToString(","))
             .apply()
     }
 

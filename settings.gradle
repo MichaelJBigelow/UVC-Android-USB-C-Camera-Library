@@ -22,19 +22,47 @@
  */
 
 // Repositories for resolving Gradle plugins (versions are in gradle/libs.versions.toml).
+// The official repositories come first, here and below; the Aliyun mirrors are only a fallback for
+// networks that can't reach them.
 // 用于解析 Gradle 插件的仓库(版本在 gradle/libs.versions.toml 中声明)。
+// 此处和下方都优先使用官方仓库；阿里云镜像仅作为无法访问官方仓库的网络环境下的备用。
 pluginManagement {
     repositories {
-        maven { url = 'https://maven.aliyun.com/repository/google' }
-        maven { url = 'https://maven.aliyun.com/repository/central' }
-
         google()
         mavenCentral()
         gradlePluginPortal()
+
+        maven { url = 'https://maven.aliyun.com/repository/google' }
+        maven { url = 'https://maven.aliyun.com/repository/central' }
     }
 }
+
 plugins {
     id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+}
+
+// Repositories for every module's dependencies; modules may not declare their own.
+// 所有模块依赖所用的仓库；模块不得自行声明仓库。
+dependencyResolutionManagement {
+    repositoriesMode = RepositoriesMode.FAIL_ON_PROJECT_REPOS
+    repositories {
+        google()
+        mavenCentral()
+
+        maven { url = 'https://maven.aliyun.com/repository/google' }
+        maven { url = 'https://maven.aliyun.com/repository/central' }
+
+        // JitPack only serves XXPermissions (com.github.getActivity), which the sample apps use.
+        // JitPack 只用于获取示例应用使用的 XXPermissions(com.github.getActivity)。
+        exclusiveContent {
+            forRepository {
+                maven { url = 'https://jitpack.io' }
+            }
+            filter {
+                includeGroup 'com.github.getActivity'
+            }
+        }
+    }
 }
 
 include ':libuvccamera'

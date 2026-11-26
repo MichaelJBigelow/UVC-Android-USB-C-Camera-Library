@@ -1,7 +1,6 @@
 package com.herohan.uvcdemo
 
 import android.os.Bundle
-import android.os.Environment
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -26,10 +25,10 @@ import com.herohan.uvcdemo.ui.CameraSurfacePreview
 import com.herohan.uvcdemo.ui.DemoScaffold
 import com.herohan.uvcdemo.ui.TestTags
 import com.herohan.uvcsample.CameraSession
+import com.herohan.uvcsample.media.MediaStoreOutput
 import com.herohan.uvcsample.ui.theme.UvcSampleTheme
 import com.herohan.uvcsample.ui.theme.enableEdgeToEdgeBelowAppBar
-import com.serenegiant.utils.FileUtils
-import com.serenegiant.utils.UriHelper
+import com.herohan.uvcsample.R as SampleR
 import com.serenegiant.uvccamera.R as UvcR
 
 class RecordVideoActivity : ComponentActivity() {
@@ -72,6 +71,14 @@ class RecordVideoActivity : ComponentActivity() {
         }
     }
 
+    override fun onStop() {
+        super.onStop()
+        // The session releases the camera, which ends any recording; reset the button now
+        // rather than waiting for a callback that may not come.
+        // 会话会释放相机，从而结束录像；现在就重置按钮，而不是等待可能不会到来的回调。
+        isRecording = false
+    }
+
     private fun toggleRecord() {
         val helper = camera.cameraHelper ?: return
         if (helper.isRecording) {
@@ -82,18 +89,11 @@ class RecordVideoActivity : ComponentActivity() {
     }
 
     private fun startRecord(helper: ICameraHelper) {
-        val file = FileUtils.getCaptureFile(this, Environment.DIRECTORY_MOVIES, ".mp4")
-        val options = VideoCapture.OutputFileOptions.Builder(file).build()
-
-//        val contentValues = ContentValues().apply {
-//            put(MediaStore.MediaColumns.DISPLAY_NAME, "NEW_VIDEO")
-//            put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4")
-//        }
-//        val options = VideoCapture.OutputFileOptions.Builder(
-//            contentResolver,
-//            MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
-//            contentValues,
-//        ).build()
+        // Saved to Movies/<app name> through MediaStore; VideoCapture.OutputFileOptions.Builder(file)
+        // also works.
+        // 通过 MediaStore 保存到 Movies/<应用名>；也可以使用 VideoCapture.OutputFileOptions.Builder(file)。
+        val output = MediaStoreOutput.video(this)
+        val options = output.videoOptions()
 
         helper.startRecording(options, object : VideoCapture.OnVideoCaptureCallback {
             override fun onStart() {
@@ -102,7 +102,7 @@ class RecordVideoActivity : ComponentActivity() {
             override fun onVideoSaved(outputFileResults: VideoCapture.OutputFileResults) {
                 Toast.makeText(
                     this@RecordVideoActivity,
-                    "save \"" + UriHelper.getPath(this@RecordVideoActivity, outputFileResults.savedUri) + "\"",
+                    getString(SampleR.string.saved_to, output.description),
                     Toast.LENGTH_SHORT,
                 ).show()
 

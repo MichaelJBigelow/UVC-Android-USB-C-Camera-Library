@@ -5,6 +5,7 @@ import static com.herohan.uvcapp.ImageCapture.ERROR_INVALID_CAMERA;
 import android.hardware.usb.UsbDevice;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.SystemClock;
 import android.util.Log;
 
 import com.serenegiant.usb.DeviceFilter;
@@ -32,6 +33,20 @@ class CameraConnectionService {
 
     private static volatile CameraConnectionService mInstance;
 
+    /**
+     * Longest wait for an opened device's camera to be registered.
+     *
+     * 等待已打开设备的相机完成注册的最长时间。
+     */
+    private static final long CAMERA_WAIT_TIMEOUT_MS = 3000;
+    /**
+     * Longest wait in {@code selectDevice} for the USB permission result; the camera still opens
+     * if the user answers later.
+     *
+     * {@code selectDevice} 等待 USB 权限结果的最长时间；用户稍后才作答时，相机仍会打开。
+     */
+    private static final long PERMISSION_WAIT_TIMEOUT_MS = 10000;
+
     CameraConnectionService() {
     }
 
@@ -56,6 +71,18 @@ class CameraConnectionService {
         private final Object mConnectionSync = new Object();
         private final HashMap<String, CameraInternal> mCameras = new HashMap<>();
         private String mLastCameraKey = null;
+        /**
+         * Keys of devices whose USB permission request has no result yet. Guarded by mConnectionSync.
+         *
+         * USB 权限请求尚无结果的设备 key。由 mConnectionSync 保护。
+         */
+        private final HashSet<String> mPendingPermissionKeys = new HashSet<>();
+        /**
+         * Set by release(); waiters stop waiting. Guarded by mConnectionSync.
+         *
+         * 由 release() 置位；等待方停止等待。由 mConnectionSync 保护。
+         */
+        private boolean mReleased = false;
 
         private USBMonitor mUSBMonitor;
         private HandlerThread mListenerHandlerThread;
@@ -87,6 +114,7 @@ class CameraConnectionService {
                 } else {
                     if (DEBUG) Log.d(TAG, "Camera already exist");
                 }
+                mPendingPermissionKeys.remove(key);
                 mConnectionSync.notifyAll();
             }
             checkExistCamera();
@@ -131,23 +159,48 @@ class CameraConnectionService {
                         cameraInternal = (CameraInternal) mCameras.values().toArray()[0];
                     }
                 } else {
-                    String cameraKey = getCameraKey(device);
+                    final String cameraKey = getCameraKey(device);
                     cameraInternal = mCameras.get(cameraKey);
                     if (cameraInternal == null && isBlocking) {
-                        //add this condition to fix async thread deadlock bug
-                        // 添加此条件以修复异步线程死锁的 bug
+                        // Don't wait for a camera that was just removed (that deadlocked async threads)
+                        // 不要等待刚被移除的相机(否则异步线程会死锁)
                         if (!cameraKey.equals(mLastCameraKey)) {
                             Log.i(TAG, "wait for service is ready");
-                            try {
-                                mConnectionSync.wait();
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
+                        }
+                        final long deadline = SystemClock.elapsedRealtime() + CAMERA_WAIT_TIMEOUT_MS;
+                        while (cameraInternal == null && !mReleased && !cameraKey.equals(mLastCameraKey)) {
+                            if (!waitUntil(deadline)) {
+                                break;
                             }
+                            cameraInternal = mCameras.get(cameraKey);
                         }
                     }
-                    cameraInternal = mCameras.get(cameraKey);
                 }
                 return cameraInternal;
+            }
+        }
+
+        /**
+         * Waits on mConnectionSync until notified or {@code deadline} (elapsedRealtime) passes.
+         * The caller must hold mConnectionSync and re-check its condition afterwards.
+         *
+         * 在 mConnectionSync 上等待，直到被通知或超过 {@code deadline}(elapsedRealtime)。
+         * 调用方必须持有 mConnectionSync，并在之后重新检查其条件。
+         *
+         * @return false if the deadline passed or the thread was interrupted (the interrupt is
+         * kept) / 超过截止时间或线程被中断(保留中断状态)时返回 false
+         */
+        private boolean waitUntil(final long deadline) {
+            final long remaining = deadline - SystemClock.elapsedRealtime();
+            if (remaining <= 0) {
+                return false;
+            }
+            try {
+                mConnectionSync.wait(remaining);
+                return true;
+            } catch (final InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return false;
             }
         }
 
@@ -222,19 +275,22 @@ class CameraConnectionService {
             CameraInternal cameraInternal = null;
             synchronized (mConnectionSync) {
                 Log.i(TAG, "request permission");
+                mPendingPermissionKeys.add(cameraKey);
                 mUSBMonitor.requestPermission(device);
                 cameraInternal = mCameras.get(cameraKey);
                 if (cameraInternal == null) {
                     Log.i(TAG, "wait for getting permission");
-                    try {
-                        mConnectionSync.wait();
-                    } catch (Exception e) {
-                        Log.e(TAG, "selectDevice:", e);
+                    // Wait until the camera is added, the request is cancelled or fails, or time runs out
+                    // 等待直到相机被添加、请求被取消或失败，或者超时
+                    final long deadline = SystemClock.elapsedRealtime() + PERMISSION_WAIT_TIMEOUT_MS;
+                    while (cameraInternal == null && !mReleased && mPendingPermissionKeys.contains(cameraKey)) {
+                        if (!waitUntil(deadline)) {
+                            break;
+                        }
+                        cameraInternal = mCameras.get(cameraKey);
                     }
-                    Log.i(TAG, "check CameraInternal again");
-                    cameraInternal = mCameras.get(cameraKey);
                     if (cameraInternal == null) {
-                        throw new RuntimeException("failed to open USB device(has no permission)");
+                        throw new IllegalStateException("failed to open USB device(has no permission yet)");
                     }
                 }
             }
@@ -243,7 +299,7 @@ class CameraConnectionService {
 
         @Override
         public List<Format> getSupportedFormatList(final UsbDevice device) {
-            final CameraInternal cameraInternal = getCamera(device);
+            final CameraInternal cameraInternal = getCamera(device, false);
             if (cameraInternal != null) {
                 return cameraInternal.getSupportedFormatList();
             }
@@ -252,7 +308,7 @@ class CameraConnectionService {
 
         @Override
         public List<Size> getSupportedSizeList(final UsbDevice device) {
-            final CameraInternal cameraInternal = getCamera(device);
+            final CameraInternal cameraInternal = getCamera(device, false);
             if (cameraInternal != null) {
                 return cameraInternal.getSupportedSizeList();
             }
@@ -261,7 +317,7 @@ class CameraConnectionService {
 
         @Override
         public Size getPreviewSize(final UsbDevice device) {
-            final CameraInternal cameraInternal = getCamera(device);
+            final CameraInternal cameraInternal = getCamera(device, false);
             if (cameraInternal != null) {
                 return cameraInternal.getPreviewSize();
             }
@@ -389,7 +445,7 @@ class CameraConnectionService {
 
         @Override
         public UVCControl getUVCControl(UsbDevice device) {
-            final CameraInternal cameraInternal = getCamera(device);
+            final CameraInternal cameraInternal = getCamera(device, false);
             if (cameraInternal != null) {
                 return cameraInternal.getUVCControl();
             }
@@ -421,6 +477,9 @@ class CameraConnectionService {
             final CameraInternal cameraInternal = getCamera(device);
             if (cameraInternal != null) {
                 cameraInternal.startRecording(options, callback);
+            } else {
+                String message = "Camera not available";
+                callback.onError(VideoCapture.ERROR_INVALID_CAMERA, message, new IllegalStateException(message));
             }
         }
 
@@ -509,7 +568,16 @@ class CameraConnectionService {
         }
 
         @Override
+        public void cancelWaits() {
+            synchronized (mConnectionSync) {
+                mReleased = true;
+                mConnectionSync.notifyAll();
+            }
+        }
+
+        @Override
         public void release() {
+            cancelWaits();
             if (mUSBMonitor != null) {
                 mUSBMonitor.destroy();
                 mUSBMonitor = null;
@@ -541,7 +609,7 @@ class CameraConnectionService {
                     try {
                         callback.onAttach(device);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        Log.w(TAG, "listener callback:", e);
                     }
                 }
             }
@@ -566,7 +634,7 @@ class CameraConnectionService {
                                 try {
                                     callback.onCameraOpen(device);
                                 } catch (Exception e) {
-                                    e.printStackTrace();
+                                    Log.w(TAG, "listener callback:", e);
                                 }
                             }
                             mIsCameraOpened = true;
@@ -581,7 +649,7 @@ class CameraConnectionService {
                                 try {
                                     callback.onCameraClose(device);
                                 } catch (Exception e) {
-                                    e.printStackTrace();
+                                    Log.w(TAG, "listener callback:", e);
                                 }
                             }
                             mIsCameraOpened = false;
@@ -595,7 +663,7 @@ class CameraConnectionService {
                             try {
                                 callback.onError(device, e);
                             } catch (Exception e1) {
-                                e1.printStackTrace();
+                                Log.w(TAG, "listener callback:", e1);
                             }
                         }
                     }
@@ -606,7 +674,7 @@ class CameraConnectionService {
                     try {
                         callback.onDeviceOpen(device, createNew);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        Log.w(TAG, "listener callback:", e);
                     }
                 }
             }
@@ -625,7 +693,7 @@ class CameraConnectionService {
                     try {
                         callback.onDeviceClose(device);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        Log.w(TAG, "listener callback:", e);
                     }
                 }
 
@@ -641,7 +709,7 @@ class CameraConnectionService {
                     try {
                         callback.onDetach(device);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        Log.w(TAG, "listener callback:", e);
                     }
                 }
 
@@ -657,11 +725,14 @@ class CameraConnectionService {
                     try {
                         callback.onCancel(device);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        Log.w(TAG, "listener callback:", e);
                     }
                 }
 
                 synchronized (mConnectionSync) {
+                    if (device != null) {
+                        mPendingPermissionKeys.remove(getCameraKey(device));
+                    }
                     mConnectionSync.notifyAll();
                 }
             }
@@ -679,11 +750,14 @@ class CameraConnectionService {
                             callback.onError(device, ex);
                         }
                     } catch (Exception e1) {
-                        e1.printStackTrace();
+                        Log.w(TAG, "onError:", e1);
                     }
                 }
 
                 synchronized (mConnectionSync) {
+                    if (device != null) {
+                        mPendingPermissionKeys.remove(getCameraKey(device));
+                    }
                     mConnectionSync.notifyAll();
                 }
             }

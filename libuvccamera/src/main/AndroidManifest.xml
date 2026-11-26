@@ -21,14 +21,14 @@
   ~  may have a different license, see the respective files.
   -->
 
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.serenegiant.uvccamera">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- Android 9+ only lets apps with CAMERA open a USB video class device, so every app that
+         uses the library needs it. Apps that record sound add RECORD_AUDIO themselves; pictures and
+         videos saved through MediaStore need no storage permission.
+         Android 9+ 只允许拥有 CAMERA 权限的应用打开 USB 视频类设备，因此每个使用本库的应用都需要它。
+         需要录音的应用自行添加 RECORD_AUDIO；通过 MediaStore 保存照片和视频不需要存储权限。 -->
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <uses-feature android:name="android.hardware.usb.host" />
 

@@ -16,18 +16,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.core.graphics.createBitmap
 import com.herohan.uvcdemo.ui.CameraSurfacePreview
 import com.herohan.uvcdemo.ui.DemoScaffold
 import com.herohan.uvcdemo.ui.OpenCloseButtons
 import com.herohan.uvcdemo.ui.PreviewCellRow
-import com.herohan.uvcdemo.utils.CustomFPS
-import com.herohan.uvcdemo.utils.NV21ToBitmap
+import com.herohan.uvcdemo.utils.FrameRateMeter
 import com.herohan.uvcsample.CameraSession
 import com.herohan.uvcsample.ui.theme.UvcSampleTheme
 import com.herohan.uvcsample.ui.theme.enableEdgeToEdgeBelowAppBar
 import com.serenegiant.usb.IFrameCallback
 import com.serenegiant.usb.UVCCamera
 import java.text.DecimalFormat
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Shows the camera preview next to the frames delivered by a frame callback, with the callback's
@@ -53,15 +54,30 @@ class SetFrameCallbackActivity : ComponentActivity() {
      */
     private var fpsText by mutableStateOf<String?>(null)
 
-    private lateinit var nv21ToBitmap: NV21ToBitmap
+    /**
+     * Two bitmaps the frames are copied into in turn: one is on screen while the next frame is
+     * written into the other, so no bitmap is allocated per frame.
+     *
+     * 两个轮流写入帧的位图：一个显示在屏幕上时，下一帧写入另一个，因此不会为每一帧分配位图。
+     */
+    private var frameBuffers: Array<Bitmap>? = null
+    private var nextBuffer = 0
 
-    private var customFPS: CustomFPS? = null
+    /**
+     * True from posting a frame to the UI until the UI shows it; frames arriving meanwhile are
+     * dropped, so a bitmap is never written while it is on its way to the screen.
+     *
+     * 从把一帧投递给 UI 到 UI 显示它期间为 true；期间到达的帧会被丢弃，
+     * 因此不会写入正在送往屏幕的位图。
+     */
+    private val framePending = AtomicBoolean(false)
+
+    @Volatile
+    private var frameRateMeter: FrameRateMeter? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdgeBelowAppBar()
-
-        nv21ToBitmap = NV21ToBitmap(this)
 
         setContent {
             UvcSampleTheme {
@@ -96,27 +112,48 @@ class SetFrameCallbackActivity : ComponentActivity() {
         override fun onCameraOpen(session: CameraSession, device: UsbDevice) {
             val helper = session.cameraHelper ?: return
 
-            // The frames are converted at the preview size, so it must be known.
-            // 帧按预览尺寸转换，因此必须先知道预览尺寸。
+            // The frames are copied at the preview size, so it must be known.
+            // 帧按预览尺寸复制，因此必须先知道预览尺寸。
             val size = helper.previewSize ?: return
+            val buffers = Array(2) { createBitmap(size.width, size.height) }
+            frameBuffers = buffers
+            nextBuffer = 0
+            framePending.set(false)
 
+            initFPS()
+
+            // RGBX frames have the byte layout of an ARGB_8888 bitmap, so they are copied as they are.
+            // RGBX 帧的字节布局与 ARGB_8888 位图相同，因此可直接复制。
             helper.setFrameCallback(IFrameCallback { frame ->
                 // Refresh FPS
                 // 刷新 FPS
-                customFPS?.doFrame()
+                frameRateMeter?.onFrame()
 
-                val nv21 = ByteArray(frame.remaining())
-                frame.get(nv21, 0, nv21.size)
-
-                val bitmap = nv21ToBitmap.nv21ToBitmap(nv21, size.width, size.height)
-                runOnUiThread { frameBitmap = bitmap }
-            }, UVCCamera.PIXEL_FORMAT_NV21)
-
-            initFPS()
+                if (!framePending.compareAndSet(false, true)) {
+                    return@IFrameCallback
+                }
+                val bitmap = buffers[nextBuffer]
+                if (frame.remaining() < bitmap.byteCount) {
+                    framePending.set(false)
+                    return@IFrameCallback
+                }
+                bitmap.copyPixelsFromBuffer(frame)
+                nextBuffer = 1 - nextBuffer
+                runOnUiThread {
+                    // Ignore frames of a camera that closed meanwhile.
+                    // 忽略在此期间已关闭的相机的帧。
+                    if (frameBuffers === buffers) {
+                        frameBitmap = bitmap
+                    }
+                    framePending.set(false)
+                }
+            }, UVCCamera.PIXEL_FORMAT_RGBX)
         }
 
         override fun onCameraClose(session: CameraSession, device: UsbDevice) {
             clearFPS()
+            frameBuffers = null
+            frameBitmap = null
         }
     }
 
@@ -128,11 +165,9 @@ class SetFrameCallbackActivity : ComponentActivity() {
     private fun initFPS() {
         val decimal = DecimalFormat(" #.0' fps'")
 
-        customFPS = CustomFPS().apply {
-            addListener { fps ->
-                Log.v(TAG, "fps:$fps")
-                runOnUiThread { fpsText = decimal.format(fps) }
-            }
+        frameRateMeter = FrameRateMeter { fps ->
+            Log.v(TAG, "fps:$fps")
+            runOnUiThread { fpsText = decimal.format(fps) }
         }
     }
 
@@ -142,8 +177,7 @@ class SetFrameCallbackActivity : ComponentActivity() {
      * 结束 FPS 显示
      */
     private fun clearFPS() {
-        customFPS?.release()
-        customFPS = null
+        frameRateMeter = null
 
         fpsText = null
     }

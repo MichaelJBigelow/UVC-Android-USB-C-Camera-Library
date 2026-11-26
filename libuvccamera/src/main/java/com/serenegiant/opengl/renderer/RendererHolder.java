@@ -25,6 +25,7 @@ import com.serenegiant.uvccamera.BuildConfig;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -52,6 +53,13 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
     protected static final int REQUEST_RELEASE_PRIMARY_SURFACE = 14;
     protected static final int REQUEST_RELEASE = 99;
 
+    /**
+     * Longest wait for the render thread to recreate the primary surface.
+     *
+     * 等待渲染线程重新创建主 surface 的最长时间。
+     */
+    private static final long PRIMARY_SURFACE_TIMEOUT_MS = 2000;
+
     protected final Context mContext = UVCUtils.getApplication();
     @Nullable
     private final RendererHolderCallback mCallback;
@@ -74,6 +82,19 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
 
     private final Lock mLock = new ReentrantLock();
     private final Condition mCreatePrimarySurfaceCondition = mLock.newCondition();
+    /**
+     * Counts primary surface creations, so a waiter can tell that its request was handled.
+     * Guarded by mLock.
+     *
+     * 主 surface 的创建次数，等待方据此判断其请求是否已被处理。由 mLock 保护。
+     */
+    private int mPrimarySurfaceGeneration = 0;
+    /**
+     * Set once release() is called; waiters stop waiting for a surface that will never come.
+     *
+     * 调用 release() 后置位；等待方不再等待永远不会到来的 surface。
+     */
+    private volatile boolean mReleased = false;
 
     private int mMirrorMode = MirrorMode.MIRROR_NORMAL;
     private volatile boolean mIsFirstFrameRendered;
@@ -116,6 +137,15 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
     @Override
     public void release() {
         if (DEBUG) Log.v(TAG, "release:");
+        mLock.lock();
+        try {
+            mReleased = true;
+            // Wake anyone waiting for a primary surface: the render thread is about to stop.
+            // 唤醒所有等待主 surface 的线程：渲染线程即将停止。
+            mCreatePrimarySurfaceCondition.signalAll();
+        } finally {
+            mLock.unlock();
+        }
         mRendererHandler.sendEmptyMessage(REQUEST_RELEASE);
     }
 
@@ -154,18 +184,66 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
     public void checkPrimarySurface() {
         if ((mPrimarySurface == null) || (!mPrimarySurface.isValid())) {
             Log.d(TAG, "checkPrimarySurface:invalid primary surface");
-            mLock.lock();
-            try {
-                mRendererHandler.sendEmptyMessage(REQUEST_RECREATE_PRIMARY_SURFACE);
-                try {
-                    mCreatePrimarySurfaceCondition.await();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            } finally {
-                mLock.unlock();
-            }
+            recreatePrimarySurfaceAndWait();
         }
+    }
+
+    /**
+     * Asks the render thread to recreate the primary surface and waits until it has, the holder is
+     * released, or {@link #PRIMARY_SURFACE_TIMEOUT_MS} passes. On the render thread itself the
+     * surface is recreated directly, since waiting there would deadlock.
+     *
+     * 请求渲染线程重新创建主 surface，并等待其完成、holder 被释放，或超过
+     * {@link #PRIMARY_SURFACE_TIMEOUT_MS}。若在渲染线程自身上调用，则直接重新创建，
+     * 因为在该线程上等待会造成死锁。
+     *
+     * @param width  new width, or 0 to keep the size / 新的宽度；为 0 时保持尺寸不变
+     * @param height new height, or 0 to keep the size / 新的高度；为 0 时保持尺寸不变
+     */
+    private void recreatePrimarySurfaceAndWait(final int width, final int height) {
+        if (mReleased) {
+            Log.w(TAG, "recreatePrimarySurface: already released");
+            return;
+        }
+        if (Looper.myLooper() == mRendererHandler.getLooper()) {
+            if ((width > 0) && (height > 0)) {
+                mRendererHandler.handleUpdateSize(width, height);
+            }
+            mRendererHandler.handleReCreatePrimarySurface();
+            return;
+        }
+        mLock.lock();
+        try {
+            final int generation = mPrimarySurfaceGeneration;
+            if ((width > 0) && (height > 0)) {
+                mRendererHandler.sendMessage(mRendererHandler.obtainMessage(REQUEST_UPDATE_SIZE, width, height));
+            }
+            mRendererHandler.sendEmptyMessage(REQUEST_RECREATE_PRIMARY_SURFACE);
+            long remainingNanos = TimeUnit.MILLISECONDS.toNanos(PRIMARY_SURFACE_TIMEOUT_MS);
+            boolean interrupted = false;
+            while (generation == mPrimarySurfaceGeneration && !mReleased && remainingNanos > 0) {
+                try {
+                    remainingNanos = mCreatePrimarySurfaceCondition.awaitNanos(remainingNanos);
+                } catch (final InterruptedException e) {
+                    // Keep waiting for the bounded time, then restore the interrupt.
+                    // 在限定时间内继续等待，之后恢复中断状态。
+                    interrupted = true;
+                }
+            }
+            if (interrupted) {
+                Thread.currentThread().interrupt();
+            }
+            if (generation == mPrimarySurfaceGeneration) {
+                Log.w(TAG, "recreatePrimarySurface: no new primary surface"
+                        + (mReleased ? " (released)" : " (timed out)"));
+            }
+        } finally {
+            mLock.unlock();
+        }
+    }
+
+    private void recreatePrimarySurfaceAndWait() {
+        recreatePrimarySurfaceAndWait(0, 0);
     }
 
     /**
@@ -181,18 +259,7 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
             throws IllegalStateException {
         if (((width > 0) && (height > 0))
                 && ((mVideoWidth != width) || (mVideoHeight != height))) {
-            mLock.lock();
-            try {
-                mRendererHandler.sendMessage(mRendererHandler.obtainMessage(REQUEST_UPDATE_SIZE, width, height));
-                mRendererHandler.sendEmptyMessage(REQUEST_RECREATE_PRIMARY_SURFACE);
-                try {
-                    mCreatePrimarySurfaceCondition.await();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            } finally {
-                mLock.unlock();
-            }
+            recreatePrimarySurfaceAndWait(width, height);
         }
     }
 
@@ -242,7 +309,8 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
                 try {
                     mSlaveSurfaces.wait(1000);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    Thread.currentThread().interrupt();
+                    Log.w(TAG, e);
                 }
             }
         }
@@ -264,7 +332,8 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
                 try {
                     mSlaveSurfaces.wait(1000);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    Thread.currentThread().interrupt();
+                    Log.w(TAG, e);
                 }
             }
         }
@@ -283,7 +352,8 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
             try {
                 mSlaveSurfaces.wait(2000);
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                Thread.currentThread().interrupt();
+                Log.w(TAG, e);
             }
         }
     }
@@ -715,6 +785,7 @@ public class RendererHolder extends EGLTask implements IRendererHolder {
 
                 makeCurrent();
 
+                mPrimarySurfaceGeneration++;
                 mCreatePrimarySurfaceCondition.signalAll();
 
                 onPrimarySurfaceCreate(mPrimarySurface);

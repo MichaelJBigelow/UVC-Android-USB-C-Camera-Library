@@ -1,5 +1,6 @@
 package com.serenegiant.utils;
 
+import android.util.Log;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -180,7 +181,7 @@ public class FileUtils {
                 }
             }
         } catch (final Exception e) {
-            e.printStackTrace();
+            Log.w(TAG, e);
         }
 //		Log.i(TAG, "Path of sd card external: " + externalpath);
 //		Log.i(TAG, "Path of internal memory: " + internalpath);

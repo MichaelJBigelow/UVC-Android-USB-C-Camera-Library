@@ -41,7 +41,7 @@ import com.serenegiant.usb.Size
  * @param configure called on each new [ICameraHelper] before it is used / 每个新的 [ICameraHelper] 使用前调用
  */
 class CameraSession(
-    owner: LifecycleOwner,
+    private val owner: LifecycleOwner,
     private val callback: Callback = object : Callback {},
     private val activeState: Lifecycle.State = Lifecycle.State.STARTED,
     private val logTag: String = TAG,
@@ -159,9 +159,19 @@ class CameraSession(
         })
     }
 
+    /**
+     * The helper released last, until a new one is created. Surfaces removed after the release go
+     * through its queue, so their callback runs after its teardown.
+     *
+     * 最近一次释放的 helper，直到创建新的 helper 为止。释放之后移除的 surface 会经过它的队列，
+     * 因此其回调会在它的清理之后运行。
+     */
+    private var releasedHelper: ICameraHelper? = null
+
     private fun open() {
         Log.d(logTag, "initCameraHelper:")
         if (cameraHelper == null) {
+            releasedHelper = null
             cameraHelper = CameraHelper().also {
                 it.setStateCallback(stateCallback)
                 configure(it)
@@ -171,9 +181,19 @@ class CameraSession(
 
     private fun release() {
         Log.d(logTag, "clearCameraHelper:")
-        cameraHelper?.release()
+        cameraHelper?.let { helper ->
+            // Detach the previews first: they stay alive and are attached again to the next helper.
+            // 先移除预览：它们仍然存在，并会重新挂接到下一个 helper。
+            previewSurfaces.forEach { helper.removeSurface(it) }
+            helper.release()
+            releasedHelper = helper
+        }
         cameraHelper = null
         isCameraOpened = false
+        // The next helper starts with no device selected, so attached cameras are picked up again.
+        // 下一个 helper 开始时没有选中的设备，因此会重新识别已接入的相机。
+        usbDevice = null
+        isPreviewPaused = false
     }
 
     /**
@@ -192,8 +212,57 @@ class CameraSession(
      * 移除即将被销毁的预览 surface。
      */
     fun removePreviewSurface(surface: Any) {
-        if (previewSurfaces.remove(surface)) {
-            cameraHelper?.removeSurface(surface)
+        removePreviewSurface(surface) {}
+    }
+
+    /**
+     * Removes a preview surface, then calls [onRemoved] on the main thread once the camera no
+     * longer draws on it, for example to release a SurfaceTexture.
+     *
+     * 移除预览 surface，并在相机不再向其绘制后于主线程上调用 [onRemoved]，
+     * 例如用于释放 SurfaceTexture。
+     */
+    fun removePreviewSurface(surface: Any, onRemoved: () -> Unit) {
+        val helper = cameraHelper ?: releasedHelper
+        if (previewSurfaces.remove(surface) && helper != null) {
+            helper.removeSurface(surface, Runnable { onRemoved() })
+        } else {
+            onRemoved()
+        }
+    }
+
+    /**
+     * Whether [pausePreview] stopped the preview; [resumePreview] restarts it.
+     *
+     * [pausePreview] 是否停止了预览；[resumePreview] 会重新启动它。
+     */
+    private var isPreviewPaused = false
+
+    /**
+     * Stops streaming while the screen is not visible, keeping the camera open. For sessions kept
+     * from onCreate to onDestroy; call it from onStop.
+     *
+     * 在界面不可见时停止推流，但保持相机打开。适用于从 onCreate 保留到 onDestroy 的会话；
+     * 请在 onStop 中调用。
+     */
+    fun pausePreview() {
+        if (isCameraOpened) {
+            cameraHelper?.stopPreview()
+            isPreviewPaused = true
+        }
+    }
+
+    /**
+     * Restarts the preview that [pausePreview] stopped; call it from onStart.
+     *
+     * 重新启动被 [pausePreview] 停止的预览；请在 onStart 中调用。
+     */
+    fun resumePreview() {
+        if (isPreviewPaused) {
+            isPreviewPaused = false
+            if (isCameraOpened) {
+                cameraHelper?.startPreview()
+            }
         }
     }
 
@@ -246,8 +315,14 @@ class CameraSession(
             Log.v(logTag, "onCameraOpen:device=" + device.deviceName)
             val helper = cameraHelper ?: return
             if (!callback.handlesDevice(this@CameraSession, device)) return
-
-            helper.startPreview()
+            // A camera that opens while the screen is hidden waits for resumePreview to stream.
+            // 在界面隐藏时打开的相机，等到 resumePreview 时才开始推流。
+            if (owner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+                isPreviewPaused = false
+                helper.startPreview()
+            } else {
+                isPreviewPaused = true
+            }
 
             // After the camera opens, its preview size is known: keep the views at its aspect ratio.
             // 相机打开后即可获知其预览尺寸：让视图保持该宽高比。

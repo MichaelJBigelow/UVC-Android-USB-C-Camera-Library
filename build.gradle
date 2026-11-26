@@ -9,17 +9,8 @@ plugins {
     alias(libs.plugins.maven.publish) apply false
 }
 
-allprojects {
-    repositories {
-        maven { url = 'https://maven.aliyun.com/repository/google' }
-        maven { url = 'https://maven.aliyun.com/repository/central' }
-
-        maven { url = 'https://jitpack.io' }
-
-        google()
-        mavenCentral()
-    }
-}
+// Repositories are declared once, in settings.gradle (dependencyResolutionManagement).
+// 仓库只在 settings.gradle(dependencyResolutionManagement)中声明一次。
 
 tasks.register('clean', Delete) {
     delete rootProject.layout.buildDirectory

@@ -57,8 +57,7 @@ public final class GLHelper {
         final int error = GLES20.glGetError();
         if (error != GLES20.GL_NO_ERROR) {
             final String msg = op + ": glError 0x" + Integer.toHexString(error);
-            Log.e(TAG, msg);
-            new Throwable(msg).printStackTrace();
+            Log.e(TAG, msg, new Throwable(msg));
 //         	if (DEBUG) {
 //	            throw new RuntimeException(msg);
 //       	}

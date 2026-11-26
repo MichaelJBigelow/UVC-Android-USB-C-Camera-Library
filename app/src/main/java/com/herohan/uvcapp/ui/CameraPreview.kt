@@ -15,11 +15,13 @@ import com.herohan.uvcsample.ui.aspectRatioOf
  *
  * The camera renders into the view's [SurfaceTexture]; [onSurfaceAvailable] and
  * [onSurfaceDestroyed] report when it can be attached to, or must be detached from, the camera.
+ * [onSurfaceDestroyed] must release the texture once the camera no longer draws on it.
  *
  * 由 [TextureView] 承载的相机预览，尺寸与相机的宽高比一致。
  *
  * 相机渲染到该视图的 [SurfaceTexture] 上；[onSurfaceAvailable] 和
  * [onSurfaceDestroyed] 分别通知何时可以将其挂接到相机、何时必须将其从相机移除。
+ * [onSurfaceDestroyed] 必须在相机不再向该纹理绘制后将其释放。
  *
  * @param previewWidth width of the camera preview, in pixels / 相机预览宽度(像素)
  * @param previewHeight height of the camera preview, in pixels / 相机预览高度(像素)
@@ -50,8 +52,10 @@ fun CameraTexturePreview(
 
                     override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean {
                         currentOnDestroyed(surface)
-                        // The camera removes the surface asynchronously, so don't let the view release it.
-                        // 相机会异步移除该 surface，因此不要让视图释放它。
+                        // The camera removes the surface asynchronously, so the view must not release
+                        // it now: onSurfaceDestroyed releases it once the camera has let go of it.
+                        // 相机会异步移除该 surface，因此视图此时不能释放它：
+                        // onSurfaceDestroyed 会在相机不再使用它之后将其释放。
                         return false
                     }
 

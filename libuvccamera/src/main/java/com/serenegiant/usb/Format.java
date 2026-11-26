@@ -1,5 +1,6 @@
 package com.serenegiant.usb;
 
+import android.util.Log;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -10,6 +11,8 @@ import java.util.List;
 import java.util.Locale;
 
 public class Format implements Parcelable, Cloneable {
+    private static final String TAG = Format.class.getSimpleName();
+
 
     public int index;
     /**
@@ -63,7 +66,7 @@ public class Format implements Parcelable, Cloneable {
         try {
             format = (Format) super.clone();
         } catch (CloneNotSupportedException e) {
-            e.printStackTrace();
+            Log.w(TAG, e);
         }
 
         if (format == null) {
@@ -163,7 +166,7 @@ public class Format implements Parcelable, Cloneable {
             try {
                 descriptor = (Descriptor) super.clone();
             } catch (CloneNotSupportedException e) {
-                e.printStackTrace();
+                Log.w(TAG, e);
             }
 
             if (descriptor == null) {
@@ -231,7 +234,7 @@ public class Format implements Parcelable, Cloneable {
             try {
                 interval = (Interval) super.clone();
             } catch (CloneNotSupportedException e) {
-                e.printStackTrace();
+                Log.w(TAG, e);
             }
 
             if (interval == null) {

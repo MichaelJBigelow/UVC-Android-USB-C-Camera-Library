@@ -1,8 +1,10 @@
 package com.herohan.uvcapp;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.pm.PackageManager;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaCodec;
@@ -24,11 +26,11 @@ import androidx.annotation.GuardedBy;
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresPermission;
 import androidx.annotation.UiThread;
 import androidx.annotation.VisibleForTesting;
 
 import com.serenegiant.usb.Size;
+import com.serenegiant.utils.UVCUtils;
 
 import java.io.File;
 import java.io.FileDescriptor;
@@ -44,6 +46,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class VideoCapture {
     private static final String TAG = VideoCapture.class.getSimpleName();
@@ -209,6 +212,13 @@ public class VideoCapture {
     private int mAudioSampleRate;
     private int mAudioBitRate;
     private final AtomicBoolean mIsAudioEnabled = new AtomicBoolean(true);
+    /**
+     * Why the audio thread stopped this recording, if it did. The video thread reports it, so the
+     * recording ends with exactly one result.
+     *
+     * 音频线程中止本次录像的原因(如有)。由视频线程报告，使录像只产生一个结果。
+     */
+    private final AtomicReference<Throwable> mAudioFailure = new AtomicReference<>();
 
     private VideoEncoderInitStatus mVideoEncoderInitStatus =
             VideoEncoderInitStatus.VIDEO_ENCODER_INIT_STATUS_UNINITIALIZED;
@@ -221,8 +231,10 @@ public class VideoCapture {
     private Throwable mAudioEncoderErrorMessage;
 
     private WeakReference<ICameraRendererHolder> mRendererHolderWeak;
-    private VideoCaptureConfig mConfig;
-    private Size mResolution;
+    // Changed on the camera thread, read by the recording session's final task
+    // 在相机线程上修改，由录像会话的最后一个任务读取
+    private volatile VideoCaptureConfig mConfig;
+    private volatile Size mResolution;
 
     private Handler mMainHandler;
 
@@ -251,12 +263,30 @@ public class VideoCapture {
 
     void setConfig(VideoCaptureConfig config) {
         this.mConfig = (VideoCaptureConfig) config.clone();
-        initVideoAudioEncoder();
+        reinitEncodersUnlessRecording();
     }
 
     void setResolution(Size resolution) {
         this.mResolution = resolution;
-        initVideoAudioEncoder();
+        reinitEncodersUnlessRecording();
+    }
+
+    /**
+     * Rebuilds the encoders for the new config or resolution, unless a recording session is still
+     * running: its final task reconfigures the encoders with the new values anyway, and rebuilding
+     * them now would kill the recording.
+     *
+     * 按新的配置或分辨率重建编码器；但如果录像会话仍在进行则不重建：
+     * 该会话的最后一个任务无论如何都会用新值重新配置编码器，而此时重建会中断录像。
+     */
+    private void reinitEncodersUnlessRecording() {
+        synchronized (mReleaseLock) {
+            if (mRecordingSessionActive) {
+                Log.i(TAG, "Recording in progress; the new settings apply to the next recording");
+                return;
+            }
+            initVideoAudioEncoder();
+        }
     }
 
     private void initVideoAudioHandler() {
@@ -331,21 +361,25 @@ public class VideoCapture {
      * <p>StartRecording() is asynchronous. User needs to check if any error occurs by setting the
      * {@link OnVideoCaptureCallback#onError(int, String, Throwable)}.
      *
+     * <p>Sound is recorded only when the app holds RECORD_AUDIO; otherwise the video has no sound.
+     *
      * 开始录制视频，直到调用 {@link VideoCapture#stopRecording()} 为止。
      *
      * <p>StartRecording() 是异步的。用户需要通过设置 {@link OnVideoCaptureCallback#onError(int, String, Throwable)} 来检查是否发生错误。
+     *
+     * <p>仅当应用拥有 RECORD_AUDIO 权限时才录制声音；否则视频没有声音。
      *
      * @param outputFileOptions Location to save the video capture / 保存视频采集的位置
      * @param callback          Callback for when the recorded video saving completion or failure. / 录制的视频保存完成或失败时的回调
      */
     @SuppressWarnings("ObjectToString")
-    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     public void startRecording(
             @NonNull OutputFileOptions outputFileOptions,
             @NonNull OnVideoCaptureCallback callback) {
         Log.i(TAG, "startRecording");
         mIsFirstVideoKeyFrameWrite.set(false);
         mIsFirstAudioSampleWrite.set(false);
+        mAudioFailure.set(null);
 
         OnVideoCaptureCallback postListener = new VideoCaptureListenerWrapper(callback);
 
@@ -474,6 +508,7 @@ public class VideoCapture {
                 mAudioEncoder.start();
             }
         } catch (IllegalStateException e) {
+            stopAudioRecorder();
             mExecutor.execute(mRecordingFuture);
             postListener.onError(ERROR_ENCODER, "Audio/Video encoder start fail", e);
             return;
@@ -494,6 +529,10 @@ public class VideoCapture {
             // 同时捕获运行时异常（上面以及 MediaMuxer 抛出的 IllegalArgumentException，
             // ContentResolver 抛出的 SecurityException 等），确保会话仍然结束，
             // 由其最后一个任务重置编码器和 AudioRecord，release() 不会被无限期推迟
+            // Stop the audio input and remove the output this session created
+            // 停止音频输入，并删除本次会话创建的输出
+            stopAudioRecorder();
+            discardFailedOutput(outputFileOptions);
             mExecutor.execute(mRecordingFuture);
             postListener.onError(ERROR_MUXER, "MediaMuxer creation failed!", e);
             return;
@@ -517,11 +556,25 @@ public class VideoCapture {
         mVideoHandler.post(
                 () -> {
                     boolean errorOccurred = videoEncode(postListener, outputFileOptions);
-                    if (!errorOccurred) {
+                    final Throwable audioFailure = mAudioFailure.getAndSet(null);
+                    if (!errorOccurred && audioFailure != null) {
+                        // The audio thread failed: report that as the recording's one result.
+                        // 音频线程失败：将其作为本次录像的唯一结果报告。
+                        postListener.onError(ERROR_ENCODER, "Audio encoder encode failed!", audioFailure);
+                        errorOccurred = true;
+                    }
+                    if (!errorOccurred && publishMediaStoreOutput(outputFileOptions)) {
+                        // Only file:// outputs need a scan; MediaStore entries are already indexed.
+                        // 只有 file:// 输出需要扫描；MediaStore 条目已建立索引。
                         MediaScanHelper.scanMediaFile(mSavedVideoUri);
                         postListener.onVideoSaved(new OutputFileResults(mSavedVideoUri));
-                        mSavedVideoUri = null;
+                    } else {
+                        if (!errorOccurred) {
+                            postListener.onError(ERROR_FILE_IO, "Failed to publish the video", null);
+                        }
+                        discardFailedOutput(outputFileOptions);
                     }
+                    mSavedVideoUri = null;
                     mExecutor.execute(mRecordingFuture);
                 });
     }
@@ -594,6 +647,69 @@ public class VideoCapture {
         releaseAudioRecorder();
     }
 
+    /**
+     * Stops the audio input if it is recording.
+     *
+     * 如果音频输入正在录制，则将其停止。
+     */
+    private void stopAudioRecorder() {
+        if (mAudioRecorder != null) {
+            try {
+                if (mAudioRecorder.getRecordingState() == AudioRecord.RECORDSTATE_RECORDING) {
+                    mAudioRecorder.stop();
+                }
+            } catch (IllegalStateException e) {
+                Log.w(TAG, "stopAudioRecorder:", e);
+            }
+        }
+    }
+
+    /**
+     * Makes a finished MediaStore video visible to other apps by clearing IS_PENDING.
+     *
+     * 通过清除 IS_PENDING，使录制完成的 MediaStore 视频对其他应用可见。
+     *
+     * @return false if the entry could not be published / 无法发布该条目时返回 false
+     */
+    private boolean publishMediaStoreOutput(@NonNull OutputFileOptions outputFileOptions) {
+        if (!outputFileOptions.isSavingToMediaStore() || mSavedVideoUri == null) {
+            return true;
+        }
+        try {
+            final ContentValues values = new ContentValues();
+            values.put(MediaStore.MediaColumns.IS_PENDING, 0);
+            return outputFileOptions.getContentResolver().update(mSavedVideoUri, values, null, null) > 0;
+        } catch (RuntimeException e) {
+            Log.e(TAG, "publishMediaStoreOutput:", e);
+            return false;
+        }
+    }
+
+    /**
+     * Closes and deletes the MediaStore entry of a recording that failed, so no broken or empty
+     * video is left behind.
+     *
+     * 关闭并删除失败录像的 MediaStore 条目，避免留下损坏或空白的视频。
+     */
+    private void discardFailedOutput(@NonNull OutputFileOptions outputFileOptions) {
+        if (mParcelFileDescriptor != null) {
+            try {
+                mParcelFileDescriptor.close();
+            } catch (IOException e) {
+                Log.w(TAG, "discardFailedOutput:", e);
+            }
+            mParcelFileDescriptor = null;
+        }
+        if (outputFileOptions.isSavingToMediaStore() && mSavedVideoUri != null) {
+            try {
+                outputFileOptions.getContentResolver().delete(mSavedVideoUri, null, null);
+            } catch (RuntimeException e) {
+                Log.w(TAG, "discardFailedOutput:", e);
+            }
+            mSavedVideoUri = null;
+        }
+    }
+
     private void releaseAudioRecorder() {
         if (mAudioRecorder != null) {
             mAudioRecorder.release();
@@ -621,7 +737,6 @@ public class VideoCapture {
      * 设置 {@link MediaCodec}，用于对来自相机 {@link Surface} 的视频以及来自所选音频源的音频进行编码。
      */
     @UiThread
-    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
     void setupEncoder() {
 
         // video encoder setup
@@ -819,8 +934,7 @@ public class VideoCapture {
                                 + "/offset="
                                 + mAudioBufferInfo.offset
                                 + "/timeUs="
-                                + mAudioBufferInfo.presentationTimeUs);
-                e.printStackTrace();
+                                + mAudioBufferInfo.presentationTimeUs, e);
             }
         }
         mAudioEncoder.releaseOutputBuffer(bufferIndex, false);
@@ -885,7 +999,9 @@ public class VideoCapture {
                         videoEos = writeVideoEncodedBuffer(outputBufferId);
                 }
             }
-        } catch (IllegalStateException e) {
+        } catch (IllegalStateException | IllegalArgumentException e) {
+            // IllegalArgumentException: the muxer refused the encoder's format
+            // IllegalArgumentException：muxer 不接受编码器的格式
             videoSavedCallback.onError(ERROR_ENCODER,
                     "Video encoder encode failed!", e);
             errorOccurred = true;
@@ -977,6 +1093,7 @@ public class VideoCapture {
         boolean audioEos = false;
         int outIndex;
         long lastAudioTimestamp = 0;
+        try {
         while (!audioEos && mIsRecording) {
             // Check for end of stream from main thread
             // 检查来自主线程的流结束信号
@@ -1053,6 +1170,14 @@ public class VideoCapture {
                 } while (outIndex >= 0 && !audioEos); // end of dequeue output buffer / 出队输出缓冲区结束
             }
         } // end of while loop / while 循环结束
+        } catch (RuntimeException e) {
+            // Don't let the audio thread die: stop audio and end the video stream below; the video
+            // thread then reports this failure as the recording's result.
+            // 不要让音频线程崩溃：在下面停止音频并结束视频流；随后由视频线程将此失败作为录像结果报告。
+            Log.e(TAG, "audioEncode:", e);
+            mIsRecording = false;
+            mAudioFailure.compareAndSet(null, e);
+        }
 
         // Audio Stop
         // 音频停止
@@ -1062,15 +1187,15 @@ public class VideoCapture {
                 mAudioRecorder.stop();
             }
         } catch (IllegalStateException e) {
-            videoSavedCallback.onError(
-                    ERROR_ENCODER, "Audio recorder stop failed!", e);
+            // The samples are already written; the video still gets its one result.
+            // 采样已写入；视频仍只产生一个结果。
+            Log.w(TAG, "Audio recorder stop failed!", e);
         }
 
         try {
             mAudioEncoder.stop();
         } catch (IllegalStateException e) {
-            videoSavedCallback.onError(ERROR_ENCODER,
-                    "Audio encoder stop failed!", e);
+            Log.w(TAG, "Audio encoder stop failed!", e);
         }
 
         Log.i(TAG, "Audio encode thread end");
@@ -1112,8 +1237,18 @@ public class VideoCapture {
      *
      * 创建 AudioRecord 对象以获取原始数据
      */
-    @RequiresPermission(Manifest.permission.RECORD_AUDIO)
+    // RECORD_AUDIO is checked first thing below.
+    // 下面一开始就检查了 RECORD_AUDIO。
+    @SuppressLint("MissingPermission")
     private AudioRecord autoConfigAudioRecordSource() {
+        // Without RECORD_AUDIO the video is recorded without sound.
+        // 没有 RECORD_AUDIO 权限时，录制的视频没有声音。
+        if (UVCUtils.getApplication().checkSelfPermission(Manifest.permission.RECORD_AUDIO)
+                != PackageManager.PERMISSION_GRANTED) {
+            Log.w(TAG, "RECORD_AUDIO is not granted, recording without sound");
+            return null;
+        }
+
         // Use channel count to determine stereo vs mono
         // 使用声道数判断是立体声还是单声道
         int channelConfig =
@@ -1237,24 +1372,24 @@ public class VideoCapture {
                     : new ContentValues();
 
             if (contentResolver != null && saveCollection != null) {
+                // Hide the entry from other apps until the video is complete.
+                // 在视频完成之前，对其他应用隐藏该条目。
+                values.put(MediaStore.MediaColumns.IS_PENDING, 1);
                 mSavedVideoUri = contentResolver.insert(saveCollection, values);
 
                 if (mSavedVideoUri == null) {
                     throw new IOException("Invalid Uri!");
                 }
 
-                try {
-                    mParcelFileDescriptor =
-                            outputFileOptions.getContentResolver().openFileDescriptor(
-                                    mSavedVideoUri, "rw");
-                    if (mParcelFileDescriptor != null) {
-                        mediaMuxer = new MediaMuxer(
-                                mParcelFileDescriptor.getFileDescriptor(),
-                                MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
-                    }
-                } catch (IOException e) {
-                    mSavedVideoUri = null;
-                    throw e;
+                // If this throws, the caller closes the descriptor and deletes the entry.
+                // 如果此处抛出异常，由调用方关闭文件描述符并删除该条目。
+                mParcelFileDescriptor =
+                        outputFileOptions.getContentResolver().openFileDescriptor(
+                                mSavedVideoUri, "rw");
+                if (mParcelFileDescriptor != null) {
+                    mediaMuxer = new MediaMuxer(
+                            mParcelFileDescriptor.getFileDescriptor(),
+                            MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
                 }
             }
         } else {

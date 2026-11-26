@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="6" by="lint 9.5.1" type="baseline" client="gradle" dependencies="false" name="AGP (9.5.1)" variant="all" version="9.5.1">
+
+    <issue
+        id="OldTargetApi"
+        message="Not targeting the latest versions of Android; compatibility modes apply. Consider testing and updating this version. Consult the `android.os.Build.VERSION_CODES` javadoc for details."
+        errorLine1="targetSdk = &quot;36&quot;"
+        errorLine2="            ~~~~">
+        <location
+            file="$HOME/Git/UVC-Android-USB-C-Camera-Library/gradle/libs.versions.toml"
+            line="10"
+            column="13"/>
+    </issue>
+
+    <issue
+        id="SuspiciousIndentation"
+        message="The indentation string here is different from on the previous line (`&quot; &quot;` vs `\t`)"
+        errorLine1="    eventType = parser.next();"
+        errorLine2=" ~~~">
+        <location
+            file="src/main/java/com/serenegiant/usb/DeviceFilter.java"
+            line="131"
+            column="2"/>
+        <location
+            file="src/main/java/com/serenegiant/usb/DeviceFilter.java"
+            line="125"
+            column="2"
+            message="Previous line indentation here"/>
+    </issue>
+
+    <issue
+        id="SuspiciousIndentation"
+        message="The indentation string here is different from on the previous line (`&quot; &quot;` vs `\t`)"
+        errorLine1="    result = Integer.parseInt(v, radix);"
+        errorLine2="~~~~">
+        <location
+            file="src/main/java/com/serenegiant/usb/DeviceFilter.java"
+            line="175"
+            column="1"/>
+        <location
+            file="src/main/java/com/serenegiant/usb/DeviceFilter.java"
+            line="168"
+            column="1"
+            message="Previous line indentation here"/>
+    </issue>
+
+    <issue
+        id="SuspiciousIndentation"
+        message="The indentation string here is different from on the previous line (`&quot; &quot;` vs `\t`)"
+        errorLine1="     vendorId = getAttributeInteger(context, parser, null, &quot;vendor-id&quot;, -1);"
+        errorLine2="~~~~~">
+        <location
+            file="src/main/java/com/serenegiant/usb/DeviceFilter.java"
+            line="292"
+            column="1"/>
+        <location
+            file="src/main/java/com/serenegiant/usb/DeviceFilter.java"
+            line="291"
+            column="1"
+            message="Previous line indentation here"/>
+    </issue>
+
+    <issue
+        id="AndroidGradlePluginVersion"
+        message="A newer version of Gradle than 9.9.0 is available: 9.9.2"
+        errorLine1="distributionUrl=https\://services.gradle.org/distributions/gradle-9.9.0-bin.zip"
+        errorLine2="                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="$HOME/Git/UVC-Android-USB-C-Camera-Library/gradle/wrapper/gradle-wrapper.properties"
+            line="3"
+            column="17"/>
+    </issue>
+
+    <issue
+        id="AndroidGradlePluginVersion"
+        message="A newer version of com.android.application than 9.5.1 is available: 9.5.3"
+        errorLine1="agp = &quot;9.5.1&quot;"
+        errorLine2="      ~~~~~~~">
+        <location
+            file="$HOME/Git/UVC-Android-USB-C-Camera-Library/gradle/libs.versions.toml"
+            line="16"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="AndroidGradlePluginVersion"
+        message="A newer version of com.android.library than 9.5.1 is available: 9.5.3"
+        errorLine1="agp = &quot;9.5.1&quot;"
+        errorLine2="      ~~~~~~~">
+        <location
+            file="$HOME/Git/UVC-Android-USB-C-Camera-Library/gradle/libs.versions.toml"
+            line="16"
+            column="7"/>
+    </issue>
+
+    <issue
+        id="GradleDependency"
+        message="A newer version of androidx.compose:compose-bom than 2026.09.00 is available: 2026.11.01"
+        errorLine1="androidxComposeBom = &quot;2026.09.00&quot;"
+        errorLine2="                     ~~~~~~~~~~~~">
+        <location
+            file="$HOME/Git/UVC-Android-USB-C-Camera-Library/gradle/libs.versions.toml"
+            line="24"
+            column="22"/>
+    </issue>
+
+    <issue
+        id="NewerVersionAvailable"
+        message="A newer version of org.jetbrains.kotlinx:kotlinx-coroutines-android than 1.9.0 is available: 1.11.0"
+        errorLine1="kotlinxCoroutines = &quot;1.9.0&quot;"
+        errorLine2="                    ~~~~~~~">
+        <location
+            file="$HOME/Git/UVC-Android-USB-C-Camera-Library/gradle/libs.versions.toml"
+            line="30"
+            column="21"/>
+    </issue>
+
+    <issue
+        id="DiscouragedApi"
+        message="Use of this function is discouraged because resource reflection makes it harder to perform build optimizations and compile-time verification of code. It is much more efficient to retrieve resources by identifier (e.g. `R.foo.bar`) than by name (e.g. `getIdentifier(&quot;bar&quot;, &quot;foo&quot;, null)`)."
+        errorLine1="    final int resId = context.getResources().getIdentifier(r, null, context.getPackageName());"
+        errorLine2="                                             ~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/serenegiant/usb/DeviceFilter.java"
+            line="162"
+            column="46"/>
+    </issue>
+
+    <issue
+        id="DiscouragedApi"
+        message="Use of this function is discouraged because resource reflection makes it harder to perform build optimizations and compile-time verification of code. It is much more efficient to retrieve resources by identifier (e.g. `R.foo.bar`) than by name (e.g. `getIdentifier(&quot;bar&quot;, &quot;foo&quot;, null)`)."
+        errorLine1="    final int resId = context.getResources().getIdentifier(r, null, context.getPackageName());"
+        errorLine2="                                             ~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/serenegiant/usb/DeviceFilter.java"
+            line="212"
+            column="46"/>
+    </issue>
+
+    <issue
+        id="DiscouragedApi"
+        message="Use of this function is discouraged because resource reflection makes it harder to perform build optimizations and compile-time verification of code. It is much more efficient to retrieve resources by identifier (e.g. `R.foo.bar`) than by name (e.g. `getIdentifier(&quot;bar&quot;, &quot;foo&quot;, null)`)."
+        errorLine1="    final int resId = context.getResources().getIdentifier(r, null, context.getPackageName());"
+        errorLine2="                                             ~~~~~~~~~~~~~">
+        <location
+            file="src/main/java/com/serenegiant/usb/DeviceFilter.java"
+            line="258"
+            column="46"/>
+    </issue>
+
+    <issue
+        id="MissingTranslation"
+        message="&quot;app_name&quot; is not translated in &quot;ja&quot; (Japanese) or &quot;zh&quot; (Chinese)"
+        errorLine1="    &lt;string name=&quot;app_name&quot;>usb camera&lt;/string>"
+        errorLine2="            ~~~~~~~~~~~~~~~">
+        <location
+            file="src/main/res/values/strings.xml"
+            line="24"
+            column="13"/>
+    </issue>
+
+</issues>

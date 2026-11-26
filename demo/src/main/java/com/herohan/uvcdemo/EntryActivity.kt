@@ -52,18 +52,13 @@ class EntryActivity : ComponentActivity() {
         Demo(R.string.entry_multi_preview, MultiPreviewActivity::class.java),
         Demo(R.string.entry_multi_camera_new, MultiCameraNewActivity::class.java),
         Demo(R.string.entry_multi_camera, MultiCameraActivity::class.java),
-        Demo(
-            R.string.entry_take_picture,
-            TakePictureActivity::class.java,
-            listOf(PermissionLists.getManageExternalStoragePermission()),
-        ),
+        // Pictures and videos are saved through MediaStore, which needs no storage permission.
+        // 照片和视频通过 MediaStore 保存，不需要存储权限。
+        Demo(R.string.entry_take_picture, TakePictureActivity::class.java),
         Demo(
             R.string.entry_record_video,
             RecordVideoActivity::class.java,
-            listOf(
-                PermissionLists.getManageExternalStoragePermission(),
-                PermissionLists.getRecordAudioPermission(),
-            ),
+            listOf(PermissionLists.getRecordAudioPermission()),
         ),
         Demo(R.string.entry_set_frame_callback, SetFrameCallbackActivity::class.java),
     )

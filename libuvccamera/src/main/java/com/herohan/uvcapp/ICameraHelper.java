@@ -2,6 +2,8 @@ package com.herohan.uvcapp;
 
 import android.content.Context;
 import android.hardware.usb.UsbDevice;
+import android.os.Handler;
+import android.os.Looper;
 import android.widget.Toast;
 
 import com.serenegiant.usb.Format;
@@ -23,17 +25,67 @@ public interface ICameraHelper {
 
     void selectDevice(UsbDevice device);
 
+    /**
+     * The camera's formats, or null when no camera is open. Doesn't wait for the camera to open.
+     *
+     * 相机支持的格式；没有打开的相机时为 null。不会等待相机打开。
+     */
     List<Format> getSupportedFormatList();
 
+    /**
+     * The camera's sizes, or null when no camera is open. Doesn't wait for the camera to open.
+     *
+     * 相机支持的尺寸；没有打开的相机时为 null。不会等待相机打开。
+     */
     List<Size> getSupportedSizeList();
 
+    /**
+     * The current preview size, or null when no camera is open. Doesn't wait for the camera to open.
+     *
+     * 当前的预览尺寸；没有打开的相机时为 null。不会等待相机打开。
+     */
     Size getPreviewSize();
 
+    /**
+     * Changes the preview size, asynchronously. It is ignored while recording; if the camera
+     * rejects the size, the camera is closed and {@link StateCallback#onCameraClose} is called.
+     *
+     * 异步更改预览尺寸。录像期间会被忽略；如果相机不接受该尺寸，
+     * 则关闭相机并调用 {@link StateCallback#onCameraClose}。
+     */
     void setPreviewSize(Size size);
 
+    /**
+     * Adds a preview surface.
+     *
+     * 添加预览 surface。
+     *
+     * @param surface a Surface, SurfaceTexture, SurfaceHolder or SurfaceView / Surface、SurfaceTexture、SurfaceHolder 或 SurfaceView
+     * @throws IllegalArgumentException if surface is none of those / surface 不属于上述类型时
+     */
     void addSurface(Object surface, boolean isRecordable);
 
     void removeSurface(Object surface);
+
+    /**
+     * Removes a preview surface, then runs {@code onRemoved} on the main thread once the camera no
+     * longer draws on it, for example to release a SurfaceTexture.
+     *
+     * 移除预览 surface，并在相机不再向其绘制后于主线程上运行 {@code onRemoved}，
+     * 例如用于释放 SurfaceTexture。
+     *
+     * <p>The default implementation, kept for other implementations of this interface, only posts
+     * {@code onRemoved} after asking for the removal; {@link CameraHelper} waits for it.
+     *
+     * <p>默认实现(为本接口的其他实现保留)只在请求移除后投递 {@code onRemoved}；
+     * {@link CameraHelper} 会等待移除完成。
+     */
+    default void removeSurface(Object surface, Runnable onRemoved) {
+        removeSurface(surface);
+        if (onRemoved != null) {
+            new Handler(Looper.getMainLooper()).post(onRemoved);
+        }
+    }
 
     void setButtonCallback(IButtonCallback callback);
 
@@ -51,6 +103,14 @@ public interface ICameraHelper {
 
     void stopPreview();
 
+    /**
+     * The camera's controls, or null when no camera is open. Doesn't wait for the camera to open.
+     * Each get or set on the returned object is a USB control transfer, so call them off the main
+     * thread.
+     *
+     * 相机的控制接口；没有打开的相机时为 null。不会等待相机打开。
+     * 对返回对象的每次读取或设置都是一次 USB 控制传输，因此请在主线程之外调用。
+     */
     UVCControl getUVCControl();
 
     void takePicture(ImageCapture.OutputFileOptions options,

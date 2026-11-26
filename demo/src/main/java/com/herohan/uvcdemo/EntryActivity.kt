@@ -20,8 +20,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.herohan.uvcdemo.ui.DemoScaffold
 import com.herohan.uvcdemo.ui.TestTags
-import com.herohan.uvcdemo.ui.theme.UvcDemoTheme
-import com.herohan.uvcdemo.ui.theme.enableEdgeToEdgeBelowAppBar
+import com.herohan.uvcsample.ui.theme.UvcSampleTheme
+import com.herohan.uvcsample.ui.theme.enableEdgeToEdgeBelowAppBar
 import com.hjq.permissions.XXPermissions
 import com.hjq.permissions.permission.PermissionLists
 import com.hjq.permissions.permission.base.IPermission
@@ -73,7 +73,7 @@ class EntryActivity : ComponentActivity() {
         enableEdgeToEdgeBelowAppBar()
 
         setContent {
-            UvcDemoTheme {
+            UvcSampleTheme {
                 DemoScaffold(
                     title = stringResource(R.string.app_name),
                     background = MaterialTheme.colorScheme.background,

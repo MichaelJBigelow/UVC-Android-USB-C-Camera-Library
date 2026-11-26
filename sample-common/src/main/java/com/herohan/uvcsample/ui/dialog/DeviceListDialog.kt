@@ -1,4 +1,4 @@
-package com.herohan.uvcdemo.ui.dialog
+package com.herohan.uvcsample.ui.dialog
 
 import android.hardware.usb.UsbDevice
 import androidx.compose.foundation.layout.Arrangement
@@ -20,7 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.herohan.uvcdemo.R
+import com.herohan.uvcsample.R
 
 /**
  * Dialog that lists the connected USB devices and lets the user pick one.

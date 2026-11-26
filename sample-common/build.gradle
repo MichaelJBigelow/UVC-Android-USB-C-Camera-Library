@@ -1,0 +1,38 @@
+// Code shared by the two sample apps, app and demo: the Compose dialogs and theme, and the camera
+// session helper. It is not part of the published library.
+// 两个示例应用(app 和 demo)共用的代码：Compose 对话框和主题，以及相机会话辅助类。
+// 它不属于发布的库。
+plugins {
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.kotlin.compose)
+}
+
+android {
+    namespace = 'com.herohan.uvcsample'
+    compileSdk = rootProject.ext.versionCompiler
+
+    defaultConfig {
+        minSdk = rootProject.ext.versionMin
+    }
+
+    compileOptions {
+        sourceCompatibility = rootProject.ext.javaSourceCompatibility
+        targetCompatibility = rootProject.ext.javaTargetCompatibility
+    }
+    buildFeatures {
+        compose = true
+    }
+}
+
+dependencies {
+    // The dialogs and the camera session take and return library types, so expose the library.
+    // 对话框和相机会话的参数与返回值使用库中的类型，因此对外暴露该库。
+    api project(':libuvccamera')
+
+    implementation platform(libs.androidx.compose.bom)
+    implementation libs.androidx.activity.compose
+    implementation libs.androidx.compose.material3
+    implementation libs.androidx.compose.ui
+
+    testImplementation libs.junit
+}

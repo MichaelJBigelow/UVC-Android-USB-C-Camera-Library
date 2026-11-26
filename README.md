@@ -47,3 +47,5 @@ Building this repository requires JDK 17 or newer. It is tested with JDK 25, the
 Plugin and library versions are declared in one place, the Gradle version catalog [`gradle/libs.versions.toml`](gradle/libs.versions.toml).
 
 The library is written in Java. The two sample apps, `app` (a full USB camera app) and `demo` (one screen per library feature), are written in Kotlin with a Jetpack Compose UI; the camera preview is a `TextureView` or `SurfaceView` hosted in Compose with `AndroidView`.
+
+The code the two sample apps share, the Compose dialogs and theme and `CameraSession` (which ties a camera to an activity's lifecycle), lives in the `sample-common` module. It is not part of the published library.

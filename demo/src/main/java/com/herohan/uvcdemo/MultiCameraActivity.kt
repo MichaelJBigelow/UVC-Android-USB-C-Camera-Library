@@ -2,23 +2,19 @@ package com.herohan.uvcdemo
 
 import android.hardware.usb.UsbDevice
 import android.os.Bundle
-import android.util.Log
-import android.view.Surface
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
-import com.herohan.uvcapp.CameraHelper
-import com.herohan.uvcapp.ICameraHelper
 import com.herohan.uvcdemo.ui.CameraCell
 import com.herohan.uvcdemo.ui.DemoScaffold
 import com.herohan.uvcdemo.ui.PreviewCellRow
-import com.herohan.uvcdemo.ui.dialog.DeviceListDialog
-import com.herohan.uvcdemo.ui.theme.UvcDemoTheme
-import com.herohan.uvcdemo.ui.theme.enableEdgeToEdgeBelowAppBar
+import com.herohan.uvcsample.CameraSession
+import com.herohan.uvcsample.ui.dialog.DeviceListDialog
+import com.herohan.uvcsample.ui.theme.UvcSampleTheme
+import com.herohan.uvcsample.ui.theme.enableEdgeToEdgeBelowAppBar
 import com.serenegiant.usb.UVCCamera
 import com.serenegiant.usb.UVCParam
 
@@ -30,8 +26,8 @@ import com.serenegiant.usb.UVCParam
  */
 class MultiCameraActivity : ComponentActivity() {
 
-    private val left = CameraSlot("ListenerLeft#")
-    private val right = CameraSlot("ListenerRight#")
+    private val left = CameraSlot("Left")
+    private val right = CameraSlot("Right")
 
     private val sync = Any()
 
@@ -47,15 +43,15 @@ class MultiCameraActivity : ComponentActivity() {
         enableEdgeToEdgeBelowAppBar()
 
         setContent {
-            UvcDemoTheme {
+            UvcSampleTheme {
                 DemoScaffold(title = stringResource(R.string.entry_multi_camera)) {
                     PreviewCellRow(cellCount = 2, cellFraction = 0.49f) { index ->
                         val slot = if (index == 0) left else right
                         CameraCell(
-                            previewWidth = slot.previewWidth,
-                            previewHeight = slot.previewHeight,
-                            onSurfaceCreated = slot::onSurfaceCreated,
-                            onSurfaceDestroyed = slot::onSurfaceDestroyed,
+                            previewWidth = slot.camera.previewWidth,
+                            previewHeight = slot.camera.previewHeight,
+                            onSurfaceCreated = slot.camera::addPreviewSurface,
+                            onSurfaceDestroyed = slot.camera::removePreviewSurface,
                             onOpen = { showDeviceListDialog(slot) },
                             onClose = slot::closeCamera,
                         )
@@ -76,26 +72,12 @@ class MultiCameraActivity : ComponentActivity() {
         }
     }
 
-    override fun onStart() {
-        if (DEBUG) Log.d(TAG, "onStart:")
-        super.onStart()
-        left.initCameraHelper()
-        right.initCameraHelper()
-    }
-
-    override fun onStop() {
-        if (DEBUG) Log.d(TAG, "onStop:")
-        super.onStop()
-        left.clearCameraHelper()
-        right.clearCameraHelper()
-    }
-
     private fun showDeviceListDialog(slot: CameraSlot) {
-        val helper = slot.cameraHelper ?: return
+        val helper = slot.camera.cameraHelper ?: return
         deviceListRequest = DeviceListRequest(
             slot = slot,
             devices = helper.deviceList.orEmpty(),
-            selectedDevice = if (slot.isCameraConnected) slot.usbDevice else null,
+            selectedDevice = if (slot.camera.isCameraOpened) slot.camera.usbDevice else null,
         )
     }
 
@@ -106,130 +88,48 @@ class MultiCameraActivity : ComponentActivity() {
     )
 
     /**
-     * One of the two cameras: its helper, device, preview surface and state callback.
+     * One of the two cameras: its session and how it picks and opens its device.
      *
-     * 两台相机之一：其相机助手、设备、预览 surface 和状态回调。
+     * 两台相机之一：其相机会话，以及它如何选择和打开自己的设备。
      */
-    private inner class CameraSlot(private val logPrefix: String) {
-        var cameraHelper: ICameraHelper? = null
-        var usbDevice: UsbDevice? = null
-        var isCameraConnected = false
-
-        private var previewSurface: Surface? = null
-
-        var previewWidth by mutableIntStateOf(DEFAULT_WIDTH)
-        var previewHeight by mutableIntStateOf(DEFAULT_HEIGHT)
+    private inner class CameraSlot(name: String) {
+        val camera = CameraSession(this@MultiCameraActivity, SlotCallback(), logTag = "$TAG#$name")
 
         private val other: CameraSlot get() = if (this === left) right else left
 
-        fun initCameraHelper() {
-            if (DEBUG) Log.d(TAG, logPrefix + "initCameraHelper:")
-            if (cameraHelper == null) {
-                cameraHelper = CameraHelper().apply { setStateCallback(stateListener) }
-            }
-        }
-
-        fun clearCameraHelper() {
-            if (DEBUG) Log.d(TAG, logPrefix + "clearCameraHelper:")
-            cameraHelper?.release()
-            cameraHelper = null
-        }
-
-        fun onSurfaceCreated(surface: Surface) {
-            previewSurface = surface
-            cameraHelper?.addSurface(surface, false)
-        }
-
-        fun onSurfaceDestroyed(surface: Surface) {
-            cameraHelper?.removeSurface(surface)
-            previewSurface = null
-        }
-
         fun selectDevice(device: UsbDevice) {
-            if (DEBUG) Log.v(TAG, logPrefix + "selectDevice:device=" + device.deviceName)
-            usbDevice = device
-
-            cameraHelper?.selectDevice(device)
+            camera.selectDevice(device)
         }
 
         fun closeCamera() {
-            if (isCameraConnected) {
-                cameraHelper?.closeCamera()
+            if (camera.isCameraOpened) {
+                camera.closeCamera()
             }
         }
 
-        private val stateListener = object : ICameraHelper.StateCallback {
-            override fun onAttach(device: UsbDevice) {
-                if (DEBUG) Log.v(TAG, logPrefix + "onAttach:")
+        private inner class SlotCallback : CameraSession.Callback {
+            override fun onAttach(session: CameraSession, device: UsbDevice) {
                 synchronized(sync) {
-                    if (usbDevice == null && device != other.usbDevice) {
+                    if (session.usbDevice == null && device != other.camera.usbDevice) {
                         selectDevice(device)
                     }
                 }
             }
 
-            override fun onDeviceOpen(device: UsbDevice, isFirstOpen: Boolean) {
-                if (DEBUG) Log.v(TAG, logPrefix + "onDeviceOpen:")
-                if (device == usbDevice) {
+            override fun onDeviceOpen(session: CameraSession, device: UsbDevice, isFirstOpen: Boolean) {
+                if (device == session.usbDevice) {
                     val param = UVCParam()
                     param.setQuirks(UVCCamera.UVC_QUIRK_FIX_BANDWIDTH)
-                    cameraHelper?.openCamera(param)
+                    session.cameraHelper?.openCamera(param)
                 }
             }
 
-            override fun onCameraOpen(device: UsbDevice) {
-                if (DEBUG) Log.v(TAG, logPrefix + "onCameraOpen:")
-                val helper = cameraHelper ?: return
-                if (device != usbDevice) return
-
-                helper.startPreview()
-
-                // auto aspect ratio
-                // 自动宽高比
-                helper.previewSize?.let {
-                    previewWidth = it.width
-                    previewHeight = it.height
-                }
-
-                previewSurface?.let { helper.addSurface(it, false) }
-
-                isCameraConnected = true
-            }
-
-            override fun onCameraClose(device: UsbDevice) {
-                if (DEBUG) Log.v(TAG, logPrefix + "onCameraClose:")
-                if (device == usbDevice) {
-                    previewSurface?.let { cameraHelper?.removeSurface(it) }
-
-                    isCameraConnected = false
-                }
-            }
-
-            override fun onDeviceClose(device: UsbDevice) {
-                if (DEBUG) Log.v(TAG, logPrefix + "onDeviceClose:")
-            }
-
-            override fun onDetach(device: UsbDevice) {
-                if (DEBUG) Log.v(TAG, logPrefix + "onDetach:")
-                if (device == usbDevice) {
-                    usbDevice = null
-                }
-            }
-
-            override fun onCancel(device: UsbDevice) {
-                if (DEBUG) Log.v(TAG, logPrefix + "onCancel:")
-                if (device == usbDevice) {
-                    usbDevice = null
-                }
-            }
+            override fun handlesDevice(session: CameraSession, device: UsbDevice): Boolean =
+                device == session.usbDevice
         }
     }
 
     private companion object {
-        private const val DEBUG = true
         private val TAG = MultiCameraActivity::class.java.simpleName
-
-        private const val DEFAULT_WIDTH = 640
-        private const val DEFAULT_HEIGHT = 480
     }
 }

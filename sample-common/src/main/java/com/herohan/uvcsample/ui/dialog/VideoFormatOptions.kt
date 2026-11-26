@@ -1,4 +1,4 @@
-package com.herohan.uvcapp.ui.dialog
+package com.herohan.uvcsample.ui.dialog
 
 import com.serenegiant.usb.Format
 import com.serenegiant.usb.Size

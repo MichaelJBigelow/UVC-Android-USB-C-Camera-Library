@@ -47,6 +47,7 @@ dependencies {
     implementation libs.xxPermissions
 
     implementation project(':libuvccamera')
+    implementation project(':sample-common')
 //    implementation 'com.herohan:UVCAndroid:1.0.13'
 
     // debugImplementation because LeakCanary should only run in debug builds.

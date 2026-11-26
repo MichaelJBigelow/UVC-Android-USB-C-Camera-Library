@@ -42,8 +42,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.herohan.uvcapp.R
-import com.herohan.uvcapp.ui.theme.RecordRed
-import com.herohan.uvcapp.ui.theme.UvcAppTheme
+import com.herohan.uvcsample.ui.theme.RecordRed
+import com.herohan.uvcsample.ui.theme.UvcSampleTheme
 import kotlinx.coroutines.delay
 import java.util.Locale
 
@@ -263,7 +263,7 @@ fun formatRecordTime(seconds: Long): String =
 @Preview
 @Composable
 private fun MainScreenDisconnectedPreview() {
-    UvcAppTheme {
+    UvcSampleTheme {
         MainScreen(
             isCameraConnected = false,
             isRecording = false,

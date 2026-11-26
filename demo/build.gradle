@@ -50,6 +50,7 @@ dependencies {
 //    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.8.1'
 
     implementation project(':libuvccamera')
+    implementation project(':sample-common')
 //    implementation 'com.herohan:UVCAndroid:1.0.13'
 
     testImplementation libs.junit

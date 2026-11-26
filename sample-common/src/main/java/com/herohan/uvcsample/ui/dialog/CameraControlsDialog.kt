@@ -1,4 +1,4 @@
-package com.herohan.uvcdemo.ui.dialog
+package com.herohan.uvcsample.ui.dialog
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
@@ -41,9 +41,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
-import com.herohan.uvcdemo.R
-import com.herohan.uvcdemo.ui.theme.DeepPink
-import com.herohan.uvcdemo.ui.theme.Gray400
+import com.herohan.uvcsample.R
+import com.herohan.uvcsample.ui.theme.DeepPink
+import com.herohan.uvcsample.ui.theme.Gray400
 import com.serenegiant.usb.UVCControl
 import kotlin.math.roundToInt
 

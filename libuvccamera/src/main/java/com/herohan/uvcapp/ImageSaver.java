@@ -17,32 +17,72 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 
+/**
+ * Encodes a captured picture as JPEG and saves it to the requested destination.
+ *
+ * 将拍摄的照片编码为 JPEG，并保存到指定的目标位置。
+ */
 public class ImageSaver implements Runnable {
     private static final String TAG = ImageSaver.class.getSimpleName();
 
     private static final int PENDING = 1;
     private static final int NOT_PENDING = 0;
 
-    // The image that was captured
-    // 捕获到的图像
-    private final ImageRawData mImage;
+    /**
+     * Encodes the captured picture as JPEG at the given quality.
+     *
+     * 以给定的质量将拍摄的照片编码为 JPEG。
+     */
+    private interface JpegEncoder {
+        byte[] encode(int jpegQuality) throws Exception;
+    }
+
+    // Encodes the image that was captured
+    // 编码捕获到的图像
+    private final JpegEncoder mEncoder;
     // The compression quality level of the output JPEG image
     // 输出 JPEG 图像的压缩质量等级
     private final int mJpegQuality;
     // The target location to save the image to.
     // 图像的保存目标位置。
     @NonNull
-    private final ImageCapture.OutputFileOptions mOutputFileOptions;
+    private final IImageCapture.OutputFileOptions mOutputFileOptions;
     // The callback to call on completion
     // 完成时调用的回调
     @NonNull
     private final OnImageSavedCallback mCallback;
 
+    /**
+     * Saves a picture read back from the renderer, as RGBA pixels.
+     *
+     * 保存从渲染器读回的照片(RGBA 像素)。
+     */
     public ImageSaver(ImageRawData image,
                       @IntRange(from = 1, to = 100) int jpegQuality,
-                      @NonNull ImageCapture.OutputFileOptions outputFileOptions,
+                      @NonNull IImageCapture.OutputFileOptions outputFileOptions,
                       @NonNull OnImageSavedCallback callback) {
-        this.mImage = image;
+        this(quality -> rawDataToJpeg(image, quality), jpegQuality, outputFileOptions, callback);
+    }
+
+    /**
+     * Saves the top-left [width] x [height] pixels of a bitmap read from an ImageReader, whose rows
+     * may be padded. The bitmap is recycled once it is encoded.
+     *
+     * 保存从 ImageReader 读取的位图左上角 [width] x [height] 的像素(其每行可能带有填充)。
+     * 位图在编码后会被回收。
+     */
+    public ImageSaver(Bitmap image, int width, int height,
+                      @IntRange(from = 1, to = 100) int jpegQuality,
+                      @NonNull IImageCapture.OutputFileOptions outputFileOptions,
+                      @NonNull OnImageSavedCallback callback) {
+        this(quality -> bitmapToJpeg(image, width, height, quality), jpegQuality, outputFileOptions, callback);
+    }
+
+    private ImageSaver(JpegEncoder encoder,
+                       @IntRange(from = 1, to = 100) int jpegQuality,
+                       @NonNull IImageCapture.OutputFileOptions outputFileOptions,
+                       @NonNull OnImageSavedCallback callback) {
+        this.mEncoder = encoder;
         this.mJpegQuality = jpegQuality;
         this.mOutputFileOptions = outputFileOptions;
         this.mCallback = callback;
@@ -56,7 +96,7 @@ public class ImageSaver implements Runnable {
         Uri outputUri = null;
 
         try {
-            byte[] data = imageToJpegByteArray(mImage, mJpegQuality);
+            byte[] data = encodeJpeg();
             if (data == null) {
                 saveError = SaveError.ENCODE_FAILED;
                 errorMessage = "Failed to encode mImage";
@@ -115,22 +155,48 @@ public class ImageSaver implements Runnable {
         if (saveError != null) {
             mCallback.onError(saveError, errorMessage, exception);
         } else {
-            mCallback.onImageSaved(new ImageCapture.OutputFileResults(outputUri));
+            mCallback.onImageSaved(new IImageCapture.OutputFileResults(outputUri));
         }
     }
 
-    private byte[] imageToJpegByteArray(ImageRawData image, int jpegQuality) {
-        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            final Bitmap bmp = Bitmap.createBitmap(
-                    image.getWidth(), image.getHeight(), Bitmap.Config.ARGB_8888);
-            bmp.copyPixelsFromBuffer(ByteBuffer.wrap(image.getData()));
-            bmp.compress(Bitmap.CompressFormat.JPEG, jpegQuality, out);
-            bmp.recycle();
-            return out.toByteArray();
+    /**
+     * @return the JPEG data, or null if encoding failed / JPEG 数据；编码失败时返回 null
+     */
+    private byte[] encodeJpeg() {
+        try {
+            return mEncoder.encode(mJpegQuality);
         } catch (Exception e) {
             Log.e(TAG, "failed to save file", e);
         }
         return null;
+    }
+
+    private static byte[] rawDataToJpeg(ImageRawData image, int jpegQuality) throws IOException {
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            final Bitmap bmp = Bitmap.createBitmap(
+                    image.getWidth(), image.getHeight(), Bitmap.Config.ARGB_8888);
+            try {
+                bmp.copyPixelsFromBuffer(ByteBuffer.wrap(image.getData()));
+                bmp.compress(Bitmap.CompressFormat.JPEG, jpegQuality, out);
+            } finally {
+                bmp.recycle();
+            }
+            return out.toByteArray();
+        }
+    }
+
+    private static byte[] bitmapToJpeg(Bitmap image, int width, int height, int jpegQuality) throws IOException {
+        Bitmap bmp = null;
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            bmp = Bitmap.createBitmap(image, 0, 0, width, height);
+            bmp.compress(Bitmap.CompressFormat.JPEG, jpegQuality, out);
+            return out.toByteArray();
+        } finally {
+            if (bmp != null && bmp != image) {
+                bmp.recycle();
+            }
+            image.recycle();
+        }
     }
 
     private boolean isSaveToMediaStore() {
@@ -232,7 +298,7 @@ public class ImageSaver implements Runnable {
 
     public interface OnImageSavedCallback {
 
-        void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults);
+        void onImageSaved(@NonNull IImageCapture.OutputFileResults outputFileResults);
 
         void onError(@NonNull SaveError saveError, @NonNull String message,
                      @Nullable Throwable cause);

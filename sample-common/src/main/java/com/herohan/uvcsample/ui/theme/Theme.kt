@@ -1,4 +1,4 @@
-package com.herohan.uvcdemo.ui.theme
+package com.herohan.uvcsample.ui.theme
 
 import android.content.res.Configuration
 import androidx.activity.ComponentActivity
@@ -11,8 +11,8 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-// Brand colors carried over from the previous XML theme (res/values/colors.xml).
-// 沿用自原 XML 主题(res/values/colors.xml)的品牌色。
+// Brand colors of the sample apps.
+// 示例应用的品牌色。
 val Purple200 = Color(0xFFBB86FC)
 val Purple500 = Color(0xFF6200EE)
 val Purple700 = Color(0xFF3700B3)
@@ -68,12 +68,12 @@ private val DarkColors = darkColorScheme(
 )
 
 /**
- * Material 3 theme of the demo app; follows the system light/dark setting.
+ * Material 3 theme shared by the sample apps; follows the system light/dark setting.
  *
- * 演示应用的 Material 3 主题；跟随系统的浅色/深色设置。
+ * 示例应用共用的 Material 3 主题；跟随系统的浅色/深色设置。
  */
 @Composable
-fun UvcDemoTheme(
+fun UvcSampleTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {

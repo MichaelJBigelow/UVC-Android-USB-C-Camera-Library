@@ -1,7 +1,6 @@
 package com.herohan.uvcapp.activity
 
 import android.content.Intent
-import android.graphics.SurfaceTexture
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
 import android.os.Bundle
@@ -12,23 +11,23 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.content.IntentCompat
-import com.herohan.uvcapp.CameraHelper
+import androidx.lifecycle.Lifecycle
 import com.herohan.uvcapp.ICameraHelper
 import com.herohan.uvcapp.IImageCapture
 import com.herohan.uvcapp.R
 import com.herohan.uvcapp.VideoCapture
 import com.herohan.uvcapp.ui.MainMenuAction
 import com.herohan.uvcapp.ui.MainScreen
-import com.herohan.uvcapp.ui.dialog.CameraControlsDialog
-import com.herohan.uvcapp.ui.dialog.DeviceListDialog
-import com.herohan.uvcapp.ui.dialog.VideoFormatDialog
-import com.herohan.uvcapp.ui.theme.UvcAppTheme
-import com.herohan.uvcapp.ui.theme.enableEdgeToEdgeBelowAppBar
 import com.herohan.uvcapp.utils.SaveHelper
+import com.herohan.uvcsample.CameraSession
+import com.herohan.uvcsample.ui.dialog.CameraControlsDialog
+import com.herohan.uvcsample.ui.dialog.DeviceListDialog
+import com.herohan.uvcsample.ui.dialog.VideoFormatDialog
+import com.herohan.uvcsample.ui.theme.UvcSampleTheme
+import com.herohan.uvcsample.ui.theme.enableEdgeToEdgeBelowAppBar
 import com.hjq.permissions.XXPermissions
 import com.hjq.permissions.permission.PermissionLists
 import com.serenegiant.opengl.renderer.MirrorMode
@@ -42,29 +41,33 @@ import java.io.File
 
 class MainActivity : ComponentActivity() {
 
-    private var cameraHelper: ICameraHelper? = null
+    /**
+     * The camera, kept from onCreate to onDestroy so that a recording survives the activity going
+     * to the background until onStop stops it.
+     *
+     * 相机，在 onCreate 到 onDestroy 期间保留，使录像在 Activity 进入后台后、
+     * 直到 onStop 将其停止之前得以继续。
+     */
+    private val camera = CameraSession(
+        owner = this,
+        callback = cameraCallback(),
+        activeState = Lifecycle.State.CREATED,
+        logTag = TAG,
+        configure = { helper ->
+            setCustomImageCaptureConfig(helper)
+            setCustomVideoCaptureConfig(helper)
+        },
+    )
 
-    private var usbDevice: UsbDevice? = null
+    private val cameraHelper: ICameraHelper? get() = camera.cameraHelper
+
+    private val isCameraConnected: Boolean get() = camera.isCameraOpened
 
     private var previewRotation = 0
 
-    /**
-     * Surface of the preview view, while it exists.
-     *
-     * 预览视图的 surface(存在期间有效)。
-     */
-    private var previewSurface: SurfaceTexture? = null
-
     // UI state, read by the composables in setContent.
     // UI 状态，由 setContent 中的 composable 读取。
-    private var isCameraConnected by mutableStateOf(false)
     private var isRecording by mutableStateOf(false)
-
-    /** Camera preview width / 相机预览宽度 */
-    private var previewWidth by mutableIntStateOf(DEFAULT_WIDTH)
-
-    /** Camera preview height / 相机预览高度 */
-    private var previewHeight by mutableIntStateOf(DEFAULT_HEIGHT)
 
     /**
      * [SystemClock.elapsedRealtime] when recording started, or null when not recording.
@@ -79,18 +82,16 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdgeBelowAppBar()
 
-        initCameraHelper()
-
         setContent {
-            UvcAppTheme {
+            UvcSampleTheme {
                 MainScreen(
                     isCameraConnected = isCameraConnected,
                     isRecording = isRecording,
-                    previewWidth = previewWidth,
-                    previewHeight = previewHeight,
+                    previewWidth = camera.previewWidth,
+                    previewHeight = camera.previewHeight,
                     recordStartTime = recordStartTime,
-                    onSurfaceAvailable = ::onPreviewSurfaceAvailable,
-                    onSurfaceDestroyed = ::onPreviewSurfaceDestroyed,
+                    onSurfaceAvailable = camera::addPreviewSurface,
+                    onSurfaceDestroyed = camera::removePreviewSurface,
                     onMenuAction = ::onMenuAction,
                     onTakePicture = ::requestTakePicture,
                     onToggleRecord = ::requestToggleVideoRecord,
@@ -106,7 +107,7 @@ class MainActivity : ComponentActivity() {
         if (intent.action == UsbManager.ACTION_USB_DEVICE_ATTACHED && !isCameraConnected) {
             val device = IntentCompat.getParcelableExtra(intent, UsbManager.EXTRA_DEVICE, UsbDevice::class.java)
             if (device != null) {
-                usbDevice = device
+                camera.usbDevice = device
                 selectDevice(device)
             }
         }
@@ -117,11 +118,6 @@ class MainActivity : ComponentActivity() {
         if (isRecording) {
             toggleVideoRecord(false)
         }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        clearCameraHelper()
     }
 
     @Composable
@@ -167,7 +163,7 @@ class MainActivity : ComponentActivity() {
         val helper = cameraHelper ?: return
         openDialog = MainDialog.DeviceList(
             devices = helper.deviceList.orEmpty(),
-            selectedDevice = if (isCameraConnected) usbDevice else null,
+            selectedDevice = if (isCameraConnected) camera.usbDevice else null,
         )
     }
 
@@ -175,7 +171,7 @@ class MainActivity : ComponentActivity() {
         if (isCameraConnected) {
             cameraHelper?.closeCamera()
         }
-        usbDevice = device
+        camera.usbDevice = device
         selectDevice(device)
     }
 
@@ -192,7 +188,7 @@ class MainActivity : ComponentActivity() {
             helper.stopPreview()
             helper.previewSize = size
             helper.startPreview()
-            resizePreviewView(size)
+            camera.resizePreview(size)
             // save selected preview size
             // 保存所选的预览尺寸
             setSavedPreviewSize(size)
@@ -209,37 +205,9 @@ class MainActivity : ComponentActivity() {
         cameraHelper?.let { it.previewConfig = it.previewConfig.setMirror(mirrorMode) }
     }
 
-    private fun initCameraHelper() {
-        if (cameraHelper == null) {
-            cameraHelper = CameraHelper().apply {
-                setStateCallback(stateCallback)
-                setCustomImageCaptureConfig(this)
-                setCustomVideoCaptureConfig(this)
-            }
-        }
-    }
-
-    private fun clearCameraHelper() {
-        if (DEBUG) Log.v(TAG, "clearCameraHelper:")
-        cameraHelper?.release()
-        cameraHelper = null
-    }
-
-    private fun onPreviewSurfaceAvailable(surface: SurfaceTexture) {
-        previewSurface = surface
-        cameraHelper?.addSurface(surface, false)
-    }
-
-    private fun onPreviewSurfaceDestroyed(surface: SurfaceTexture) {
-        if (previewSurface === surface) {
-            cameraHelper?.removeSurface(surface)
-            previewSurface = null
-        }
-    }
-
     private fun attachNewDevice(device: UsbDevice) {
-        if (usbDevice == null) {
-            usbDevice = device
+        if (camera.usbDevice == null) {
+            camera.usbDevice = device
             selectDevice(device)
         }
     }
@@ -250,26 +218,20 @@ class MainActivity : ComponentActivity() {
      * 在 Android 9+ 上，连接 UVC 相机需要 CAMERA 权限
      */
     private fun selectDevice(device: UsbDevice) {
-        if (DEBUG) Log.v(TAG, "selectDevice:device=" + device.deviceName)
-
         XXPermissions.with(this)
             .permission(PermissionLists.getCameraPermission())
             .request { grantedList, _ ->
                 if (grantedList.isEmpty()) {
                     return@request
                 }
-                isCameraConnected = false
-
                 // Try to obtain device permission through the UsbDevice object
                 // 通过UsbDevice对象，尝试获取设备权限
-                cameraHelper?.selectDevice(device)
+                camera.selectDevice(device)
             }
     }
 
-    private val stateCallback = object : ICameraHelper.StateCallback {
-        override fun onAttach(device: UsbDevice) {
-            if (DEBUG) Log.v(TAG, "onAttach:device=" + device.deviceName)
-
+    private fun cameraCallback() = object : CameraSession.Callback {
+        override fun onAttach(session: CameraSession, device: UsbDevice) {
             attachNewDevice(device)
         }
 
@@ -278,10 +240,8 @@ class MainActivity : ComponentActivity() {
          *
          * 获取 USB 设备权限后，连接 USB 相机
          */
-        override fun onDeviceOpen(device: UsbDevice, isFirstOpen: Boolean) {
-            if (DEBUG) Log.v(TAG, "onDeviceOpen:device=" + device.deviceName)
-
-            val helper = cameraHelper ?: return
+        override fun onDeviceOpen(session: CameraSession, device: UsbDevice, isFirstOpen: Boolean) {
+            val helper = session.cameraHelper ?: return
             helper.openCamera(getSavedPreviewSize())
             helper.setButtonCallback(IButtonCallback { button, state ->
                 Toast.makeText(
@@ -292,66 +252,16 @@ class MainActivity : ComponentActivity() {
             })
         }
 
-        override fun onCameraOpen(device: UsbDevice) {
-            if (DEBUG) Log.v(TAG, "onCameraOpen:device=" + device.deviceName)
-
-            val helper = cameraHelper ?: return
-            helper.startPreview()
-
-            // After connecting to the camera, you can get preview size of the camera
-            // 连接相机后，即可获取相机的预览尺寸
-            helper.previewSize?.let { resizePreviewView(it) }
-
-            previewSurface?.let { helper.addSurface(it, false) }
-
-            isCameraConnected = true
-        }
-
-        override fun onCameraClose(device: UsbDevice) {
-            if (DEBUG) Log.v(TAG, "onCameraClose:device=" + device.deviceName)
-
+        override fun onCameraClose(session: CameraSession, device: UsbDevice) {
             if (isRecording) {
                 toggleVideoRecord(false)
             }
-
-            // Detach the preview from the camera but keep it: it is attached again on the next onCameraOpen.
-            // 将预览从相机上移除但保留它：下次 onCameraOpen 时会重新挂接。
-            previewSurface?.let { cameraHelper?.removeSurface(it) }
-
-            isCameraConnected = false
             openDialog = null
         }
-
-        override fun onDeviceClose(device: UsbDevice) {
-            if (DEBUG) Log.v(TAG, "onDeviceClose:device=" + device.deviceName)
-        }
-
-        override fun onDetach(device: UsbDevice) {
-            if (DEBUG) Log.v(TAG, "onDetach:device=" + device.deviceName)
-
-            if (device == usbDevice) {
-                usbDevice = null
-            }
-        }
-
-        override fun onCancel(device: UsbDevice) {
-            if (DEBUG) Log.v(TAG, "onCancel:device=" + device.deviceName)
-
-            if (device == usbDevice) {
-                usbDevice = null
-            }
-        }
-    }
-
-    private fun resizePreviewView(size: Size) {
-        // Update the preview size; the preview keeps the camera's aspect ratio
-        // 更新预览尺寸；预览会保持与相机一致的宽高比
-        previewWidth = size.width
-        previewHeight = size.height
     }
 
     private fun savedPreviewSizeKey(): String =
-        getString(R.string.saved_preview_size) + USBMonitor.getProductKey(usbDevice)
+        getString(R.string.saved_preview_size) + USBMonitor.getProductKey(camera.usbDevice)
 
     // The preview size is stored as plain preference values, one per Size field.
     // 预览尺寸以普通的偏好设置值保存，Size 的每个字段对应一个值。
@@ -527,9 +437,5 @@ class MainActivity : ComponentActivity() {
 
     private companion object {
         private val TAG = MainActivity::class.java.simpleName
-        private const val DEBUG = true
-
-        private const val DEFAULT_WIDTH = 640
-        private const val DEFAULT_HEIGHT = 480
     }
 }

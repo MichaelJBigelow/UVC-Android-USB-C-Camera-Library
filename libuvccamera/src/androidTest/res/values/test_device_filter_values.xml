@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Values the test device filters refer to.
+     测试设备过滤器所引用的值。 -->
+<resources>
+    <integer name="test_vendor_id">4660</integer>
+    <bool name="test_exclude">true</bool>
+    <string name="test_product_name">Referenced Cam</string>
+</resources>

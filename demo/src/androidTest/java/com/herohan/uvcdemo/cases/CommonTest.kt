@@ -8,8 +8,11 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.test.espresso.Espresso
 import com.herohan.uvcdemo.EntryActivity
 import com.herohan.uvcdemo.RecordVideoActivity
+import com.herohan.uvcdemo.isUvcCameraAttached
 import com.herohan.uvcdemo.ui.TestTags
 import org.junit.After
+import org.junit.Assume.assumeTrue
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import kotlin.math.roundToLong
@@ -23,6 +26,17 @@ class CommonTest {
      */
     @get:Rule
     val composeTestRule = createAndroidComposeRule<EntryActivity>()
+
+    /**
+     * This soak test records from a real camera for about 30 minutes, so it is skipped when no UVC
+     * camera is attached (always on an emulator).
+     *
+     * 这项长时间测试会用真实相机录像约 30 分钟，因此在未连接 UVC 相机时(在模拟器上总是如此)跳过。
+     */
+    @Before
+    fun requireCamera() {
+        assumeTrue("needs a UVC camera", isUvcCameraAttached(composeTestRule.activity))
+    }
 
     @Test
     fun testMemoryLeak() {

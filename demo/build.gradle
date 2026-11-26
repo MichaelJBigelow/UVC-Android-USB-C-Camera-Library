@@ -65,6 +65,9 @@ dependencies {
 
     testImplementation libs.junit
     androidTestImplementation libs.androidx.test.junit
+    // GrantPermissionRule, so the tests needn't answer permission dialogs.
+    // GrantPermissionRule，使测试无需应答权限对话框。
+    androidTestImplementation libs.androidx.test.rules
     androidTestImplementation platform(libs.androidx.compose.bom)
     androidTestImplementation libs.androidx.compose.ui.test.junit4
     debugImplementation libs.androidx.compose.ui.test.manifest

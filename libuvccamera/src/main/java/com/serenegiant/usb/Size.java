@@ -82,10 +82,13 @@ public class Size implements Parcelable, Cloneable {
         } catch (CloneNotSupportedException e) {
             Log.w(TAG, e);
         }
+        // A Size read from a Parcel has no frame rate list
+        // 从 Parcel 读取的 Size 没有帧率列表
+        final List<Integer> fpsListCopy = fpsList != null ? new ArrayList<>(fpsList) : null;
         if (size == null) {
-            size = new Size(type, width, height, fps, new ArrayList<>(fpsList));
+            size = new Size(type, width, height, fps, fpsListCopy);
         } else {
-            size.fpsList = new ArrayList<>(fpsList);
+            size.fpsList = fpsListCopy;
         }
         return size;
     }

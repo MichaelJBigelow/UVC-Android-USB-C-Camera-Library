@@ -511,7 +511,7 @@ public final class DeviceFilter {
 							.equals(filter.mSerialNumber))) {
 				return false;
 			}
-			return (filter.isExclude != isExclude);
+			return (filter.isExclude == isExclude);
 		}
 		if (obj instanceof UsbDevice) {
 			final UsbDevice device = (UsbDevice) obj;

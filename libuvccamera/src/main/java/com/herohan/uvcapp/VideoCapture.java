@@ -491,11 +491,13 @@ public class VideoCapture {
                             "MediaMuxer creation failed!");
                 }
             }
-        } catch (IOException | IllegalArgumentException e) {
-            // Also catch IllegalArgumentException (thrown above and by MediaMuxer), so the
-            // session still ends and release() isn't deferred forever
-            // 同时捕获 IllegalArgumentException（上面以及 MediaMuxer 都会抛出），
-            // 确保会话仍然结束，release() 不会被无限期推迟
+        } catch (IOException | RuntimeException e) {
+            // Also catch runtime exceptions (IllegalArgumentException from above and MediaMuxer,
+            // SecurityException etc. from ContentResolver), so the session still ends, its final
+            // task resets the encoders and AudioRecord, and release() isn't deferred forever
+            // 同时捕获运行时异常（上面以及 MediaMuxer 抛出的 IllegalArgumentException，
+            // ContentResolver 抛出的 SecurityException 等），确保会话仍然结束，
+            // 由其最后一个任务重置编码器和 AudioRecord，release() 不会被无限期推迟
             mExecutor.execute(mRecordingFuture);
             postListener.onError(ERROR_MUXER, "MediaMuxer creation failed!", e);
             return;

@@ -40,6 +40,8 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.util.SparseArray;
 
+import androidx.annotation.GuardedBy;
+
 import com.serenegiant.utils.HandlerThreadHandler;
 import com.serenegiant.uvccamera.BuildConfig;
 
@@ -96,6 +98,13 @@ public final class USBMonitor {
      * 所有已检测到的设备的 key
      */
     private HashSet<String> mDetectedDeviceKeys = new HashSet<>();
+    /**
+     * true between register() and unregister(); the device check only re-posts itself while true
+     *
+     * 在 register() 与 unregister() 之间为 true；仅在为 true 时设备检查才会再次投递自身
+     */
+    @GuardedBy("this")
+    private boolean mDeviceCheckRunning = false;
 
     private final WeakReference<Context> mWeakContext;
     private final UsbManager mUsbManager;
@@ -275,9 +284,11 @@ public final class USBMonitor {
                     context.registerReceiver(mUsbReceiver, filter);
                 }
             }
-            // start connection check
-            // 开始连接检查
+            // start connection check (replacing any check still pending, so only one runs)
+            // 开始连接检查（替换任何仍在等待的检查，确保只有一个在运行）
             mDetectedDeviceKeys.clear();
+            mDeviceCheckRunning = true;
+            mAsyncHandler.removeCallbacks(mDeviceCheckRunnable);
             mAsyncHandler.postDelayed(mDeviceCheckRunnable, CHECK_DEVICE_RUNNABLE_DELAY);
         }
     }
@@ -288,9 +299,12 @@ public final class USBMonitor {
      * 注销 BroadcastReceiver
      */
     public synchronized void unregister() {
-        // remove Runnable of connection check
-        // 移除连接检查的 Runnable
+        // remove Runnable of connection check; a check that is running now sees
+        // mDeviceCheckRunning == false and doesn't re-post itself
+        // 移除连接检查的 Runnable；正在运行的检查会看到 mDeviceCheckRunning == false，
+        // 因而不会再次投递自身
         mDetectedDeviceKeys.clear();
+        mDeviceCheckRunning = false;
         if (!mDestroyed) {
             mAsyncHandler.removeCallbacks(mDeviceCheckRunnable);
         }
@@ -706,28 +720,49 @@ public final class USBMonitor {
         public void run() {
             if (mDestroyed) return;
             final List<UsbDevice> devices = getDeviceList();
+            // Query keys and permissions (binder calls to UsbManager) before taking the lock,
+            // so register()/unregister() on the main thread don't wait behind them
+            // 在获取锁之前查询 key 和权限（对 UsbManager 的 binder 调用），
+            // 以免主线程上的 register()/unregister() 需要等待这些调用
+            final int deviceCount = devices.size();
+            final String[] deviceKeys = new String[deviceCount];
+            final boolean[] permissions = new boolean[deviceCount];
+            for (int i = 0; i < deviceCount; i++) {
+                deviceKeys[i] = getDeviceKey(devices.get(i));
+                permissions[i] = hasPermission(devices.get(i));
+            }
             final HashSet<UsbDevice> needNotifyDevices = new HashSet<>();
             // Lock the monitor (not this Runnable), the same lock that guards the device key sets elsewhere
             // 锁定 USBMonitor（而不是这个 Runnable），与其他地方保护设备 key 集合的锁相同
             synchronized (USBMonitor.this) {
+                // unregister() ran while this check was in progress: stop here
+                // 本次检查进行期间已调用 unregister()：在此停止
+                if (!mDeviceCheckRunning) return;
+
                 final HashSet<String> oldHasPermissionKeys = mHasPermissionDeviceKeys;
                 final HashSet<String> oldDetectedKeys = mDetectedDeviceKeys;
                 mHasPermissionDeviceKeys = new HashSet<>();
                 mDetectedDeviceKeys = new HashSet<>();
-                for (UsbDevice device : devices) {
-                    boolean hasPermission = hasPermission(device);
-                    String deviceKey = getDeviceKey(device);
+                for (int i = 0; i < deviceCount; i++) {
+                    final boolean hasPermission = permissions[i];
+                    final String deviceKey = deviceKeys[i];
                     // if this device a new device or a old device that get permission just now
                     // 如果此设备是新设备，或者是刚刚获得权限的旧设备
                     if (!oldDetectedKeys.contains(deviceKey)
                             || (hasPermission && !oldHasPermissionKeys.contains(deviceKey))) {
                         // need to notify user
                         // 需要通知用户
-                        needNotifyDevices.add(device);
+                        needNotifyDevices.add(devices.get(i));
                     }
 
                     updateDeviceKeys(deviceKey, hasPermission);
                 }
+
+                // Re-post under the lock, replacing any copy register() posted meanwhile,
+                // so only one check is ever pending
+                // 在持有锁时再次投递，替换期间 register() 投递的副本，确保始终只有一个检查在等待
+                mAsyncHandler.removeCallbacks(this);
+                mAsyncHandler.postDelayed(this, CHECK_DEVICE_RUNNABLE_DELAY);
             }
             if (mOnDeviceConnectListener != null && needNotifyDevices.size() > 0) {
                 mListenerHandler.post(() -> {
@@ -738,7 +773,6 @@ public final class USBMonitor {
                     }
                 });
             }
-            mAsyncHandler.postDelayed(this, CHECK_DEVICE_RUNNABLE_DELAY);
         }
     };
 

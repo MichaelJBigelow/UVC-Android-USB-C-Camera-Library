@@ -76,11 +76,13 @@ public class ImageSaver2 implements Runnable {
                         saveError = SaveError.FILE_IO_FAILED;
                         errorMessage = "Failed to insert URI.";
                     } else {
+                        // Only true once the image is written and published
+                        // 仅在图片写入并发布之后才为 true
                         boolean saved = false;
                         try {
-                            saved = copyByteArrayToUri(data, outputUri);
-                            if (saved) {
+                            if (copyByteArrayToUri(data, outputUri)) {
                                 setUriNotPending(outputUri);
+                                saved = true;
                             } else {
                                 saveError = SaveError.FILE_IO_FAILED;
                                 errorMessage = "Failed to save to URI.";

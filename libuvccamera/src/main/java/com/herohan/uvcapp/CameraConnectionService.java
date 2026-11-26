@@ -24,6 +24,7 @@ import com.serenegiant.uvccamera.R;
 
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 class CameraConnectionService {
@@ -525,6 +526,15 @@ class CameraConnectionService {
         }
 
         private class MyOnDeviceConnectListener implements OnDeviceConnectListener {
+            /**
+             * Keys of devices whose close was already reported since they were last opened.
+             * Only used on the listener thread, where USBMonitor delivers every callback.
+             *
+             * 自上次打开以来已报告关闭的设备 key。
+             * 仅在监听线程上使用，USBMonitor 的所有回调都在该线程上分发。
+             */
+            private final HashSet<String> mClosedDeviceKeys = new HashSet<>();
+
             @Override
             public void onAttach(final UsbDevice device) {
                 if (DEBUG) Log.d(TAG, "OnDeviceConnectListener#onAttach:");
@@ -543,6 +553,7 @@ class CameraConnectionService {
             public void onDeviceOpen(final UsbDevice device, final UsbControlBlock ctrlBlock, final boolean createNew) {
                 if (DEBUG) Log.d(TAG, "OnDeviceConnectListener#onDeviceOpen:");
 
+                mClosedDeviceKeys.remove(getCameraKey(device));
                 CameraInternal camera = addCamera(device, ctrlBlock);
 
                 // register callback that listen onCameraOpen and onCameraClose state
@@ -607,8 +618,13 @@ class CameraConnectionService {
             public void onDeviceClose(final UsbDevice device, final UsbControlBlock ctrlBlock) {
                 if (DEBUG) Log.d(TAG, "OnDeviceConnectListener#onDeviceClose:");
 
+                // A device can be closed twice: the camera's cloned control block, then the
+                // monitor's own block on detach or release. Report it to the app only once.
+                // 设备可能会被关闭两次：先是相机克隆的控制块，然后是 USBMonitor 自己的控制块
+                // （在设备拔出或释放时）。只向应用报告一次。
+                final boolean firstClose = device == null || mClosedDeviceKeys.add(getCameraKey(device));
                 ICameraHelper.StateCallback callback = getStateCallback();
-                if (callback != null) {
+                if (firstClose && callback != null) {
                     try {
                         callback.onDeviceClose(device);
                     } catch (Exception e) {

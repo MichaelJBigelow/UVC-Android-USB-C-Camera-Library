@@ -28,27 +28,30 @@ plugins {
 
 android {
     namespace = 'com.serenegiant.uvccamera'
-    compileSdk = rootProject.ext.versionCompiler
+    compileSdk = libs.versions.compileSdk.get().toInteger()
 
     compileOptions {
-        sourceCompatibility = rootProject.ext.javaSourceCompatibility
-        targetCompatibility = rootProject.ext.javaTargetCompatibility
+        sourceCompatibility = JavaVersion.toVersion(libs.versions.java.get())
+        targetCompatibility = JavaVersion.toVersion(libs.versions.java.get())
     }
 
     defaultConfig {
-        minSdk = rootProject.ext.versionMin
-        targetSdk = rootProject.ext.versionTarget
+        minSdk = libs.versions.minSdk.get().toInteger()
+        targetSdk = libs.versions.targetSdk.get().toInteger()
 
         ndk {
             abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
         }
+
+        // Keep rules applied to every app that uses the library, in all build types.
+        // 应用于所有使用本库的应用(所有构建类型)的保留规则。
+        consumerProguardFiles 'consumer-rules.pro'
     }
 
     buildTypes {
         release {
             minifyEnabled = false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            consumerProguardFiles 'consumer-rules.pro'
         }
     }
     buildFeatures {
@@ -67,9 +70,8 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation libs.androidx.core
-    implementation libs.androidx.legacy.support.v4
-    implementation libs.androidx.appcompat
+    // The library only uses androidx.annotation; keep it light for the apps that depend on it.
+    // 本库只使用 androidx.annotation；保持精简，避免给依赖它的应用带来多余的库。
     implementation libs.androidx.annotation
 }
 

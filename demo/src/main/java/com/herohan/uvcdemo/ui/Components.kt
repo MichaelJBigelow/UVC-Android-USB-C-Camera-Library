@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.herohan.uvcdemo.R
+import com.herohan.uvcsample.ui.aspectRatioOf
 
 /**
  * Background behind the camera previews.
@@ -123,14 +124,6 @@ fun CameraSurfacePreview(
         modifier = modifier.aspectRatio(aspectRatioOf(previewWidth, previewHeight)),
     )
 }
-
-/**
- * Width-to-height ratio of a preview size, falling back to 4:3 for an invalid size.
- *
- * 预览尺寸的宽高比；尺寸无效时回退为 4:3。
- */
-fun aspectRatioOf(width: Int, height: Int): Float =
-    if (width > 0 && height > 0) width.toFloat() / height else 4f / 3f
 
 /**
  * A row of [cellCount] 4:3 cells, each [cellFraction] of the available width, with equal gaps

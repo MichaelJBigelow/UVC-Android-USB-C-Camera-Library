@@ -3,7 +3,6 @@ package com.herohan.uvcapp;
 import android.Manifest;
 import android.content.ContentResolver;
 import android.content.ContentValues;
-import android.content.Context;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaCodec;
@@ -11,7 +10,6 @@ import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
 import android.media.MediaMuxer;
 import android.media.MediaRecorder;
-import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -31,8 +29,6 @@ import androidx.annotation.UiThread;
 import androidx.annotation.VisibleForTesting;
 
 import com.serenegiant.usb.Size;
-import com.serenegiant.utils.UVCUtils;
-import com.serenegiant.utils.UriHelper;
 
 import java.io.File;
 import java.io.FileDescriptor;
@@ -522,7 +518,7 @@ public class VideoCapture {
                 () -> {
                     boolean errorOccurred = videoEncode(postListener, outputFileOptions);
                     if (!errorOccurred) {
-                        scanMediaFile(mSavedVideoUri);
+                        MediaScanHelper.scanMediaFile(mSavedVideoUri);
                         postListener.onVideoSaved(new OutputFileResults(mSavedVideoUri));
                         mSavedVideoUri = null;
                     }
@@ -1267,22 +1263,6 @@ public class VideoCapture {
         }
 
         return mediaMuxer;
-    }
-
-    private void scanMediaFile(final Uri uri) {
-        if (uri == null) {
-            return;
-        }
-        final Context context = UVCUtils.getApplication();
-        String path = UriHelper.getPath(context, uri);
-
-        try {
-            // invoke scanFile to update size of media file in MediaStore
-            // 调用 scanFile 以更新 MediaStore 中媒体文件的大小
-            MediaScannerConnection.scanFile(context, new String[]{path}, null, null);
-        } catch (final Exception e) {
-            Log.e(TAG, "MediaScannerConnection:", e);
-        }
     }
 
     /**

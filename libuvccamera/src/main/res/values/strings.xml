@@ -22,10 +22,6 @@
   -->
 <resources>
     <string name="app_name">usb camera</string>
-    <string name="select">Select USB Web Camera</string>
-    <string name="camera">Camera</string>
-    <string name="refresh">Refresh</string>
-    <string name="no_device">No USB camera found</string>
     <string name="error_busy_need_replug">The device is occupied. Please re-plug the device.</string>
     <string name="error_unknown_need_replug">Unknown error occurred. Please re-plug the device.</string>
     <string name="error_messge_camera_open_unknown">Unknown error occurred  when open camera.</string>

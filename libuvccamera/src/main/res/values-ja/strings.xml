@@ -22,10 +22,6 @@
   ~  may have a different license, see the respective files.
   -->
 <resources>
-    <string name="select">USB カメラを選択してください</string>
-    <string name="camera">カメラ</string>
-    <string name="refresh">更新</string>
-    <string name="no_device">USBカメラが見つかりません</string>
     <string name="error_busy_need_replug">デバイスが占有されています。 もう一度デバイスを抜き差ししてください！ </string>
     <string name="error_unknown_need_replug">不明なエラーが発生しました。 もう一度デバイスを抜き差ししてください！</string>
     <string name="error_messge_camera_open_unknown">デバイスが占有されています。 </string>

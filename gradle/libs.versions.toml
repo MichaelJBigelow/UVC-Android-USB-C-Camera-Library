@@ -4,6 +4,15 @@
 # 构建脚本通过 libs.<别名> 和 libs.plugins.<别名> 引用这些条目。
 
 [versions]
+# Android SDK levels shared by every module. targetSdk follows Google Play's target API requirement.
+# 所有模块共用的 Android SDK 级别。targetSdk 遵循 Google Play 的目标 API 级别要求。
+compileSdk = "37"
+targetSdk = "36"
+minSdk = "29"
+# Java language level for all modules. The build runs on JDK 25; Android bytecode targets Java 17.
+# 所有模块的 Java 语言级别。构建在 JDK 25 上运行；Android 字节码以 Java 17 为目标。
+java = "17"
+
 agp = "9.5.1"
 # Kotlin Gradle plugin and the matching Compose compiler plugin (they share one version).
 # Kotlin Gradle 插件及与之匹配的 Compose 编译器插件(二者版本一致)。
@@ -12,25 +21,17 @@ mavenPublish = "0.37.0"
 
 androidxActivity = "1.13.0"
 androidxAnnotation = "1.11.0"
-androidxAppcompat = "1.8.0"
 androidxComposeBom = "2026.09.00"
 androidxCore = "1.19.1"
-androidxLegacySupport = "1.0.0"
 androidxTestEspresso = "3.7.0"
 androidxTestJunit = "1.3.0"
-androidxTestUiautomator = "2.4.1"
-gson = "2.15.0"
 junit = "4.13.2"
-takt = "2.1.1"
 xxPermissions = "28.3"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidxActivity" }
 androidx-annotation = { module = "androidx.annotation:annotation", version.ref = "androidxAnnotation" }
-androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidxAppcompat" }
 androidx-core = { module = "androidx.core:core", version.ref = "androidxCore" }
-androidx-legacy-support-v4 = { module = "androidx.legacy:legacy-support-v4", version.ref = "androidxLegacySupport" }
-gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 
 # Jetpack Compose. The BOM sets the version of every androidx.compose library below.
 # Jetpack Compose。BOM 统一设定下列所有 androidx.compose 库的版本。
@@ -41,17 +42,12 @@ androidx-compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4
 androidx-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
 androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
-takt = { module = "jp.wasabeef:takt", version.ref = "takt" }
-takt-no-op = { module = "jp.wasabeef:takt-no-op", version.ref = "takt" }
 xxPermissions = { module = "com.github.getActivity:XXPermissions", version.ref = "xxPermissions" }
 
 # Test libraries
 # 测试库
-androidx-test-espresso-contrib = { module = "androidx.test.espresso:espresso-contrib", version.ref = "androidxTestEspresso" }
 androidx-test-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "androidxTestEspresso" }
-androidx-test-espresso-intents = { module = "androidx.test.espresso:espresso-intents", version.ref = "androidxTestEspresso" }
 androidx-test-junit = { module = "androidx.test.ext:junit", version.ref = "androidxTestJunit" }
-androidx-test-uiautomator = { module = "androidx.test.uiautomator:uiautomator", version.ref = "androidxTestUiautomator" }
 junit = { module = "junit:junit", version.ref = "junit" }
 
 [plugins]

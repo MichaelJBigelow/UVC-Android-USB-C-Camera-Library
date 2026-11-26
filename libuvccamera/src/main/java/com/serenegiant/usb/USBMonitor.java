@@ -257,29 +257,27 @@ public final class USBMonitor {
             if (DEBUG) Log.i(TAG, "register:");
             final Context context = mWeakContext.get();
             if (context != null) {
-                int flags = 0;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-                    // Starting with Build. VERSION_CODES. UPSIDE_DOWN_CAKE, for apps that target SDK Build. VERSION_CODES. UPSIDE_DOWN_CAKE or higher,
-                    // creation of a PendingIntent with FLAG_MUTABLE and an implicit Intent within will throw an IllegalArgumentException for security reasons.
-                    // To bypass this check, use FLAG_ALLOW_UNSAFE_IMPLICIT_INTENT when creating a PendingIntent
-                    // 从 Build.VERSION_CODES.UPSIDE_DOWN_CAKE 开始，对于目标 SDK 为 Build.VERSION_CODES.UPSIDE_DOWN_CAKE 或更高版本的应用，
-                    // 出于安全原因，使用 FLAG_MUTABLE 并包含隐式 Intent 来创建 PendingIntent 将抛出 IllegalArgumentException。
-                    // 要绕过此检查，请在创建 PendingIntent 时使用 FLAG_ALLOW_UNSAFE_IMPLICIT_INTENT
-                    flags = PendingIntent.FLAG_MUTABLE | PendingIntent.FLAG_ALLOW_UNSAFE_IMPLICIT_INTENT;
-                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    // Up until Build.VERSION_CODES.R, PendingIntents are assumed to be mutable by default, unless FLAG_IMMUTABLE is set.
-                    // Starting with Build.VERSION_CODES.S, it will be required to explicitly specify the mutability of PendingIntents on creation with either (@link #FLAG_IMMUTABLE} or FLAG_MUTABLE.
-                    // 直到 Build.VERSION_CODES.R，除非设置了 FLAG_IMMUTABLE，否则 PendingIntent 默认被视为可变。
-                    // 从 Build.VERSION_CODES.S 开始，创建 PendingIntent 时必须通过 (@link #FLAG_IMMUTABLE} 或 FLAG_MUTABLE 显式指定其可变性。
-                    flags = PendingIntent.FLAG_MUTABLE;
-                }
-                mPermissionIntent = PendingIntent.getBroadcast(context, 0, new Intent(ACTION_USB_PERMISSION), flags);
+                // The USB service fills in the permission result, so the PendingIntent must be mutable
+                // (FLAG_MUTABLE exists from Build.VERSION_CODES.S; before that PendingIntents are mutable by default).
+                // The Intent names this app's package: a mutable PendingIntent with an implicit Intent is refused
+                // when targeting Build.VERSION_CODES.UPSIDE_DOWN_CAKE or higher, and only this app can then send it.
+                // USB 服务会填入权限结果，因此 PendingIntent 必须是可变的
+                // (FLAG_MUTABLE 从 Build.VERSION_CODES.S 开始提供；在此之前 PendingIntent 默认可变)。
+                // Intent 指定了本应用的包名：以 Build.VERSION_CODES.UPSIDE_DOWN_CAKE 或更高版本为目标时，
+                // 含隐式 Intent 的可变 PendingIntent 会被拒绝；而且这样只有本应用能发送它。
+                final int flags = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ? PendingIntent.FLAG_MUTABLE : 0;
+                final Intent permissionIntent = new Intent(ACTION_USB_PERMISSION).setPackage(context.getPackageName());
+                mPermissionIntent = PendingIntent.getBroadcast(context, 0, permissionIntent, flags);
                 final IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
                 // ACTION_USB_DEVICE_ATTACHED never comes on some devices so it should not be added here
                 // 在某些设备上 ACTION_USB_DEVICE_ATTACHED 永远不会收到，因此不应在此处添加
                 filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
+                // Not exported: the permission result is sent through this app's own PendingIntent and
+                // ACTION_USB_DEVICE_DETACHED is a system broadcast, so other apps can't fake either.
+                // 不导出：权限结果通过本应用自己的 PendingIntent 发送，ACTION_USB_DEVICE_DETACHED 是系统广播，
+                // 因此其他应用无法伪造这两者。
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    context.registerReceiver(mUsbReceiver, filter, Context.RECEIVER_EXPORTED);
+                    context.registerReceiver(mUsbReceiver, filter, Context.RECEIVER_NOT_EXPORTED);
                 } else {
                     context.registerReceiver(mUsbReceiver, filter);
                 }

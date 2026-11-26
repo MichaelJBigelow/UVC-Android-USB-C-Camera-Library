@@ -7,12 +7,12 @@ plugins {
 
 android {
     namespace = 'com.herohan.uvcapp'
-    compileSdk = rootProject.ext.versionCompiler
+    compileSdk = libs.versions.compileSdk.get().toInteger()
 
     defaultConfig {
         applicationId = "com.herohan.uvcapp"
-        minSdk = rootProject.ext.versionMin
-        targetSdk = rootProject.ext.versionTarget
+        minSdk = libs.versions.minSdk.get().toInteger()
+        targetSdk = libs.versions.targetSdk.get().toInteger()
         versionCode = 3
         versionName = "1.0.2"
 
@@ -26,8 +26,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = rootProject.ext.javaSourceCompatibility
-        targetCompatibility = rootProject.ext.javaTargetCompatibility
+        sourceCompatibility = JavaVersion.toVersion(libs.versions.java.get())
+        targetCompatibility = JavaVersion.toVersion(libs.versions.java.get())
     }
     buildFeatures {
         compose = true
@@ -38,19 +38,16 @@ dependencies {
 
     implementation platform(libs.androidx.compose.bom)
     implementation libs.androidx.activity.compose
+    implementation libs.androidx.core
     implementation libs.androidx.compose.material3
     implementation libs.androidx.compose.ui
     implementation libs.androidx.compose.ui.tooling.preview
     debugImplementation libs.androidx.compose.ui.tooling
 
-    implementation libs.gson
-
     implementation libs.xxPermissions
 
-    releaseImplementation libs.takt.no.op
-    debugImplementation libs.takt
-
     implementation project(':libuvccamera')
+    implementation project(':sample-common')
 //    implementation 'com.herohan:UVCAndroid:1.0.13'
 
     // debugImplementation because LeakCanary should only run in debug builds.

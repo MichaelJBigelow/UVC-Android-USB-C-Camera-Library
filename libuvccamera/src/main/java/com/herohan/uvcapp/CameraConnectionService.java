@@ -7,7 +7,6 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Log;
 
-import com.herohan.uvcapp.utils.Watchdog;
 import com.serenegiant.usb.DeviceFilter;
 import com.serenegiant.usb.Format;
 import com.serenegiant.usb.IButtonCallback;
@@ -67,7 +66,6 @@ class CameraConnectionService {
             mListenerHandlerThread = new HandlerThread(LOG_PREFIX + hashCode());
             mListenerHandlerThread.start();
             mListenerHandler = new Handler(mListenerHandlerThread.getLooper());
-//            Watchdog.getInstance().addThread(mListenerHandler);
 
             mUSBMonitor = new USBMonitor(
                     UVCUtils.getApplication(),
@@ -84,7 +82,7 @@ class CameraConnectionService {
                 mLastCameraKey = null;
                 cameraInternal = mCameras.get(key);
                 if (cameraInternal == null) {
-                    cameraInternal = new CameraInternal(UVCUtils.getApplication(), ctrlBlock, device.getVendorId(), device.getProductId());
+                    cameraInternal = new CameraInternal(ctrlBlock, device.getVendorId(), device.getProductId());
                     mCameras.put(key, cameraInternal);
                 } else {
                     if (DEBUG) Log.d(TAG, "Camera already exist");
@@ -517,7 +515,6 @@ class CameraConnectionService {
                 mUSBMonitor = null;
             }
 
-//            Watchdog.getInstance().removeThread(mListenerHandler);
             mListenerHandlerThread.quitSafely();
 
             if (mWeakStateCallback != null) {

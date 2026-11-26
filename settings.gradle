@@ -40,3 +40,4 @@ plugins {
 include ':libuvccamera'
 include ':app'
 include ':demo'
+include ':sample-common'

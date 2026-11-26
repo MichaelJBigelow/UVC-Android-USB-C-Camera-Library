@@ -1,69 +1,39 @@
 package com.herohan.uvcapp;
 
 import android.annotation.SuppressLint;
-import android.content.ContentResolver;
-import android.content.ContentValues;
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.PixelFormat;
 import android.media.Image;
 import android.media.ImageReader;
-import android.media.MediaScannerConnection;
-import android.net.Uri;
-import android.os.Handler;
-import android.os.Looper;
-import android.provider.MediaStore;
-import android.util.Log;
 
-import androidx.annotation.IntDef;
-import androidx.annotation.IntRange;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.serenegiant.usb.Size;
-import com.serenegiant.utils.UVCUtils;
-import com.serenegiant.utils.UriHelper;
 
-import java.io.File;
-import java.io.OutputStream;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
 
-public class ImageCapture2 implements IImageCapture {
+/**
+ * Takes pictures by attaching an {@link ImageReader} to the camera
+ * ({@link IImageCapture#CAPTURE_STRATEGY_IMAGE_READER}).
+ *
+ * 通过将 {@link ImageReader} 挂接到相机来拍照({@link IImageCapture#CAPTURE_STRATEGY_IMAGE_READER})。
+ */
+public class ImageCapture2 extends BaseImageCapture {
 
-    private static final String TAG = ImageCapture.class.getSimpleName();
+    private static final String TAG = ImageCapture2.class.getSimpleName();
 
-    private WeakReference<ICameraInternal> mCameraInternalWeak;
-    private ImageCaptureConfig mConfig;
+    private final WeakReference<ICameraInternal> mCameraInternalWeak;
     private Size mResolution;
-
-    private Handler mMainHandler;
-
-    private ExecutorService mExecutor;
 
     private ImageReader mImageReader;
 
     ImageCapture2(ICameraInternal cameraInternal,
                   ImageCaptureConfig config,
                   Size resolution) {
+        super(config, TAG);
         this.mCameraInternalWeak = new WeakReference<>(cameraInternal);
-        this.mConfig = (ImageCaptureConfig) config.clone();
         this.mResolution = resolution;
-        this.mMainHandler = new Handler(Looper.getMainLooper());
-        this.mExecutor = Executors.newFixedThreadPool(1, new ThreadFactory() {
-            private final AtomicInteger mId = new AtomicInteger(0);
-
-            @Override
-            public Thread newThread(Runnable r) {
-                return new Thread(r, TAG + "image_capture" + mId.getAndIncrement());
-            }
-        });
 
         initImageReader();
     }
@@ -79,41 +49,9 @@ public class ImageCapture2 implements IImageCapture {
         }
     }
 
-    @Override
-    public void setConfig(ImageCaptureConfig config) {
-        this.mConfig = (ImageCaptureConfig) config.clone();
-    }
-
     void setResolution(Size resolution) {
         this.mResolution = resolution;
         initImageReader();
-    }
-
-    /**
-     * Gets the JPEG quality .
-     *
-     * <p> Range is 1-100; larger is higher quality.
-     *
-     * <p> 获取 JPEG 质量。
-     *
-     * <p> 范围为 1-100；数值越大，质量越高。
-     *
-     * @return Compression quality of the captured JPEG image. / 所拍摄 JPEG 图像的压缩质量。
-     */
-    @IntRange(from = 1, to = 100)
-    int getJpegQualityInternal() {
-        if (mConfig.hasJpegCompressionQuality()) {
-            return mConfig.getJpegCompressionQuality();
-        }
-
-        switch (mConfig.getCaptureMode()) {
-            case CAPTURE_MODE_MAXIMIZE_QUALITY:
-                return JPEG_QUALITY_MAXIMIZE_QUALITY_MODE;
-            case CAPTURE_MODE_MINIMIZE_LATENCY:
-                return JPEG_QUALITY_MINIMIZE_LATENCY_MODE;
-            default:
-                throw new IllegalStateException("CaptureMode " + mConfig.getCaptureMode() + " is invalid");
-        }
     }
 
     void clearImageReader() {
@@ -143,34 +81,7 @@ public class ImageCapture2 implements IImageCapture {
     public void takePicture(
             final @NonNull OutputFileOptions outputFileOptions,
             final @NonNull OnImageCaptureCallback imageSavedCallback) {
-        // Convert the ImageSaver2.OnImageSavedCallback to ImageCapture.OnImageSavedCallback
-        // 将 ImageSaver2.OnImageSavedCallback 转换为 ImageCapture.OnImageSavedCallback
-        ImageSaver2.OnImageSavedCallback imageSavedCallbackWrapper = new ImageSaver2.OnImageSavedCallback() {
-            @Override
-            public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
-                scanMediaFile(outputFileResults.getSavedUri());
-
-                mMainHandler.post(() -> imageSavedCallback.onImageSaved(outputFileResults));
-            }
-
-            @Override
-            public void onError(@NonNull ImageSaver2.SaveError error, @NonNull String message, @Nullable Throwable cause) {
-                mMainHandler.post(() -> {
-                    @ImageCapture.ImageCaptureError int imageCaptureError = ERROR_UNKNOWN;
-                    switch (error) {
-                        case FILE_IO_FAILED:
-                            imageCaptureError = ERROR_FILE_IO;
-                            break;
-                        default:
-                            // Keep the imageCaptureError as UNKNOWN_ERROR
-                            // 保持 imageCaptureError 为 UNKNOWN_ERROR
-                            break;
-                    }
-
-                    imageSavedCallback.onError(imageCaptureError, message, cause);
-                });
-            }
-        };
+        ImageSaver.OnImageSavedCallback imageSavedCallbackWrapper = wrapCallback(imageSavedCallback);
 
         ICameraInternal cameraInternal = mCameraInternalWeak.get();
 
@@ -213,7 +124,7 @@ public class ImageCapture2 implements IImageCapture {
                                     height, Bitmap.Config.ARGB_8888);
                             bmp.copyPixelsFromBuffer(buffer);
 
-                            mExecutor.execute(new ImageSaver2(bmp, width, height, outputJpegQuality, outputFileOptions,
+                            mExecutor.execute(new ImageSaver(bmp, width, height, outputJpegQuality, outputFileOptions,
                                     imageSavedCallbackWrapper));
                         }
                     }
@@ -235,30 +146,4 @@ public class ImageCapture2 implements IImageCapture {
             }, null);
         }
     }
-
-    private void scanMediaFile(final Uri uri) {
-        if (uri == null) {
-            return;
-        }
-        final Context context = UVCUtils.getApplication();
-        String path = UriHelper.getPath(context, uri);
-
-        try {
-            // invoke scanFile to update size of media file in MediaStore
-            // 调用 scanFile 以更新 MediaStore 中媒体文件的大小
-            MediaScannerConnection.scanFile(context, new String[]{path}, null, null);
-        } catch (final Exception e) {
-            Log.e(TAG, "MediaScannerConnection:", e);
-        }
-    }
-
-    @Override
-    public void release() {
-        if (mExecutor != null) {
-            mExecutor.shutdown();
-            mExecutor = null;
-        }
-    }
-
-
 }

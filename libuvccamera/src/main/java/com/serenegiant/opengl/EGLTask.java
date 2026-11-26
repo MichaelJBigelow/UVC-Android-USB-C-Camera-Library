@@ -47,15 +47,15 @@ public abstract class EGLTask extends Thread {
     }
 
     protected void init(final EGLBase.IContext sharedContext, final int flags, final int maxClientVersion) {
-        if (sharedContext == null) {
-            final int stencilBits =
-                    (flags & EGL_FLAG_STENCIL_1BIT) == EGL_FLAG_STENCIL_1BIT ? 1
-                            : ((flags & EGL_FLAG_STENCIL_8BIT) == EGL_FLAG_STENCIL_8BIT ? 8 : 0);
-            mEgl = EGLBase.createFrom(sharedContext, maxClientVersion,
-                    (flags & EGL_FLAG_DEPTH_BUFFER) == EGL_FLAG_DEPTH_BUFFER,
-                    stencilBits,
-                    (flags & EGL_FLAG_RECORDABLE) == EGL_FLAG_RECORDABLE);
-        }
+        // Always create the EGL context; createFrom shares sharedContext when it is non-null
+        // 始终创建 EGL 上下文；当 sharedContext 不为 null 时，createFrom 会与其共享
+        final int stencilBits =
+                (flags & EGL_FLAG_STENCIL_1BIT) == EGL_FLAG_STENCIL_1BIT ? 1
+                        : ((flags & EGL_FLAG_STENCIL_8BIT) == EGL_FLAG_STENCIL_8BIT ? 8 : 0);
+        mEgl = EGLBase.createFrom(sharedContext, maxClientVersion,
+                (flags & EGL_FLAG_DEPTH_BUFFER) == EGL_FLAG_DEPTH_BUFFER,
+                stencilBits,
+                (flags & EGL_FLAG_RECORDABLE) == EGL_FLAG_RECORDABLE);
     }
 
     private void initEglSurface() {

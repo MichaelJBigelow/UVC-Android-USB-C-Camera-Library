@@ -150,7 +150,23 @@ public class VideoCapture {
     MediaCodec mVideoEncoder;
     private MediaCodec mAudioEncoder;
     private FutureTask<String> mRecordingFuture = null;
-    private final AtomicBoolean mRecordingWaitRelease = new AtomicBoolean(false);
+    /**
+     * Guards {@link #mRecordingSessionActive} and {@link #mRecordingWaitRelease}, so release()
+     * either frees resources itself or leaves it to the session's final task, never neither.
+     *
+     * 保护 {@link #mRecordingSessionActive} 和 {@link #mRecordingWaitRelease}，确保 release()
+     * 要么自己释放资源，要么交给录制会话的最后一个任务释放，不会两者都不做。
+     */
+    private final Object mReleaseLock = new Object();
+    /**
+     * True from the start of a recording session until its final task (mRecordingFuture) has run.
+     *
+     * 从录制会话开始到其最后一个任务（mRecordingFuture）执行完毕期间为 true。
+     */
+    @GuardedBy("mReleaseLock")
+    private boolean mRecordingSessionActive = false;
+    @GuardedBy("mReleaseLock")
+    private boolean mRecordingWaitRelease = false;
 
     /**
      * The muxer that writes the encoding data to file.
@@ -397,7 +413,11 @@ public class VideoCapture {
                 Log.i(TAG,
                         "AudioRecorder cannot start recording, disable audio." + e.getMessage());
                 mIsAudioEnabled.set(false);
-                releaseAudioInputResource();
+                // Only release this session's AudioRecord; the audio thread and encoder are
+                // reused by later recordings, and setupEncoder() creates a new AudioRecord.
+                // 只释放本次会话的 AudioRecord；音频线程和编码器会被之后的录制复用，
+                // setupEncoder() 会创建新的 AudioRecord。
+                releaseAudioRecorder();
             }
 
             // Gets the AudioRecorder's state
@@ -407,10 +427,13 @@ public class VideoCapture {
                         "AudioRecorder startRecording failed - incorrect state: "
                                 + mAudioRecorder.getRecordingState());
                 mIsAudioEnabled.set(false);
-                releaseAudioInputResource();
+                releaseAudioRecorder();
             }
         }
 
+        synchronized (mReleaseLock) {
+            mRecordingSessionActive = true;
+        }
         mRecordingFuture = new FutureTask<>(new Callable<String>() {
             @Override
             public String call() throws Exception {
@@ -418,21 +441,27 @@ public class VideoCapture {
                     mRendererHolderWeak.get().removeSlaveSurface(mCameraSurface.hashCode());
                 }
 
-                if (mRecordingWaitRelease.get()) {
-                    mRecordingWaitRelease.set(false);
-                    releaseResources();
-                    mIsRecording = false;
-                    return "releaseResources";
-                }
+                synchronized (mReleaseLock) {
+                    try {
+                        if (mRecordingWaitRelease) {
+                            mRecordingWaitRelease = false;
+                            releaseResources();
+                            mIsRecording = false;
+                            return "releaseResources";
+                        }
 
-                // Do the setup of the videoEncoder at the end of video recording instead of at the
-                // start of recording because it requires attaching a new Surface. This causes a
-                // glitch so we don't want that to incur latency at the start of capture.
-                // 在视频录制结束时而不是录制开始时设置 videoEncoder，
-                // 因为这需要附加一个新的 Surface。这会导致画面卡顿，
-                // 所以我们不希望它在采集开始时造成延迟。
-                setupEncoder();
-                return "startRecording";
+                        // Do the setup of the videoEncoder at the end of video recording instead of at the
+                        // start of recording because it requires attaching a new Surface. This causes a
+                        // glitch so we don't want that to incur latency at the start of capture.
+                        // 在视频录制结束时而不是录制开始时设置 videoEncoder，
+                        // 因为这需要附加一个新的 Surface。这会导致画面卡顿，
+                        // 所以我们不希望它在采集开始时造成延迟。
+                        setupEncoder();
+                        return "startRecording";
+                    } finally {
+                        mRecordingSessionActive = false;
+                    }
+                }
             }
         });
 
@@ -462,7 +491,13 @@ public class VideoCapture {
                             "MediaMuxer creation failed!");
                 }
             }
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
+            // Also catch runtime exceptions (IllegalArgumentException from above and MediaMuxer,
+            // SecurityException etc. from ContentResolver), so the session still ends, its final
+            // task resets the encoders and AudioRecord, and release() isn't deferred forever
+            // 同时捕获运行时异常（上面以及 MediaMuxer 抛出的 IllegalArgumentException，
+            // ContentResolver 抛出的 SecurityException 等），确保会话仍然结束，
+            // 由其最后一个任务重置编码器和 AudioRecord，release() 不会被无限期推迟
             mExecutor.execute(mRecordingFuture);
             postListener.onError(ERROR_MUXER, "MediaMuxer creation failed!", e);
             return;
@@ -528,10 +563,14 @@ public class VideoCapture {
     public void release() {
         stopRecording();
 
-        if (mRecordingFuture != null) {
-            mRecordingWaitRelease.set(true);
-        } else {
-            releaseResources();
+        synchronized (mReleaseLock) {
+            if (mRecordingSessionActive) {
+                // A recording is still finishing; its final task releases the resources
+                // 录制仍在收尾；由其最后一个任务释放资源
+                mRecordingWaitRelease = true;
+            } else {
+                releaseResources();
+            }
         }
     }
 
@@ -542,9 +581,11 @@ public class VideoCapture {
         // 音频编码器释放
         releaseAudioInputResource();
 
-        if (mCameraSurface != null) {
-            releaseCameraSurface(true);
-        }
+        // Release the video encoder even if no input surface was created
+        // 即使没有创建输入 Surface，也要释放视频编码器
+        releaseCameraSurface(true);
+
+        mExecutor.shutdown();
     }
 
     private void releaseAudioInputResource() {
@@ -554,6 +595,10 @@ public class VideoCapture {
             mAudioEncoder = null;
         }
 
+        releaseAudioRecorder();
+    }
+
+    private void releaseAudioRecorder() {
         if (mAudioRecorder != null) {
             mAudioRecorder.release();
             mAudioRecorder = null;
@@ -611,7 +656,9 @@ public class VideoCapture {
         // 音频编码器设置
         // reset audio inout flag
         // 重置音频输入标志
-        mIsAudioEnabled.set(mConfig.getAudioCaptureEnable());
+        // Audio stays off if the audio encoder could not be created
+        // 如果无法创建音频编码器，则保持关闭音频
+        mIsAudioEnabled.set(mConfig.getAudioCaptureEnable() && mAudioEncoder != null);
 
         if (mIsAudioEnabled.get()) {
             setAudioParameters();

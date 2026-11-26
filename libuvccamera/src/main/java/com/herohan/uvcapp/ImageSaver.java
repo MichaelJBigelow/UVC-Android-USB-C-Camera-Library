@@ -73,11 +73,24 @@ public class ImageSaver implements Runnable {
                         saveError = SaveError.FILE_IO_FAILED;
                         errorMessage = "Failed to insert URI.";
                     } else {
-                        if (!copyByteArrayToUri(data, outputUri)) {
-                            saveError = SaveError.FILE_IO_FAILED;
-                            errorMessage = "Failed to save to URI.";
+                        // Only true once the image is written and published
+                        // 仅在图片写入并发布之后才为 true
+                        boolean saved = false;
+                        try {
+                            if (copyByteArrayToUri(data, outputUri)) {
+                                setUriNotPending(outputUri);
+                                saved = true;
+                            } else {
+                                saveError = SaveError.FILE_IO_FAILED;
+                                errorMessage = "Failed to save to URI.";
+                            }
+                        } finally {
+                            if (!saved) {
+                                // Delete the pending entry instead of publishing an empty or broken image
+                                // 删除待处理的条目，而不是发布一张空白或损坏的图片
+                                deleteUri(outputUri);
+                            }
                         }
-                        setUriNotPending(outputUri);
                     }
                 } else if (isSaveToOutputStream()) {
                     mOutputFileOptions.getOutputStream().write(data);
@@ -90,6 +103,12 @@ public class ImageSaver implements Runnable {
         } catch (IOException e) {
             saveError = SaveError.FILE_IO_FAILED;
             errorMessage = "Failed to write destination file.";
+            exception = e;
+        } catch (RuntimeException e) {
+            // e.g. SecurityException or IllegalArgumentException from ContentResolver
+            // 例如 ContentResolver 抛出的 SecurityException 或 IllegalArgumentException
+            saveError = SaveError.UNKNOWN;
+            errorMessage = "Failed to save image.";
             exception = e;
         }
 
@@ -146,6 +165,14 @@ public class ImageSaver implements Runnable {
         ContentValues values = new ContentValues();
         setContentValuePending(values, NOT_PENDING);
         mOutputFileOptions.getContentResolver().update(outputUri, values, null, null);
+    }
+
+    private void deleteUri(@NonNull Uri outputUri) {
+        try {
+            mOutputFileOptions.getContentResolver().delete(outputUri, null, null);
+        } catch (RuntimeException e) {
+            Log.w(TAG, "failed to delete " + outputUri, e);
+        }
     }
 
     /**

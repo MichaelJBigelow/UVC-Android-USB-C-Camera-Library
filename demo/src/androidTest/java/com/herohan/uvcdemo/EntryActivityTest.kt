@@ -12,6 +12,8 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.rule.GrantPermissionRule
 import com.herohan.uvcdemo.ui.TestTags
+import org.junit.Assume.assumeFalse
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -19,11 +21,12 @@ import com.herohan.uvcsample.R as SampleR
 
 /**
  * Checks that the entry screen lists every demo, and that each demo opens and returns to the list.
- * With no USB camera the demos show an empty preview, so this runs on an emulator; with a camera
- * attached it opens the camera too.
+ * With no USB camera the demos show an empty preview, so this runs on an emulator. It is skipped
+ * when a camera is attached: each demo would then ask for USB permission in a system dialog the test
+ * can't answer.
  *
  * 检查入口界面列出了所有演示，且每个演示都能打开并返回列表。没有 USB 相机时演示显示空白预览，
- * 因此可在模拟器上运行；连接相机时也会打开相机。
+ * 因此可在模拟器上运行。连接了相机时跳过：此时每个演示都会通过系统对话框请求 USB 权限，而测试无法应答。
  */
 @RunWith(AndroidJUnit4::class)
 class EntryActivityTest {
@@ -59,6 +62,11 @@ class EntryActivityTest {
     /** Whether a demo screen, which has a navigate up button, is showing. / 是否正在显示演示界面(其带有返回按钮)。 */
     private fun isDemoShowing(): Boolean =
         composeRule.onAllNodesWithContentDescription(navigateUp).fetchSemanticsNodes().isNotEmpty()
+
+    @Before
+    fun requireNoCamera() {
+        assumeFalse("needs no UVC camera attached", isUvcCameraAttached(composeRule.activity))
+    }
 
     @Test
     fun listsEveryDemo() {

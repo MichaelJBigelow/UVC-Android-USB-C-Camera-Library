@@ -2,13 +2,14 @@ package com.herohan.uvcapp
 
 import android.graphics.SurfaceTexture
 import android.hardware.usb.UsbDevice
+import android.os.HandlerThread
 import android.os.Looper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import com.serenegiant.usb.DeviceFilter
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
@@ -20,6 +21,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import com.serenegiant.uvccamera.R as LibraryR
 
 /**
  * Checks what [CameraHelper] does before a camera is selected: it reports no camera, fails captures
@@ -31,6 +33,8 @@ import java.util.concurrent.atomic.AtomicInteger
  */
 @RunWith(AndroidJUnit4::class)
 class CameraHelperTest {
+
+    private val context = InstrumentationRegistry.getInstrumentation().targetContext
 
     private lateinit var helper: CameraHelper
 
@@ -55,10 +59,17 @@ class CameraHelperTest {
     }
 
     @Test
-    fun listsDevicesOnceACallbackIsSet() {
+    fun withACallback_listsOnlyDevicesTheLibraryFilterAccepts() {
         helper.setStateCallback(NoOpStateCallback())
 
-        assertNotNull(helper.deviceList)
+        // An emulator has no USB devices, so the list is empty there; on a phone with other USB
+        // devices attached, those must be left out.
+        // 模拟器没有 USB 设备，因此在其上列表为空；在连接了其他 USB 设备的手机上，这些设备必须被排除。
+        val filters = DeviceFilter.getDeviceFilters(context, LibraryR.xml.device_filter)
+        val devices = helper.deviceList!!
+        devices.forEach { device ->
+            assertTrue(device.deviceName, filters.any { !it.isExclude && it.matches(device) })
+        }
 
         helper.setStateCallback(null)
     }
@@ -127,6 +138,7 @@ class CameraHelperTest {
             val removed = CountDownLatch(1)
 
             helper.release()
+            awaitHelperThreadStopped()
             helper.removeSurface(texture) {
                 onMainThread.set(Looper.myLooper() == Looper.getMainLooper())
                 removed.countDown()
@@ -157,8 +169,21 @@ class CameraHelperTest {
         assertFalse(helper.videoCaptureConfig.audioCaptureEnable)
     }
 
-    private fun tempFile(name: String): File =
-        File(InstrumentationRegistry.getInstrumentation().targetContext.cacheDir, name)
+    /**
+     * Waits until release() has stopped the helper's own thread, so nothing can be posted to it any
+     * more. The thread is private, so it is read by reflection.
+     *
+     * 等待 release() 停止 helper 自身的线程，使其不再能接收投递。该线程是私有的，因此通过反射读取。
+     */
+    private fun awaitHelperThreadStopped() {
+        val field = CameraHelper::class.java.getDeclaredField("mAsyncHandlerThread")
+        field.isAccessible = true
+        val thread = field.get(helper) as HandlerThread
+        thread.join(5_000)
+        assertFalse("the helper thread has stopped", thread.isAlive)
+    }
+
+    private fun tempFile(name: String): File = File(context.cacheDir, name)
 
     private class NoOpStateCallback : ICameraHelper.StateCallback {
         override fun onAttach(device: UsbDevice) {}

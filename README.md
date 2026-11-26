@@ -63,4 +63,6 @@ Instrumented tests run on a device or emulator with Android 10 or newer, and nee
 ./gradlew connectedDebugAndroidTest
 ```
 
-They cover the library (capture settings, device filters, saving pictures, and `CameraHelper` before a camera is selected), the sample apps' dialogs, every demo screen, and the app's start screen. Opening a camera, previewing and recording need a real UVC camera, so only these tests use one: the demo's `CommonTest`, a recording soak test of about 30 minutes, runs only when a UVC camera is attached and is skipped otherwise, while the app's `MainActivityTest` is skipped when one is attached.
+They cover the library (capture settings, device filters, saving pictures, and `CameraHelper` before a camera is selected), the sample apps' dialogs, every demo screen, and the app's start screen. Opening a camera, previewing and recording need a real UVC camera. The demo's `CommonTest`, a recording soak test of about 30 minutes, runs only when a UVC camera is attached. The app's `MainActivityTest` and the demo's `EntryActivityTest` are skipped when one is attached, since opening the camera then asks for permission in a system dialog the tests can't answer.
+
+The demo's tests grant it the camera and microphone permissions, and they stay granted afterwards. Uninstall the demo to see its permission requests again.

@@ -5,6 +5,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.util.concurrent.CopyOnWriteArrayList
 
 /**
  * Checks how filters compare with each other. Matching a [android.hardware.usb.UsbDevice] needs a
@@ -74,10 +75,25 @@ class DeviceFilterTest {
     }
 
     @Test
-    fun filtersWithWildcardsAreNeverEqual() {
-        // Documented: a filter with an unspecified (-1) number can't be compared.
-        // 已有文档说明：含未指定(-1)数值的过滤器无法比较。
+    fun filtersWithWildcardsAreOnlyEqualToThemselves() {
+        val filter = byClass(14)
+
+        assertEquals(filter, filter)
+        // Documented: two filters with an unspecified (-1) number can't be compared.
+        // 已有文档说明：含未指定(-1)数值的两个过滤器无法比较。
         assertNotEquals(byClass(14), byClass(14))
+    }
+
+    @Test
+    fun aListCanRemoveTheFiltersItHolds() {
+        // As USBMonitor.removeDeviceFilter does with the library's wildcard filters
+        // 正如 USBMonitor.removeDeviceFilter 对库中含通配符的过滤器所做的那样
+        val wildcard = byClass(239, subclass = 2)
+        val filters = CopyOnWriteArrayList(listOf(wildcard, named()))
+
+        assertTrue(filters.remove(wildcard))
+        assertTrue(filters.remove(named()))
+        assertTrue(filters.isEmpty())
     }
 
     @Test

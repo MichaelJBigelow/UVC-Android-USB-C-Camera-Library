@@ -3,7 +3,6 @@ package com.herohan.uvcapp;
 import static com.herohan.uvcapp.ImageCapture.ERROR_CAMERA_CLOSED;
 import static com.herohan.uvcapp.ImageCapture.ERROR_UNKNOWN;
 
-import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.hardware.usb.UsbDevice;
 import android.os.Handler;
@@ -14,25 +13,20 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-import com.herohan.uvcapp.utils.Watchdog;
 import com.serenegiant.usb.Format;
 import com.serenegiant.usb.IButtonCallback;
 import com.serenegiant.usb.IFrameCallback;
 import com.serenegiant.usb.Size;
 import com.serenegiant.usb.UVCControl;
 import com.serenegiant.usb.UVCParam;
-import com.serenegiant.utils.UVCUtils;
 import com.serenegiant.uvccamera.BuildConfig;
 
-import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.WeakHashMap;
 
 public class CameraHelper implements ICameraHelper {
     private static final boolean DEBUG = BuildConfig.DEBUG;
     private static final String TAG = CameraHelper.class.getSimpleName();
-
-    protected final WeakReference<Context> mWeakContext;
 
     private HandlerThread mAsyncHandlerThread;
     private Handler mAsyncHandler;
@@ -51,12 +45,10 @@ public class CameraHelper implements ICameraHelper {
 
     public CameraHelper() {
         if (DEBUG) Log.d(TAG, "Constructor:");
-        mWeakContext = new WeakReference<Context>(UVCUtils.getApplication());
 
         mAsyncHandlerThread = new HandlerThread(TAG);
         mAsyncHandlerThread.start();
         mAsyncHandler = new Handler(mAsyncHandlerThread.getLooper());
-//        Watchdog.getInstance().addThread(mAsyncHandler);
 
         mService = CameraConnectionService.getInstance().newConnection();
     }
@@ -266,8 +258,6 @@ public class CameraHelper implements ICameraHelper {
                                 mCameraPreviewConfig,
                                 mImageCaptureConfig,
                                 mVideoCaptureConfig);
-                    } else {
-//                        mCallbackWrapper.onCameraOpen(mUsbDevice);
                     }
                 } catch (final Exception e) {
                     if (DEBUG) Log.e(TAG, "openCamera:", e);
@@ -284,8 +274,6 @@ public class CameraHelper implements ICameraHelper {
                 try {
                     if (mService.isCameraOpened(mUsbDevice)) {
                         mService.closeCamera(mUsbDevice);
-                    } else {
-//                        mCallbackWrapper.onCameraClose(mUsbDevice);
                     }
                 } catch (final Exception e) {
                     if (DEBUG) Log.e(TAG, "closeCamera:", e);
@@ -432,7 +420,6 @@ public class CameraHelper implements ICameraHelper {
             }
 
             mUsbDevice = null;
-//            Watchdog.getInstance().removeThread(mAsyncHandler);
             mAsyncHandlerThread.quitSafely();
             mDetachedDeviceMap.clear();
         });
@@ -455,7 +442,6 @@ public class CameraHelper implements ICameraHelper {
             }
 
             mUsbDevice = null;
-//            Watchdog.getInstance().removeThread(mAsyncHandler);
             mAsyncHandlerThread.quitSafely();
             mDetachedDeviceMap.clear();
         });

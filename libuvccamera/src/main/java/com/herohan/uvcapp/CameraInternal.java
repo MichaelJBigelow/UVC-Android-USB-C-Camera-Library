@@ -17,16 +17,12 @@ import com.serenegiant.utils.UVCUtils;
 import com.serenegiant.uvccamera.BuildConfig;
 import com.serenegiant.uvccamera.R;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
 final class CameraInternal implements ICameraInternal {
     private static final boolean DEBUG = BuildConfig.DEBUG;
     private static final String TAG = CameraInternal.class.getSimpleName();
-
-    private static final String KEY_ARG_1 = "key_arg1";
-    private static final String KEY_ARG_2 = "key_arg2";
 
     private static final int DEFAULT_WIDTH = 640;
     private static final int DEFAULT_HEIGHT = 480;
@@ -36,7 +32,6 @@ final class CameraInternal implements ICameraInternal {
 
     private final Object mSync = new Object();
 
-    private final WeakReference<Context> mWeakContext;
     private final UsbControlBlock mCtrlBlock;
 
     private ICameraRendererHolder mRendererHolder;
@@ -54,9 +49,8 @@ final class CameraInternal implements ICameraInternal {
     private IImageCapture mImageCapture;
     private VideoCapture mVideoCapture;
 
-    public CameraInternal(final Context context, final UsbControlBlock ctrlBlock, final int vid, final int pid) {
+    public CameraInternal(final UsbControlBlock ctrlBlock, final int vid, final int pid) {
         if (DEBUG) Log.d(TAG, "Constructor:");
-        mWeakContext = new WeakReference<Context>(context);
         mCtrlBlock = ctrlBlock;
 
         mRendererHolder = new CameraRendererHolder(mFrameWidth, mFrameHeight, new RendererHolderCallback() {

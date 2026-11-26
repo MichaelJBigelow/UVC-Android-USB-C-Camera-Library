@@ -34,10 +34,10 @@ public abstract class EGLBase {
 //	public static final int EGL_SWAP_BEHAVIOR_PRESERVED_BIT = 0x0400;
 
     /**
-     * Egl helper method, create object of EGLBase10 or EGLBase14 depending on your environment
+     * Egl helper method, create an EGLBase14 object
      * maxClientVersion=3, No stencil buffer.
      *
-     * Egl 辅助方法,根据运行环境创建 EGLBase10 或 EGLBase14 对象
+     * Egl 辅助方法,创建 EGLBase14 对象
      * maxClientVersion=3,无模板缓冲区。
      *
      * @param sharedContext
@@ -52,10 +52,10 @@ public abstract class EGLBase {
     }
 
     /**
-     * Egl helper method, create object of EGLBase10 or EGLBase14 depending on your environment
+     * Egl helper method, create an EGLBase14 object
      * maxClientVersion=3
      *
-     * Egl 辅助方法,根据运行环境创建 EGLBase10 或 EGLBase14 对象
+     * Egl 辅助方法,创建 EGLBase14 对象
      * maxClientVersion=3
      *
      * @param sharedContext
@@ -72,9 +72,9 @@ public abstract class EGLBase {
     }
 
     /**
-     * Egl helper method, create object of EGLBase10 or EGLBase14 depending on your environment
+     * Egl helper method, create an EGLBase14 object
      *
-     * Egl 辅助方法,根据运行环境创建 EGLBase10 或 EGLBase14 对象
+     * Egl 辅助方法,创建 EGLBase14 对象
      *
      * @param sharedContext
      * @param maxClientVersion
@@ -87,15 +87,11 @@ public abstract class EGLBase {
                                      final boolean withDepthBuffer,
                                      final int stencilBits, final boolean isRecordable) {
 
-        if (isEGL14Supported() && ((sharedContext == null)
-                || (sharedContext instanceof EGLBase14.Context))) {
-
-            return new EGLBase14((EGLBase14.Context) sharedContext, maxClientVersion,
-                    withDepthBuffer, stencilBits, isRecordable);
-        } else {
-            return new EGLBase10((EGLBase10.Context) sharedContext, maxClientVersion,
-                    withDepthBuffer, stencilBits, isRecordable);
+        if ((sharedContext != null) && !(sharedContext instanceof EGLBase14.Context)) {
+            throw new IllegalArgumentException("sharedContext must be created by EGLBase14");
         }
+        return new EGLBase14((EGLBase14.Context) sharedContext, maxClientVersion,
+                withDepthBuffer, stencilBits, isRecordable);
     }
 
     /**
@@ -131,10 +127,8 @@ public abstract class EGLBase {
 
         /**
          * swap with presentation time[ns]
-         * only works well now when using EGLBase14
          *
          * 以呈现时间[ns]进行交换
-         * 目前仅在使用 EGLBase14 时才能正常工作
          *
          * @param presentationTimeNs
          */
@@ -143,10 +137,6 @@ public abstract class EGLBase {
         void release();
 
         boolean isValid();
-    }
-
-    public static boolean isEGL14Supported() {
-        return true;
     }
 
     /**

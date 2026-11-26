@@ -40,8 +40,11 @@ object FileUtils {
      * 或扩展名不是图片、视频或音频类型时返回 null
      */
     @JvmStatic
-    @JvmOverloads
-    fun getCaptureUri(context: Context, type: String, prefix: String? = null, ext: String): Uri? {
+    fun getCaptureUri(context: Context, type: String, ext: String): Uri? =
+        getCaptureUri(context, type, null, ext)
+
+    @JvmStatic
+    fun getCaptureUri(context: Context, type: String, prefix: String?, ext: String): Uri? {
         var fileName = getDateTimeString() + ext
         if (!TextUtils.isEmpty(prefix)) {
             fileName = prefix + fileName
@@ -91,8 +94,11 @@ object FileUtils {
      * @return  return null when this app has no writing permission to external storage. / 当本应用没有外部存储的写入权限时返回 null
      */
     @JvmStatic
-    @JvmOverloads
-    fun getCaptureFile(context: Context, type: String, prefix: String? = null, ext: String): File? {
+    fun getCaptureFile(context: Context, type: String, ext: String): File? =
+        getCaptureFile(context, type, null, ext)
+
+    @JvmStatic
+    fun getCaptureFile(context: Context, type: String, prefix: String?, ext: String): File? {
         val fileName = (if (TextUtils.isEmpty(prefix)) getDateTimeString() else prefix + getDateTimeString()) + ext
         val dir = getCaptureDir(context, type) ?: return null
         dir.mkdirs()

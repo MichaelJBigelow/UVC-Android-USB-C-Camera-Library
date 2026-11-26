@@ -69,6 +69,7 @@ public class JavaApiCompatTest {
     private static void useTheApi(ICameraHelper helper, Context context, UsbDevice device) {
         List<UsbDevice> devices = helper.getDeviceList();
         helper.selectDevice(device);
+        helper.selectDevice(null);
         List<Format> formats = helper.getSupportedFormatList();
         List<Size> sizes = helper.getSupportedSizeList();
         Size size = helper.getPreviewSize();

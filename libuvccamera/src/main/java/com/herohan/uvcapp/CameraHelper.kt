@@ -66,8 +66,12 @@ open class CameraHelper : ICameraHelper {
     private fun isDetached(usbDevice: UsbDevice): Boolean =
         synchronized(mDetachedDeviceMap) { mDetachedDeviceMap.containsKey(usbDevice) }
 
-    override fun selectDevice(device: UsbDevice) {
-        if (DEBUG) Log.d(TAG, "selectDevice:device=" + device.deviceName + " " + this)
+    override fun selectDevice(device: UsbDevice?) {
+        if (DEBUG) Log.d(TAG, "selectDevice:device=" + device?.deviceName + " " + this)
+        if (device == null) {
+            Log.w(TAG, "selectDevice: ignoring a null device")
+            return
+        }
         mAsyncHandler.post {
             val service = mService
             if (service != null && !isDetached(device)) {

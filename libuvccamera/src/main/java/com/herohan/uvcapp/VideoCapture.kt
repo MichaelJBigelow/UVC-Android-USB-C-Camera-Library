@@ -1053,7 +1053,12 @@ class VideoCapture internal constructor(
                     try {
                         val index = audioEncoder.dequeueInputBuffer(-1)
                         if (index >= 0) {
-                            val buffer = checkNotNull(audioEncoder.getInputBuffer(index)) { "No audio input buffer" }
+                            // Not an IllegalStateException, which the catch below only logs: a
+                            // missing buffer ends the recording through the outer catch.
+                            // 不是 IllegalStateException(下面的 catch 只会记录它)：缺少缓冲区时
+                            // 通过外层 catch 结束录像。
+                            val buffer = audioEncoder.getInputBuffer(index)
+                                ?: throw NullPointerException("No audio input buffer")
                             buffer.clear()
                             val length = audioRecorder.read(buffer, mAudioBufferSize)
                             if (length > 0) {

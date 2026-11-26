@@ -24,7 +24,13 @@ interface ICameraHelper {
      */
     val deviceList: List<UsbDevice>?
 
-    fun selectDevice(device: UsbDevice)
+    /**
+     * Asks for the USB permission of [device] and opens it, asynchronously. A null device is
+     * ignored.
+     *
+     * 异步请求 [device] 的 USB 权限并打开它。忽略 null 设备。
+     */
+    fun selectDevice(device: UsbDevice?)
 
     /**
      * The camera's formats, or null when no camera is open. Doesn't wait for the camera to open.

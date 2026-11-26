@@ -1,27 +1,26 @@
 package com.herohan.uvcsample.ui.dialog
 
 import androidx.annotation.StringRes
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -33,7 +32,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -43,8 +41,6 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
 import com.herohan.uvcsample.R
-import com.herohan.uvcsample.ui.theme.DeepPink
-import com.herohan.uvcsample.ui.theme.Gray400
 import com.serenegiant.usb.UVCControl
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -53,10 +49,18 @@ import kotlinx.coroutines.withContext
 import kotlin.math.roundToInt
 
 /**
+ * Opacity of the camera controls panel: enough to read the controls over the preview, low enough
+ * to see the preview through it.
+ *
+ * 相机控制面板的不透明度：既能在预览上方看清控制项，又能透过面板看到预览。
+ */
+private const val PANEL_ALPHA = 0.8f
+
+/**
  * Translucent panel of the camera's UVC controls (brightness, focus, zoom, power line frequency…).
  *
  * Every change is sent to the camera straight away. The panel does not dim the preview behind it,
- * so the effect of each change can be seen while adjusting it.
+ * and is itself translucent, so the effect of each change can be seen while adjusting it.
  *
  * Each read or change is a USB control transfer, so they all run one at a time on a background
  * thread. While a transfer is in progress, further moves of the same slider are merged into the
@@ -64,7 +68,7 @@ import kotlin.math.roundToInt
  *
  * 相机 UVC 控制项(亮度、对焦、变焦、电源频率等)的半透明面板。
  *
- * 每次更改都会立即发送给相机。面板不会使其后方的预览变暗，
+ * 每次更改都会立即发送给相机。面板不会使其后方的预览变暗，且自身是半透明的，
  * 因此调整时即可看到每项更改的效果。
  *
  * 每次读取或更改都是一次 USB 控制传输，因此它们都在后台线程上逐个执行。
@@ -157,53 +161,73 @@ fun CameraControlsDialog(control: UVCControl, onDismiss: () -> Unit) {
         val dialogWindow = (LocalView.current.parent as? DialogWindowProvider)?.window
         SideEffect { dialogWindow?.setDimAmount(0f) }
 
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 10.dp, vertical = 60.dp)
-                .background(Color(0x77000000)),
+                .padding(horizontal = 16.dp, vertical = 48.dp),
+            contentAlignment = Alignment.Center,
         ) {
-            Column(
+            Surface(
                 modifier = Modifier
-                    .weight(1f)
-                    .verticalScroll(rememberScrollState())
-                    .padding(10.dp),
+                    .widthIn(max = 560.dp)
+                    .fillMaxHeight(),
+                shape = MaterialTheme.shapes.extraLarge,
+                color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = PANEL_ALPHA),
+                contentColor = MaterialTheme.colorScheme.onSurface,
             ) {
-                SLIDER_CONTROLS.forEachIndexed { index, spec ->
-                    val state = sliders[index]
-                    SliderControlRow(
-                        label = stringResource(spec.label),
-                        state = state,
-                        onValueChange = { value ->
-                            if (value != state.value) {
-                                updateSlider(index, state.copy(value = value))
-                                changes.trySend(ControlChange.SliderValue(index, value))
-                            }
-                        },
-                        onAutoChange = { auto ->
-                            if (spec.auto == null) return@SliderControlRow
-                            updateSlider(index, state.copy(autoChecked = auto))
-                            changes.trySend(ControlChange.Auto(index, auto))
-                        },
+                Column {
+                    Text(
+                        text = stringResource(R.string.camera_controls_title),
+                        style = MaterialTheme.typography.headlineSmall,
+                        modifier = Modifier.padding(start = 24.dp, top = 24.dp, end = 24.dp, bottom = 8.dp),
                     )
-                }
-                PowerLineFrequencyRow(
-                    state = powerLine,
-                    onSelected = { value ->
-                        powerLine = powerLine.copy(value = value)
-                        changes.trySend(ControlChange.PowerLineFrequency(value))
-                    },
-                )
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                TextButton(onClick = onDismiss) {
-                    Text(stringResource(R.string.camera_controls_button_close), color = DeepPink)
-                }
-                TextButton(onClick = { changes.trySend(ControlChange.ResetAll) }) {
-                    Text(stringResource(R.string.camera_controls_button_reset), color = DeepPink)
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .verticalScroll(rememberScrollState())
+                            .padding(horizontal = 16.dp),
+                    ) {
+                        SLIDER_CONTROLS.forEachIndexed { index, spec ->
+                            val state = sliders[index]
+                            SliderControlRow(
+                                label = stringResource(spec.label),
+                                state = state,
+                                onValueChange = { value ->
+                                    if (value != state.value) {
+                                        updateSlider(index, state.copy(value = value))
+                                        changes.trySend(ControlChange.SliderValue(index, value))
+                                    }
+                                },
+                                onAutoChange = { auto ->
+                                    if (spec.auto == null) return@SliderControlRow
+                                    updateSlider(index, state.copy(autoChecked = auto))
+                                    changes.trySend(ControlChange.Auto(index, auto))
+                                },
+                            )
+                        }
+                        PowerLineFrequencyRow(
+                            state = powerLine,
+                            onSelected = { value ->
+                                powerLine = powerLine.copy(value = value)
+                                changes.trySend(ControlChange.PowerLineFrequency(value))
+                            },
+                        )
+                    }
+                    // Reset is an action of its own, so it sits apart from Close, which ends the panel.
+                    // “重置”是一个独立的操作，因此与结束面板的“关闭”分开放置。
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        TextButton(onClick = { changes.trySend(ControlChange.ResetAll) }) {
+                            Text(stringResource(R.string.camera_controls_button_reset))
+                        }
+                        TextButton(onClick = onDismiss) {
+                            Text(stringResource(R.string.camera_controls_button_close))
+                        }
+                    }
                 }
             }
         }
@@ -219,7 +243,11 @@ private fun SliderControlRow(
 ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.width(100.dp)) {
-            Text(label, color = Gray400, style = MaterialTheme.typography.bodyMedium)
+            Text(
+                label,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodyMedium,
+            )
             if (state.hasAuto) {
                 Row(
                     modifier = Modifier.toggleable(
@@ -234,11 +262,10 @@ private fun SliderControlRow(
                         checked = state.autoChecked,
                         onCheckedChange = null,
                         enabled = state.autoEnabled,
-                        colors = CheckboxDefaults.colors(checkedColor = DeepPink, uncheckedColor = Gray400),
                     )
                     Text(
                         stringResource(R.string.camera_controls_text_auto),
-                        color = Gray400,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.bodySmall,
                     )
                 }
@@ -250,14 +277,13 @@ private fun SliderControlRow(
             enabled = state.sliderEnabled,
             valueRange = state.min.toFloat()..maxOf(state.max, state.min + 1).toFloat(),
             steps = state.steps,
-            colors = SliderDefaults.colors(thumbColor = DeepPink, activeTrackColor = DeepPink),
             modifier = Modifier.weight(1f),
         )
         Text(
             text = if (state.enabled) state.value.toString() else "",
-            color = DeepPink,
+            color = MaterialTheme.colorScheme.primary,
             textAlign = TextAlign.End,
-            style = MaterialTheme.typography.bodySmall,
+            style = MaterialTheme.typography.labelMedium,
             modifier = Modifier.width(48.dp),
         )
     }
@@ -293,9 +319,8 @@ private fun PowerLineFrequencyRow(state: PowerLineState, onSelected: (Int) -> Un
                     selected = state.value == value,
                     onClick = null,
                     enabled = state.enabled,
-                    colors = RadioButtonDefaults.colors(selectedColor = DeepPink, unselectedColor = DeepPink),
                 )
-                Text(stringResource(label), color = DeepPink, style = MaterialTheme.typography.bodySmall)
+                Text(stringResource(label), style = MaterialTheme.typography.bodySmall)
             }
         }
     }

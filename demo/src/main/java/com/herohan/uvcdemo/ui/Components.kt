@@ -3,6 +3,7 @@ package com.herohan.uvcdemo.ui
 import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.SurfaceView
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -16,54 +17,55 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.herohan.uvcdemo.R
 import com.herohan.uvcsample.ui.aspectRatioOf
-
-/**
- * Background behind the camera previews.
- *
- * 相机预览后方的背景色。
- */
-val PreviewBackground = Color(0xFF808080)
+import com.herohan.uvcsample.R as SampleR
 
 /**
  * Screen frame shared by the demos: a top app bar with [title] and [actions] above [content].
  *
+ * The app bar has an up button that goes back to the demo list, unless [showNavigateUp] is false.
+ * Behind [content] is the theme's container color, so the letterboxing around a camera preview
+ * follows the theme.
+ *
  * 各演示共用的界面框架：[content] 上方是带 [title] 和 [actions] 的顶部应用栏。
+ *
+ * 除非 [showNavigateUp] 为 false，否则应用栏带有返回演示列表的向上按钮。
+ * [content] 后方是主题的容器色，因此相机预览周围的留白跟随主题。
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DemoScaffold(
     title: String,
     actions: @Composable RowScope.() -> Unit = {},
-    background: Color = PreviewBackground,
+    showNavigateUp: Boolean = true,
+    background: Color = MaterialTheme.colorScheme.surfaceContainer,
     content: @Composable BoxScope.() -> Unit,
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(title) },
+                navigationIcon = { if (showNavigateUp) NavigateUpButton() },
                 actions = actions,
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary,
-                ),
             )
         },
         containerColor = background,
@@ -73,6 +75,22 @@ fun DemoScaffold(
                 .fillMaxSize()
                 .padding(innerPadding),
             content = content,
+        )
+    }
+}
+
+/**
+ * Up button of the top app bar: goes back, like the system back gesture.
+ *
+ * 顶部应用栏的向上按钮：与系统返回手势一样执行返回。
+ */
+@Composable
+private fun NavigateUpButton() {
+    val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
+    IconButton(onClick = { backDispatcher?.onBackPressed() }) {
+        Icon(
+            painterResource(SampleR.drawable.ic_arrow_back),
+            contentDescription = stringResource(SampleR.string.navigate_up),
         )
     }
 }
@@ -189,9 +207,10 @@ fun BoxScope.CameraCell(
 }
 
 /**
- * A pair of buttons at the bottom of [BoxScope]: [openText] on the left, [closeText] on the right.
+ * A pair of buttons at the bottom of [BoxScope]: [openText] on the left as a filled button,
+ * [closeText] on the right as a tonal one.
  *
- * 位于 [BoxScope] 底部的一对按钮：左侧为 [openText]，右侧为 [closeText]。
+ * 位于 [BoxScope] 底部的一对按钮：左侧为填充按钮 [openText]，右侧为色调按钮 [closeText]。
  */
 @Composable
 fun BoxScope.OpenCloseButtons(
@@ -206,10 +225,10 @@ fun BoxScope.OpenCloseButtons(
         modifier = modifier
             .align(Alignment.BottomCenter)
             .fillMaxWidth()
-            .padding(horizontal = horizontalPadding),
+            .padding(horizontal = horizontalPadding, vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         Button(onClick = onOpen) { Text(openText) }
-        Button(onClick = onClose) { Text(closeText) }
+        FilledTonalButton(onClick = onClose) { Text(closeText) }
     }
 }

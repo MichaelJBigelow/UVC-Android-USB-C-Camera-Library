@@ -3,6 +3,13 @@
     <!-- Toast after a picture or video is saved; %1$s is where, e.g. Pictures/UVC Demo/2026-11-26_09-30-00.jpg -->
     <string name="saved_to">Saved to %1$s</string>
 
+    <!-- Content descriptions of the capture buttons and app bar icons, read by screen readers -->
+    <string name="take_picture">Take picture</string>
+    <string name="start_recording">Start recording</string>
+    <string name="stop_recording">Stop recording</string>
+    <string name="navigate_up">Navigate up</string>
+    <string name="more_options">More options</string>
+
     <string name="device_list_dialog_title">Device</string>
     <string name="device_list_empty_tip">Please connect a USB Camera</string>
     <string name="device_list_cancel_button">Cancel</string>
@@ -16,6 +23,7 @@
     <string name="video_format_format_yuv">YUV</string>
     <string name="video_format_format_mjped">MJPEG</string>
 
+    <string name="camera_controls_title">Camera Controls</string>
     <string name="camera_controls_text_brightness">Brightness</string>
     <string name="camera_controls_text_contrast">Contrast</string>
     <string name="camera_controls_text_hue">Hue</string>

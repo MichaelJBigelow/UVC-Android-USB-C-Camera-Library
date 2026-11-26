@@ -3,6 +3,7 @@ package com.herohan.uvcdemo
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -11,7 +12,6 @@ import com.herohan.uvcdemo.ui.DemoScaffold
 import com.herohan.uvcdemo.ui.OpenCloseButtons
 import com.herohan.uvcsample.CameraSession
 import com.herohan.uvcsample.ui.theme.UvcSampleTheme
-import com.herohan.uvcsample.ui.theme.enableEdgeToEdgeBelowAppBar
 
 class BasicPreviewActivity : ComponentActivity() {
 
@@ -19,7 +19,7 @@ class BasicPreviewActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdgeBelowAppBar()
+        enableEdgeToEdge()
 
         setContent {
             UvcSampleTheme {

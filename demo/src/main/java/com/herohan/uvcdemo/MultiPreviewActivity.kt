@@ -3,6 +3,7 @@ package com.herohan.uvcdemo
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -17,7 +18,6 @@ import com.herohan.uvcdemo.ui.OpenCloseButtons
 import com.herohan.uvcdemo.ui.PreviewCellRow
 import com.herohan.uvcsample.CameraSession
 import com.herohan.uvcsample.ui.theme.UvcSampleTheme
-import com.herohan.uvcsample.ui.theme.enableEdgeToEdgeBelowAppBar
 
 /**
  * Shows one camera in four previews at once.
@@ -30,7 +30,7 @@ class MultiPreviewActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdgeBelowAppBar()
+        enableEdgeToEdge()
 
         setContent {
             UvcSampleTheme {

@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.getValue
@@ -24,7 +25,6 @@ import com.herohan.uvcdemo.ui.PreviewCellRow
 import com.herohan.uvcdemo.utils.FrameRateMeter
 import com.herohan.uvcsample.CameraSession
 import com.herohan.uvcsample.ui.theme.UvcSampleTheme
-import com.herohan.uvcsample.ui.theme.enableEdgeToEdgeBelowAppBar
 import com.serenegiant.usb.IFrameCallback
 import com.serenegiant.usb.UVCCamera
 import java.text.DecimalFormat
@@ -77,7 +77,7 @@ class SetFrameCallbackActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdgeBelowAppBar()
+        enableEdgeToEdge()
 
         setContent {
             UvcSampleTheme {

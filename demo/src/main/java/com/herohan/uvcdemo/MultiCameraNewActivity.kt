@@ -9,6 +9,7 @@ import android.os.SystemClock
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -19,7 +20,6 @@ import com.herohan.uvcdemo.ui.PreviewCellRow
 import com.herohan.uvcsample.CameraSession
 import com.herohan.uvcsample.ui.dialog.DeviceListDialog
 import com.herohan.uvcsample.ui.theme.UvcSampleTheme
-import com.herohan.uvcsample.ui.theme.enableEdgeToEdgeBelowAppBar
 import com.serenegiant.usb.UVCCamera
 import com.serenegiant.usb.UVCParam
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -53,7 +53,7 @@ class MultiCameraNewActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdgeBelowAppBar()
+        enableEdgeToEdge()
 
         handlerThread = HandlerThread(TAG).apply { start() }
         asyncHandler = Handler(handlerThread.looper)

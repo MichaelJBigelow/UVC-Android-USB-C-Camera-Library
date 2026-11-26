@@ -9,6 +9,15 @@
     <string name="entry_take_picture">Take Picture</string>
     <string name="entry_record_video">Record Video</string>
     <string name="entry_set_frame_callback">Set Frame Callback</string>
+    <!-- One-line descriptions under each demo on the entry screen -->
+    <string name="entry_basic_preview_summary">Show the camera\'s preview</string>
+    <string name="entry_custom_preview_summary">Change format, rotation, mirroring and camera controls</string>
+    <string name="entry_multi_preview_summary">Draw one camera on four previews</string>
+    <string name="entry_multi_camera_new_summary">Two cameras side by side, asking for USB permission one at a time</string>
+    <string name="entry_multi_camera_summary">Two cameras side by side (older version)</string>
+    <string name="entry_take_picture_summary">Save a picture to Pictures</string>
+    <string name="entry_record_video_summary">Record a video with sound to Movies</string>
+    <string name="entry_set_frame_callback_summary">Receive each frame and measure the frame rate</string>
     <string name="btn_open_camera">Open Camera</string>
     <string name="btn_close_camera">Close Camera</string>
 

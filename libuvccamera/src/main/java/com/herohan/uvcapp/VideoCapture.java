@@ -46,6 +46,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class VideoCapture {
     private static final String TAG = VideoCapture.class.getSimpleName();
@@ -211,6 +212,13 @@ public class VideoCapture {
     private int mAudioSampleRate;
     private int mAudioBitRate;
     private final AtomicBoolean mIsAudioEnabled = new AtomicBoolean(true);
+    /**
+     * Why the audio thread stopped this recording, if it did. The video thread reports it, so the
+     * recording ends with exactly one result.
+     *
+     * 音频线程中止本次录像的原因(如有)。由视频线程报告，使录像只产生一个结果。
+     */
+    private final AtomicReference<Throwable> mAudioFailure = new AtomicReference<>();
 
     private VideoEncoderInitStatus mVideoEncoderInitStatus =
             VideoEncoderInitStatus.VIDEO_ENCODER_INIT_STATUS_UNINITIALIZED;
@@ -371,6 +379,7 @@ public class VideoCapture {
         Log.i(TAG, "startRecording");
         mIsFirstVideoKeyFrameWrite.set(false);
         mIsFirstAudioSampleWrite.set(false);
+        mAudioFailure.set(null);
 
         OnVideoCaptureCallback postListener = new VideoCaptureListenerWrapper(callback);
 
@@ -547,6 +556,13 @@ public class VideoCapture {
         mVideoHandler.post(
                 () -> {
                     boolean errorOccurred = videoEncode(postListener, outputFileOptions);
+                    final Throwable audioFailure = mAudioFailure.getAndSet(null);
+                    if (!errorOccurred && audioFailure != null) {
+                        // The audio thread failed: report that as the recording's one result.
+                        // 音频线程失败：将其作为本次录像的唯一结果报告。
+                        postListener.onError(ERROR_ENCODER, "Audio encoder encode failed!", audioFailure);
+                        errorOccurred = true;
+                    }
                     if (!errorOccurred && publishMediaStoreOutput(outputFileOptions)) {
                         // Only file:// outputs need a scan; MediaStore entries are already indexed.
                         // 只有 file:// 输出需要扫描；MediaStore 条目已建立索引。
@@ -1155,11 +1171,12 @@ public class VideoCapture {
             }
         } // end of while loop / while 循环结束
         } catch (RuntimeException e) {
-            // Don't let the audio thread die: report, then stop audio and end the video stream below
-            // 不要让音频线程崩溃：先报告错误，然后在下面停止音频并结束视频流
+            // Don't let the audio thread die: stop audio and end the video stream below; the video
+            // thread then reports this failure as the recording's result.
+            // 不要让音频线程崩溃：在下面停止音频并结束视频流；随后由视频线程将此失败作为录像结果报告。
             Log.e(TAG, "audioEncode:", e);
             mIsRecording = false;
-            videoSavedCallback.onError(ERROR_ENCODER, "Audio encoder encode failed!", e);
+            mAudioFailure.compareAndSet(null, e);
         }
 
         // Audio Stop
@@ -1170,15 +1187,15 @@ public class VideoCapture {
                 mAudioRecorder.stop();
             }
         } catch (IllegalStateException e) {
-            videoSavedCallback.onError(
-                    ERROR_ENCODER, "Audio recorder stop failed!", e);
+            // The samples are already written; the video still gets its one result.
+            // 采样已写入；视频仍只产生一个结果。
+            Log.w(TAG, "Audio recorder stop failed!", e);
         }
 
         try {
             mAudioEncoder.stop();
         } catch (IllegalStateException e) {
-            videoSavedCallback.onError(ERROR_ENCODER,
-                    "Audio encoder stop failed!", e);
+            Log.w(TAG, "Audio encoder stop failed!", e);
         }
 
         Log.i(TAG, "Audio encode thread end");

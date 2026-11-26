@@ -568,11 +568,16 @@ class CameraConnectionService {
         }
 
         @Override
-        public void release() {
+        public void cancelWaits() {
             synchronized (mConnectionSync) {
                 mReleased = true;
                 mConnectionSync.notifyAll();
             }
+        }
+
+        @Override
+        public void release() {
+            cancelWaits();
             if (mUSBMonitor != null) {
                 mUSBMonitor.destroy();
                 mUSBMonitor = null;

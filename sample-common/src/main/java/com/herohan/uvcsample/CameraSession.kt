@@ -159,9 +159,19 @@ class CameraSession(
         })
     }
 
+    /**
+     * The helper released last, until a new one is created. Surfaces removed after the release go
+     * through its queue, so their callback runs after its teardown.
+     *
+     * 最近一次释放的 helper，直到创建新的 helper 为止。释放之后移除的 surface 会经过它的队列，
+     * 因此其回调会在它的清理之后运行。
+     */
+    private var releasedHelper: ICameraHelper? = null
+
     private fun open() {
         Log.d(logTag, "initCameraHelper:")
         if (cameraHelper == null) {
+            releasedHelper = null
             cameraHelper = CameraHelper().also {
                 it.setStateCallback(stateCallback)
                 configure(it)
@@ -171,7 +181,13 @@ class CameraSession(
 
     private fun release() {
         Log.d(logTag, "clearCameraHelper:")
-        cameraHelper?.release()
+        cameraHelper?.let { helper ->
+            // Detach the previews first: they stay alive and are attached again to the next helper.
+            // 先移除预览：它们仍然存在，并会重新挂接到下一个 helper。
+            previewSurfaces.forEach { helper.removeSurface(it) }
+            helper.release()
+            releasedHelper = helper
+        }
         cameraHelper = null
         isCameraOpened = false
         // The next helper starts with no device selected, so attached cameras are picked up again.
@@ -207,7 +223,7 @@ class CameraSession(
      * 例如用于释放 SurfaceTexture。
      */
     fun removePreviewSurface(surface: Any, onRemoved: () -> Unit) {
-        val helper = cameraHelper
+        val helper = cameraHelper ?: releasedHelper
         if (previewSurfaces.remove(surface) && helper != null) {
             helper.removeSurface(surface, Runnable { onRemoved() })
         } else {

@@ -439,6 +439,7 @@ public class CameraHelper implements ICameraHelper {
     @Override
     public void release() {
         if (DEBUG) Log.d(TAG, "release: " + this);
+        cancelServiceWaits();
         mAsyncHandler.post(() -> {
             if (mService != null) {
                 try {
@@ -463,6 +464,7 @@ public class CameraHelper implements ICameraHelper {
     @Override
     public void releaseAll() {
         if (DEBUG) Log.d(TAG, "releaseAll: " + this);
+        cancelServiceWaits();
         mAsyncHandler.post(() -> {
             if (mService != null) {
                 try {
@@ -615,6 +617,19 @@ public class CameraHelper implements ICameraHelper {
             } catch (final Exception e) {
                 if (DEBUG) Log.e(TAG, "unregisterCallback:", e);
             }
+        }
+    }
+
+    /**
+     * Ends a wait for a camera or permission on the helper thread now, so the release posted after
+     * it runs without waiting for that wait to time out.
+     *
+     * 立即结束辅助线程上对相机或权限的等待，使随后投递的释放操作无需等待其超时。
+     */
+    private void cancelServiceWaits() {
+        final ICameraConnection service = mService;
+        if (service != null) {
+            service.cancelWaits();
         }
     }
 

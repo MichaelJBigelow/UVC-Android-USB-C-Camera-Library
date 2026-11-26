@@ -2,6 +2,8 @@ package com.herohan.uvcapp;
 
 import android.content.Context;
 import android.hardware.usb.UsbDevice;
+import android.os.Handler;
+import android.os.Looper;
 import android.widget.Toast;
 
 import com.serenegiant.usb.Format;
@@ -71,8 +73,19 @@ public interface ICameraHelper {
      *
      * 移除预览 surface，并在相机不再向其绘制后于主线程上运行 {@code onRemoved}，
      * 例如用于释放 SurfaceTexture。
+     *
+     * <p>The default implementation, kept for other implementations of this interface, only posts
+     * {@code onRemoved} after asking for the removal; {@link CameraHelper} waits for it.
+     *
+     * <p>默认实现(为本接口的其他实现保留)只在请求移除后投递 {@code onRemoved}；
+     * {@link CameraHelper} 会等待移除完成。
      */
-    void removeSurface(Object surface, Runnable onRemoved);
+    default void removeSurface(Object surface, Runnable onRemoved) {
+        removeSurface(surface);
+        if (onRemoved != null) {
+            new Handler(Looper.getMainLooper()).post(onRemoved);
+        }
+    }
 
     void setButtonCallback(IButtonCallback callback);
 

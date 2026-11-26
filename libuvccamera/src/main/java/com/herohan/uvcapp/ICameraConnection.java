@@ -85,4 +85,13 @@ interface ICameraConnection {
     void setVideoCaptureConfig(UsbDevice device, VideoCaptureConfig config);
 
     void release();
+
+    /**
+     * Ends any wait for a camera or a permission result now. Safe to call from any thread; called
+     * before release(), which runs on the thread that may be waiting.
+     *
+     * 立即结束对相机或权限结果的所有等待。可在任意线程调用；在 release() 之前调用，
+     * 因为 release() 运行在可能正在等待的线程上。
+     */
+    void cancelWaits();
 }

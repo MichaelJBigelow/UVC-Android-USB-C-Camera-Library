@@ -4,6 +4,7 @@ import android.hardware.usb.UsbDevice
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -27,11 +28,11 @@ import com.herohan.uvcsample.CameraSession
 import com.herohan.uvcsample.ui.dialog.CameraControlsDialog
 import com.herohan.uvcsample.ui.dialog.VideoFormatDialog
 import com.herohan.uvcsample.ui.theme.UvcSampleTheme
-import com.herohan.uvcsample.ui.theme.enableEdgeToEdgeBelowAppBar
 import com.serenegiant.opengl.renderer.MirrorMode
 import com.serenegiant.usb.Format
 import com.serenegiant.usb.Size
 import com.serenegiant.usb.UVCControl
+import com.herohan.uvcsample.R as SampleR
 
 /**
  * Preview with the camera's controls, video format, rotation and mirroring in the top app bar.
@@ -50,7 +51,7 @@ class CustomPreviewActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdgeBelowAppBar()
+        enableEdgeToEdge()
 
         setContent {
             UvcSampleTheme {
@@ -86,14 +87,17 @@ class CustomPreviewActivity : ComponentActivity() {
     private fun PreviewMenu() {
         IconButton(onClick = ::showCameraControlsDialog) {
             Icon(
-                painterResource(R.drawable.ic_action_control),
+                painterResource(SampleR.drawable.ic_tune),
                 contentDescription = stringResource(R.string.action_control),
             )
         }
         var expanded by remember { mutableStateOf(false) }
         Box {
             IconButton(onClick = { expanded = true }) {
-                Icon(painterResource(R.drawable.ic_more_vert), contentDescription = null)
+                Icon(
+                    painterResource(SampleR.drawable.ic_more_vert),
+                    contentDescription = stringResource(SampleR.string.more_options),
+                )
             }
             DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                 listOf<Pair<Int, () -> Unit>>(
@@ -131,7 +135,7 @@ class CustomPreviewActivity : ComponentActivity() {
     }
 
     private fun showCameraControlsDialog() {
-        val control = cameraHelper?.uvcControl ?: return
+        val control = cameraHelper?.getUVCControl() ?: return
         openDialog = PreviewDialog.CameraControls(control)
     }
 

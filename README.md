@@ -40,12 +40,12 @@ Requirements
 --------------
 Android 10 (API level 29)+
 
-The library is compiled for Java 17, so apps that use it must build with JDK 17 or newer. Its only dependency is `androidx.annotation`, so it adds no other AndroidX libraries to the apps that use it.
+The library is compiled for Java 17, so apps that use it must build with JDK 17 or newer. Its only dependencies are `androidx.annotation` and the Kotlin standard library (which `androidx.annotation` already brings in), so it adds no other AndroidX libraries to the apps that use it. Kotlin apps need Kotlin 2.3 or newer to read the library's Kotlin 2.4 metadata; Java apps need nothing extra.
 
 Building this repository requires JDK 17 or newer. It is tested with JDK 25, the version bundled with Android Studio. Gradle must run on a full JDK, not a JRE, because it compiles the version catalog's accessors; from the command line, point `JAVA_HOME` at a JDK (for example Android Studio's bundled one).
 
 Plugin and library versions are declared in one place, the Gradle version catalog [`gradle/libs.versions.toml`](gradle/libs.versions.toml).
 
-The library is written in Java. The two sample apps, `app` (a full USB camera app) and `demo` (one screen per library feature), are written in Kotlin with a Jetpack Compose UI; the camera preview is a `TextureView` or `SurfaceView` hosted in Compose with `AndroidView`.
+The library's camera API (`com.herohan.uvcapp`) and its helpers (`com.serenegiant.utils`) are written in Kotlin, and keep the same API for Java callers: getters, setters, static constants and static methods have the names they had in Java. The low-level USB, JNI and OpenGL code it builds on (`com.serenegiant.usb` and `com.serenegiant.opengl`) is still Java, as is the bundled libjpeg-turbo. The two sample apps, `app` (a full USB camera app) and `demo` (one screen per library feature), are written in Kotlin with a Jetpack Compose UI in Material 3, using the wallpaper's colors (dynamic color) on Android 12+; the camera preview is a `TextureView` or `SurfaceView` hosted in Compose with `AndroidView`.
 
 The code the two sample apps share, the Compose dialogs and theme and `CameraSession` (which ties a camera to an activity's lifecycle), lives in the `sample-common` module. It is not part of the published library.

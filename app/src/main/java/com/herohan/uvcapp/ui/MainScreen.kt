@@ -7,23 +7,22 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeFloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SmallFloatingActionButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -38,14 +37,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.herohan.uvcapp.R
-import com.herohan.uvcsample.ui.theme.RecordRed
 import com.herohan.uvcsample.ui.theme.UvcSampleTheme
 import kotlinx.coroutines.delay
 import java.util.Locale
+import com.herohan.uvcsample.R as SampleR
 
 /**
  * Actions offered by the top app bar.
@@ -64,11 +63,11 @@ enum class MainMenuAction {
 }
 
 /**
- * Background of the picture and video buttons over the preview.
+ * Background behind the camera preview, black like a viewfinder in both light and dark themes.
  *
- * 预览上方拍照和录像按钮的背景色。
+ * 相机预览后方的背景，与取景器一样在浅色和深色主题中均为黑色。
  */
-private val FabContainerColor = Color(0x773700B3)
+private val ViewfinderBackground = Color.Black
 
 /**
  * How often the recording time is refreshed, in milliseconds.
@@ -104,14 +103,9 @@ fun MainScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.app_name)) },
                 actions = { MainMenu(isCameraConnected, onMenuAction) },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
-                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary,
-                ),
             )
         },
-        containerColor = Color.Black,
+        containerColor = ViewfinderBackground,
     ) { innerPadding ->
         Box(
             modifier = Modifier
@@ -132,12 +126,7 @@ fun MainScreen(
                     .alpha(if (isCameraConnected) 1f else 0f),
             )
             if (!isCameraConnected) {
-                Text(
-                    text = stringResource(R.string.main_connect_usb_tip),
-                    color = Color.White,
-                    fontSize = 20.sp,
-                    modifier = Modifier.align(Alignment.Center),
-                )
+                ConnectCameraTip(modifier = Modifier.align(Alignment.Center))
             }
 
             if (isCameraConnected && recordStartTime != null) {
@@ -145,33 +134,94 @@ fun MainScreen(
                     startTime = recordStartTime,
                     modifier = Modifier
                         .align(Alignment.TopCenter)
-                        .padding(top = 20.dp),
+                        .padding(top = 16.dp),
                 )
             }
 
             if (isCameraConnected) {
-                Column(
+                CaptureButtons(
+                    isRecording = isRecording,
+                    onTakePicture = onTakePicture,
+                    onToggleRecord = onToggleRecord,
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .padding(end = dimensionResource(R.dimen.fab_margin), bottom = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                ) {
-                    SmallFloatingActionButton(
-                        onClick = onToggleRecord,
-                        containerColor = FabContainerColor,
-                        contentColor = if (isRecording) RecordRed else Color.White,
-                    ) {
-                        Icon(painterResource(R.drawable.ic_switch_video), contentDescription = null)
-                    }
-                    SmallFloatingActionButton(
-                        onClick = onTakePicture,
-                        containerColor = FabContainerColor,
-                        contentColor = Color.White,
-                    ) {
-                        Icon(painterResource(R.drawable.ic_switch_camera), contentDescription = null)
-                    }
-                }
+                )
             }
+        }
+    }
+}
+
+/**
+ * What the screen shows while no camera is connected.
+ *
+ * 未连接相机时界面显示的内容。
+ */
+@Composable
+private fun ConnectCameraTip(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier.padding(horizontal = 32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Icon(
+            painterResource(SampleR.drawable.ic_usb),
+            contentDescription = null,
+            tint = Color.White.copy(alpha = 0.7f),
+            modifier = Modifier.size(48.dp),
+        )
+        Text(
+            text = stringResource(R.string.main_connect_usb_tip),
+            color = Color.White,
+            style = MaterialTheme.typography.titleMedium,
+            textAlign = TextAlign.Center,
+        )
+    }
+}
+
+/**
+ * The record button above the larger picture button. While recording, the record button turns
+ * into a stop button in the error colors.
+ *
+ * 位于较大拍照按钮上方的录像按钮。录像期间，录像按钮变为使用错误配色的停止按钮。
+ */
+@Composable
+private fun CaptureButtons(
+    isRecording: Boolean,
+    onTakePicture: () -> Unit,
+    onToggleRecord: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        if (isRecording) {
+            FloatingActionButton(
+                onClick = onToggleRecord,
+                containerColor = MaterialTheme.colorScheme.errorContainer,
+                contentColor = MaterialTheme.colorScheme.onErrorContainer,
+            ) {
+                Icon(
+                    painterResource(SampleR.drawable.ic_stop),
+                    contentDescription = stringResource(SampleR.string.stop_recording),
+                )
+            }
+        } else {
+            FloatingActionButton(onClick = onToggleRecord) {
+                Icon(
+                    painterResource(SampleR.drawable.ic_videocam),
+                    contentDescription = stringResource(SampleR.string.start_recording),
+                )
+            }
+        }
+        LargeFloatingActionButton(onClick = onTakePicture) {
+            Icon(
+                painterResource(SampleR.drawable.ic_photo_camera),
+                contentDescription = stringResource(SampleR.string.take_picture),
+                modifier = Modifier.size(36.dp),
+            )
         }
     }
 }
@@ -186,14 +236,14 @@ private fun MainMenu(isCameraConnected: Boolean, onMenuAction: (MainMenuAction) 
     if (isCameraConnected) {
         IconButton(onClick = { onMenuAction(MainMenuAction.CameraControls) }) {
             Icon(
-                painterResource(R.drawable.ic_action_control),
+                painterResource(SampleR.drawable.ic_tune),
                 contentDescription = stringResource(R.string.action_control),
             )
         }
     }
     IconButton(onClick = { onMenuAction(MainMenuAction.Device) }) {
         Icon(
-            painterResource(R.drawable.ic_action_usb),
+            painterResource(SampleR.drawable.ic_usb),
             contentDescription = stringResource(R.string.action_usb),
         )
     }
@@ -201,7 +251,10 @@ private fun MainMenu(isCameraConnected: Boolean, onMenuAction: (MainMenuAction) 
         var expanded by remember { mutableStateOf(false) }
         Box {
             IconButton(onClick = { expanded = true }) {
-                Icon(painterResource(R.drawable.ic_more_vert), contentDescription = null)
+                Icon(
+                    painterResource(SampleR.drawable.ic_more_vert),
+                    contentDescription = stringResource(SampleR.string.more_options),
+                )
             }
             DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                 listOf(
@@ -226,9 +279,10 @@ private fun MainMenu(isCameraConnected: Boolean, onMenuAction: (MainMenuAction) 
 }
 
 /**
- * Elapsed recording time with a red dot, refreshed every quarter second.
+ * Elapsed recording time with a recording dot, in a pill in the error colors, refreshed every
+ * quarter second.
  *
- * 带红点的已录制时长，每四分之一秒刷新一次。
+ * 带录制圆点的已录制时长，显示在使用错误配色的胶囊中，每四分之一秒刷新一次。
  */
 @Composable
 private fun RecordTime(startTime: Long, modifier: Modifier = Modifier) {
@@ -239,14 +293,24 @@ private fun RecordTime(startTime: Long, modifier: Modifier = Modifier) {
             delay(RECORD_TIME_REFRESH_MS)
         }
     }
-    Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
-        Box(
-            modifier = Modifier
-                .size(13.dp)
-                .background(RecordRed, CircleShape),
-        )
-        Spacer(Modifier.width(5.dp))
-        Text(text = formatRecordTime(seconds), color = Color.White, fontSize = 14.sp)
+    Surface(
+        modifier = modifier,
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.errorContainer,
+        contentColor = MaterialTheme.colorScheme.onErrorContainer,
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(10.dp)
+                    .background(MaterialTheme.colorScheme.error, CircleShape),
+            )
+            Text(text = formatRecordTime(seconds), style = MaterialTheme.typography.labelLarge)
+        }
     }
 }
 
@@ -270,6 +334,25 @@ private fun MainScreenDisconnectedPreview() {
             previewWidth = 640,
             previewHeight = 480,
             recordStartTime = null,
+            onSurfaceAvailable = {},
+            onSurfaceDestroyed = {},
+            onMenuAction = {},
+            onTakePicture = {},
+            onToggleRecord = {},
+        )
+    }
+}
+
+@Preview
+@Composable
+private fun MainScreenRecordingPreview() {
+    UvcSampleTheme {
+        MainScreen(
+            isCameraConnected = true,
+            isRecording = true,
+            previewWidth = 640,
+            previewHeight = 480,
+            recordStartTime = SystemClock.elapsedRealtime(),
             onSurfaceAvailable = {},
             onSurfaceDestroyed = {},
             onMenuAction = {},

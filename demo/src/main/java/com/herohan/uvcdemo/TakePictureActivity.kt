@@ -4,16 +4,18 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeFloatingActionButton
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.herohan.uvcapp.IImageCapture
 import com.herohan.uvcdemo.ui.CameraSurfacePreview
 import com.herohan.uvcdemo.ui.DemoScaffold
@@ -21,7 +23,6 @@ import com.herohan.uvcdemo.ui.TestTags
 import com.herohan.uvcsample.CameraSession
 import com.herohan.uvcsample.media.MediaStoreOutput
 import com.herohan.uvcsample.ui.theme.UvcSampleTheme
-import com.herohan.uvcsample.ui.theme.enableEdgeToEdgeBelowAppBar
 import com.herohan.uvcsample.R as SampleR
 import com.serenegiant.uvccamera.R as UvcR
 
@@ -31,7 +32,7 @@ class TakePictureActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdgeBelowAppBar()
+        enableEdgeToEdge()
 
         setContent {
             UvcSampleTheme {
@@ -43,7 +44,7 @@ class TakePictureActivity : ComponentActivity() {
                         onSurfaceDestroyed = camera::removePreviewSurface,
                         modifier = Modifier.align(Alignment.Center),
                     )
-                    IconButton(
+                    LargeFloatingActionButton(
                         onClick = ::takePicture,
                         modifier = Modifier
                             .align(Alignment.BottomCenter)
@@ -51,9 +52,9 @@ class TakePictureActivity : ComponentActivity() {
                             .testTag(TestTags.CAPTURE_IMAGE),
                     ) {
                         Icon(
-                            painterResource(R.drawable.ic_switch_camera),
-                            contentDescription = stringResource(R.string.entry_take_picture),
-                            tint = Color.Unspecified,
+                            painterResource(SampleR.drawable.ic_photo_camera),
+                            contentDescription = stringResource(SampleR.string.take_picture),
+                            modifier = Modifier.size(36.dp),
                         )
                     }
                 }

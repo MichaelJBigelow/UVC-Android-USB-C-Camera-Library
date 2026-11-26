@@ -9,6 +9,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,7 +28,6 @@ import com.herohan.uvcsample.ui.dialog.CameraControlsDialog
 import com.herohan.uvcsample.ui.dialog.DeviceListDialog
 import com.herohan.uvcsample.ui.dialog.VideoFormatDialog
 import com.herohan.uvcsample.ui.theme.UvcSampleTheme
-import com.herohan.uvcsample.ui.theme.enableEdgeToEdgeBelowAppBar
 import com.hjq.permissions.XXPermissions
 import com.hjq.permissions.permission.PermissionLists
 import com.serenegiant.opengl.renderer.MirrorMode
@@ -80,7 +80,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdgeBelowAppBar()
+        enableEdgeToEdge()
 
         setContent {
             UvcSampleTheme {
@@ -165,7 +165,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun showCameraControlsDialog() {
-        val control = cameraHelper?.uvcControl ?: return
+        val control = cameraHelper?.getUVCControl() ?: return
         openDialog = MainDialog.CameraControls(control)
     }
 

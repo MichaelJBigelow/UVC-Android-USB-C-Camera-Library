@@ -18,7 +18,7 @@ package com.serenegiant.opengl;
  *  limitations under the License.
  */
 
-interface IDrawer2D {
+public interface IDrawer2D {
     void release();
 
     float[] getMvpMatrix();

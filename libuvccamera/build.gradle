@@ -28,16 +28,16 @@ plugins {
 
 android {
     namespace = 'com.serenegiant.uvccamera'
-    compileSdk = rootProject.ext.versionCompiler
+    compileSdk = libs.versions.compileSdk.get().toInteger()
 
     compileOptions {
-        sourceCompatibility = rootProject.ext.javaSourceCompatibility
-        targetCompatibility = rootProject.ext.javaTargetCompatibility
+        sourceCompatibility = JavaVersion.toVersion(libs.versions.java.get())
+        targetCompatibility = JavaVersion.toVersion(libs.versions.java.get())
     }
 
     defaultConfig {
-        minSdk = rootProject.ext.versionMin
-        targetSdk = rootProject.ext.versionTarget
+        minSdk = libs.versions.minSdk.get().toInteger()
+        targetSdk = libs.versions.targetSdk.get().toInteger()
 
         ndk {
             abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'

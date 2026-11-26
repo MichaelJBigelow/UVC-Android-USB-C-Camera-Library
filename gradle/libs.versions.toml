@@ -4,6 +4,15 @@
 # 构建脚本通过 libs.<别名> 和 libs.plugins.<别名> 引用这些条目。
 
 [versions]
+# Android SDK levels shared by every module. targetSdk follows Google Play's target API requirement.
+# 所有模块共用的 Android SDK 级别。targetSdk 遵循 Google Play 的目标 API 级别要求。
+compileSdk = "37"
+targetSdk = "36"
+minSdk = "29"
+# Java language level for all modules. The build runs on JDK 25; Android bytecode targets Java 17.
+# 所有模块的 Java 语言级别。构建在 JDK 25 上运行；Android 字节码以 Java 17 为目标。
+java = "17"
+
 agp = "9.5.1"
 # Kotlin Gradle plugin and the matching Compose compiler plugin (they share one version).
 # Kotlin Gradle 插件及与之匹配的 Compose 编译器插件(二者版本一致)。

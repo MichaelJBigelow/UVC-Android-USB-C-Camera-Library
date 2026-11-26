@@ -39,6 +39,8 @@ android {
         minSdk = libs.versions.minSdk.get().toInteger()
         targetSdk = libs.versions.targetSdk.get().toInteger()
 
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
         ndk {
             abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
         }
@@ -87,6 +89,10 @@ dependencies {
     implementation libs.androidx.annotation
 
     testImplementation libs.junit
+    // Instrumented tests of the parts that need a device but no USB camera.
+    // 针对需要设备但不需要 USB 相机的部分的仪器化测试。
+    androidTestImplementation libs.androidx.test.junit
+    androidTestImplementation libs.androidx.test.runner
 }
 
 ext {

@@ -49,3 +49,20 @@ Plugin and library versions are declared in one place, the Gradle version catalo
 The library's camera API (`com.herohan.uvcapp`) and its helpers (`com.serenegiant.utils`) are written in Kotlin, and keep the same API for Java callers: getters, setters, static constants and static methods have the names they had in Java. The low-level USB, JNI and OpenGL code it builds on (`com.serenegiant.usb` and `com.serenegiant.opengl`) is still Java, as is the bundled libjpeg-turbo. The two sample apps, `app` (a full USB camera app) and `demo` (one screen per library feature), are written in Kotlin with a Jetpack Compose UI in Material 3, using the wallpaper's colors (dynamic color) on Android 12+; the camera preview is a `TextureView` or `SurfaceView` hosted in Compose with `AndroidView`.
 
 The code the two sample apps share, the Compose dialogs and theme and `CameraSession` (which ties a camera to an activity's lifecycle), lives in the `sample-common` module. It is not part of the published library.
+
+Tests
+-----
+
+Unit tests run on the JVM:
+```bash
+./gradlew testDebugUnitTest
+```
+
+Instrumented tests run on a device or emulator with Android 10 or newer, and need no USB camera:
+```bash
+./gradlew connectedDebugAndroidTest
+```
+
+They cover the library (capture settings, device filters, saving pictures, and `CameraHelper` before a camera is selected), the sample apps' dialogs, every demo screen, and the app's start screen. Opening a camera, previewing and recording need a real UVC camera. The demo's `CommonTest`, a recording soak test of about 30 minutes, runs only when a UVC camera is attached. The app's `MainActivityTest` and the demo's `EntryActivityTest` are skipped when one is attached, since opening the camera then asks for permission in a system dialog the tests can't answer.
+
+The demo's tests grant it the camera and microphone permissions, and they stay granted afterwards. Uninstall the demo to see its permission requests again.

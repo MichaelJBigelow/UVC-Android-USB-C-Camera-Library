@@ -13,6 +13,8 @@ android {
 
     defaultConfig {
         minSdk = libs.versions.minSdk.get().toInteger()
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     compileOptions {
@@ -48,4 +50,12 @@ dependencies {
     implementation libs.kotlinx.coroutines.android
 
     testImplementation libs.junit
+    androidTestImplementation libs.androidx.test.junit
+    androidTestImplementation libs.androidx.test.runner
+    androidTestImplementation platform(libs.androidx.compose.bom)
+    androidTestImplementation libs.androidx.compose.ui.test.junit4
+    // A library's instrumented tests run in their own APK, so the activity that hosts the
+    // composables under test is added to that APK.
+    // 库的仪器化测试运行在其自己的 APK 中，因此将承载待测 composable 的 Activity 添加到该 APK。
+    androidTestImplementation libs.androidx.compose.ui.test.manifest
 }

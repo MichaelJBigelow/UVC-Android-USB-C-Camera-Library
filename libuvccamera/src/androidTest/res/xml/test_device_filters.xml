@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Device filters that use every attribute spelling DeviceFilter reads, for DeviceFilterXmlTest.
+     使用 DeviceFilter 所能读取的每种属性写法的设备过滤器，供 DeviceFilterXmlTest 使用。 -->
+<usb>
+    <!-- Hexadecimal and decimal numbers, and every name string / 十六进制和十进制数字，以及所有名称字符串 -->
+    <usb-device
+        vendor-id="0x046d"
+        product-id="2085"
+        class="0xEF"
+        subclass="2"
+        protocol="1"
+        manufacturer-name="Acme"
+        product-name="Webcam"
+        serial-number="1234" />
+    <!-- The older attribute names / 旧的属性名 -->
+    <usb-device
+        vendorId="1133"
+        productId="0x0825"
+        manufacture="Old Acme"
+        product="Old Webcam"
+        serial="5678" />
+    <!-- The misspelled vendor id is still read; exclude as a number / 仍会读取拼写错误的 vendor id；exclude 写为数字 -->
+    <usb-device venderId="1" exclude="1" />
+    <!-- An unreadable number falls back to "any" / 无法解析的数字回退为“任意” -->
+    <usb-device vendor-id="not a number" class="14" exclude="false" />
+    <!-- Values taken from resources / 取自资源的值 -->
+    <usb-device
+        vendor-id="@integer/test_vendor_id"
+        product-name="@string/test_product_name"
+        exclude="@bool/test_exclude" />
+</usb>

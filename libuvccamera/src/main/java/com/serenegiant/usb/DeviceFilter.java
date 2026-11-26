@@ -480,6 +480,11 @@ public final class DeviceFilter {
 
 	@Override
 	public boolean equals(final Object obj) {
+		// A filter equals itself, even with wildcards, so lists can remove it
+		// 过滤器总是等于其自身(即使含通配符)，这样列表才能将其移除
+		if (this == obj) {
+			return true;
+		}
 		// can't compare if we have wildcard strings
 		// 如果存在通配符字符串,则无法比较
 		if (mVendorId == -1 || mProductId == -1 || mClass == -1
@@ -511,7 +516,7 @@ public final class DeviceFilter {
 							.equals(filter.mSerialNumber))) {
 				return false;
 			}
-			return (filter.isExclude != isExclude);
+			return (filter.isExclude == isExclude);
 		}
 		if (obj instanceof UsbDevice) {
 			final UsbDevice device = (UsbDevice) obj;

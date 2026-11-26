@@ -165,7 +165,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun showCameraControlsDialog() {
-        val control = cameraHelper?.uvcControl ?: return
+        val control = cameraHelper?.getUVCControl() ?: return
         openDialog = MainDialog.CameraControls(control)
     }
 

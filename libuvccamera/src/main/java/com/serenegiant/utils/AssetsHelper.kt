@@ -1,4 +1,4 @@
-package com.serenegiant.utils;
+package com.serenegiant.utils
 /*
  * libcommon
  * utility/helper classes for myself
@@ -18,23 +18,18 @@ package com.serenegiant.utils;
  *  limitations under the License.
 */
 
-import android.content.res.AssetManager;
+import android.content.res.AssetManager
+import java.io.IOException
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+object AssetsHelper {
 
-public class AssetsHelper {
-
-	public static String loadString(final AssetManager assets, final String name) throws IOException {
-		final StringBuffer sb = new StringBuffer();
-		final char[] buf = new char[1024];
-		final BufferedReader reader = new BufferedReader(new InputStreamReader(assets.open(name)));
-		int r = reader.read(buf);
-		while (r > 0) {
-			sb.append(buf, 0, r);
-			r = reader.read(buf);
-		}
-		return sb.toString();
-	}
+    /**
+     * Reads a text asset into a string.
+     *
+     * 将文本资源读取为字符串。
+     */
+    @JvmStatic
+    @Throws(IOException::class)
+    fun loadString(assets: AssetManager, name: String): String =
+        assets.open(name).bufferedReader().use { it.readText() }
 }

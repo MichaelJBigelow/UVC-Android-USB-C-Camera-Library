@@ -80,9 +80,13 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    // The library only uses androidx.annotation; keep it light for the apps that depend on it.
-    // 本库只使用 androidx.annotation；保持精简，避免给依赖它的应用带来多余的库。
+    // The library only uses androidx.annotation (and the Kotlin standard library, added by AGP's
+    // built-in Kotlin support); keep it light for the apps that depend on it.
+    // 本库只使用 androidx.annotation(以及由 AGP 内置 Kotlin 支持添加的 Kotlin 标准库)；
+    // 保持精简，避免给依赖它的应用带来多余的库。
     implementation libs.androidx.annotation
+
+    testImplementation libs.junit
 }
 
 ext {

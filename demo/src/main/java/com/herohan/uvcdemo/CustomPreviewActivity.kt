@@ -131,7 +131,7 @@ class CustomPreviewActivity : ComponentActivity() {
     }
 
     private fun showCameraControlsDialog() {
-        val control = cameraHelper?.uvcControl ?: return
+        val control = cameraHelper?.getUVCControl() ?: return
         openDialog = PreviewDialog.CameraControls(control)
     }
 

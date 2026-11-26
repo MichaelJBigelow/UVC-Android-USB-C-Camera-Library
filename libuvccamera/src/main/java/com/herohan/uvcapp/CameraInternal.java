@@ -255,6 +255,9 @@ final class CameraInternal implements ICameraInternal {
             processOnCameraOpen();
         } catch (Exception e) {
             if (DEBUG) Log.e(TAG, "openUVCCamera:", e);
+            // Undo the partial open, so isCameraOpened() stays false and the native camera is freed
+            // 撤销未完成的打开操作，使 isCameraOpened() 保持为 false，并释放 native 相机
+            releaseAfterOpenFailure();
             CameraException ex = null;
             if (e instanceof CameraException) {
                 ex = (CameraException) e;
@@ -262,6 +265,27 @@ final class CameraInternal implements ICameraInternal {
                 ex = new CameraException(CameraException.CAMERA_OPEN_ERROR_UNKNOWN, e);
             }
             processOnError(ex);
+        }
+    }
+
+    private void releaseAfterOpenFailure() {
+        synchronized (CameraInternal.class) {
+            if (mUVCCamera != null) {
+                try {
+                    mUVCCamera.destroy(true);
+                } catch (Exception e) {
+                    Log.w(TAG, "releaseAfterOpenFailure:", e);
+                }
+                mUVCCamera = null;
+            }
+        }
+        if (mImageCapture != null) {
+            mImageCapture.release();
+            mImageCapture = null;
+        }
+        if (mVideoCapture != null) {
+            mVideoCapture.release();
+            mVideoCapture = null;
         }
     }
 

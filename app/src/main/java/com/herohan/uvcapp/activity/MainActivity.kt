@@ -385,33 +385,39 @@ class MainActivity : ComponentActivity() {
 
     /**
      * Saving a picture needs storage permission. XXPermissions reports every result, granted or
-     * denied, so act only when at least one permission was granted.
+     * denied, so act only when no requested permission was denied.
      *
      * 保存照片需要存储权限。XXPermissions 会回调每次请求结果(无论授予与否)，
-     * 因此仅在至少授予一项权限时执行操作。
+     * 因此仅在没有任何请求的权限被拒绝时执行操作。
      */
     private fun requestTakePicture() {
         XXPermissions.with(this)
             .permission(PermissionLists.getManageExternalStoragePermission())
-            .request { grantedList, _ ->
-                if (grantedList.isNotEmpty()) {
+            .request { _, deniedList ->
+                if (deniedList.isEmpty()) {
                     takePicture()
                 }
             }
     }
 
     /**
-     * Recording needs storage and microphone permissions; see [requestTakePicture].
+     * Recording needs both storage and microphone permissions; see [requestTakePicture].
+     * Stopping a recording needs no permission check.
      *
-     * 录像需要存储和麦克风权限；参见 [requestTakePicture]。
+     * 录像需要存储和麦克风两项权限；参见 [requestTakePicture]。
+     * 停止录像不需要检查权限。
      */
     private fun requestToggleVideoRecord() {
+        if (isRecording) {
+            toggleVideoRecord(false)
+            return
+        }
         XXPermissions.with(this)
             .permission(PermissionLists.getManageExternalStoragePermission())
             .permission(PermissionLists.getRecordAudioPermission())
-            .request { grantedList, _ ->
-                if (grantedList.isNotEmpty()) {
-                    toggleVideoRecord(!isRecording)
+            .request { _, deniedList ->
+                if (deniedList.isEmpty()) {
+                    toggleVideoRecord(true)
                 }
             }
     }

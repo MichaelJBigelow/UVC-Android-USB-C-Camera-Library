@@ -193,8 +193,9 @@ class CameraConnectionService {
         public void unregister(final ICameraHelper.StateCallback callback) {
             if (mUSBMonitor != null) {
                 if (DEBUG) Log.d(TAG, "mUSBMonitor#unregister:");
+                // Keep the monitor so register() can be called again; release() destroys it
+                // 保留 USBMonitor，以便可以再次调用 register()；由 release() 负责销毁
                 mUSBMonitor.unregister();
-                mUSBMonitor = null;
             }
 
             if (mWeakStateCallback != null) {

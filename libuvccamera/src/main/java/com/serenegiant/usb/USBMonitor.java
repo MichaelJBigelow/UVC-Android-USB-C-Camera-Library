@@ -207,24 +207,23 @@ public final class USBMonitor {
         if (!mDestroyed) {
             mDestroyed = true;
 
+            // close all connected USB device
+            // Take a snapshot and clear the map first, so closing a block (which removes
+            // itself from the map) can't break the iteration, and close outside the lock.
+            // 关闭所有已连接的 USB 设备
+            // 先复制一份并清空映射表，这样关闭控制块（会将自身从映射表中移除）时不会打断遍历，
+            // 并且在锁外执行关闭操作。
+            final List<UsbControlBlock> ctrlBlocks;
             synchronized (mOpenedCtrlBlocks) {
-                // close all connected USB device
-                // 关闭所有已连接的 USB 设备
-                final Set<UsbDevice> keys = mOpenedCtrlBlocks.keySet();
-                if (keys != null) {
-                    UsbControlBlock ctrlBlock;
-                    try {
-                        for (final UsbDevice key : keys) {
-                            ctrlBlock = mOpenedCtrlBlocks.remove(key);
-                            if (ctrlBlock != null) {
-                                ctrlBlock.close();
-                            }
-                        }
-                    } catch (final Exception e) {
-                        Log.e(TAG, "destroy:", e);
-                    }
-                }
+                ctrlBlocks = new ArrayList<>(mOpenedCtrlBlocks.values());
                 mOpenedCtrlBlocks.clear();
+            }
+            for (final UsbControlBlock ctrlBlock : ctrlBlocks) {
+                try {
+                    ctrlBlock.close();
+                } catch (final Exception e) {
+                    Log.e(TAG, "destroy:", e);
+                }
             }
 
             try {
@@ -676,13 +675,14 @@ public final class USBMonitor {
                     // 当设备被移除时
                     final UsbDevice device = getExtraDevice(intent);
                     if (device != null) {
+                        final UsbControlBlock ctrlBlock;
                         synchronized (mOpenedCtrlBlocks) {
-                            UsbControlBlock ctrlBlock = mOpenedCtrlBlocks.remove(device);
-                            if (ctrlBlock != null) {
-                                // cleanup
-                                // 清理
-                                ctrlBlock.close();
-                            }
+                            ctrlBlock = mOpenedCtrlBlocks.remove(device);
+                        }
+                        if (ctrlBlock != null) {
+                            // cleanup (outside the map lock, because close() locks the block, then the map)
+                            // 清理（在映射表锁之外执行，因为 close() 会先锁控制块，再锁映射表）
+                            ctrlBlock.close();
                         }
                         processDetach(device);
                     }
@@ -707,7 +707,9 @@ public final class USBMonitor {
             if (mDestroyed) return;
             final List<UsbDevice> devices = getDeviceList();
             final HashSet<UsbDevice> needNotifyDevices = new HashSet<>();
-            synchronized (this) {
+            // Lock the monitor (not this Runnable), the same lock that guards the device key sets elsewhere
+            // 锁定 USBMonitor（而不是这个 Runnable），与其他地方保护设备 key 集合的锁相同
+            synchronized (USBMonitor.this) {
                 final HashSet<String> oldHasPermissionKeys = mHasPermissionDeviceKeys;
                 final HashSet<String> oldDetectedKeys = mDetectedDeviceKeys;
                 mHasPermissionDeviceKeys = new HashSet<>();
@@ -1247,8 +1249,12 @@ public final class USBMonitor {
                             monitor.mOnDeviceConnectListener.onDeviceClose(mWeakDevice.get(), UsbControlBlock.this);
                         });
                     }
+                    // Only remove the entry if it is this block. A clone (e.g. the one UVCCamera opens)
+                    // must not remove, and so leak, the original block the monitor still owns.
+                    // 只有当映射表中的条目就是这个控制块时才移除。克隆出的控制块（例如 UVCCamera 打开的那个）
+                    // 不能移除 USBMonitor 仍然持有的原始控制块，否则原始控制块会泄漏。
                     synchronized (monitor.mOpenedCtrlBlocks) {
-                        monitor.mOpenedCtrlBlocks.remove(getDevice());
+                        monitor.mOpenedCtrlBlocks.remove(getDevice(), this);
                     }
                 }
             }

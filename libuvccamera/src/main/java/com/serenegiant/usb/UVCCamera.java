@@ -160,6 +160,12 @@ public class UVCCamera {
         }
         if (result != 0) {
 //            throw new UnsupportedOperationException("open failed:result=" + result);
+            // Close the cloned control block so its USB connection doesn't leak
+            // 关闭克隆的控制块，避免其 USB 连接泄漏
+            if (mCtrlBlock != null) {
+                mCtrlBlock.close(true);
+                mCtrlBlock = null;
+            }
             return result;
         }
 
